@@ -1,0 +1,37 @@
+{
+  "name": "svelte-sortable-flat-list-view",
+  "version": "0.1.0",
+  "description": "a sortable view for flat lists",
+  "type": "module",
+  "module": "svelte-sortable-flat-list-view.svelte",
+  "exports": {
+    "import": "./dist/svelte-sortable-flat-list-view.esm.js"
+  },
+  "types": "./dist/svelte-sortable-flat-list-view.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rozek/svelte-sortable-flat-list-view.git"
+  },
+  "keywords": [
+    "svelte3",
+    "sortable",
+    "list-view"
+  ],
+  "author": "Andreas Rozek <a.rozek@gmx.de> (https://www.rozek.de/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rozek/svelte-sortable-flat-list-view/issues"
+  },
+  "homepage": "https://github.com/rozek/svelte-sortable-flat-list-view#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^19.0.0",
+    "@rollup/plugin-node-resolve": "^13.0.0",
+    "@rollup/plugin-typescript": "^8.2.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.52.2",
+    "typescript": "^4.3.4"
+  }
+}

@@ -1,2 +1,3 @@
-# svelte-sortable-flat-list-view
- a sortable view for flat lists
+# svelte-sortable-flat-list-view #
+
+a sortable view for flat lists

@@ -9,7 +9,7 @@
     "require": "./dist/svelte-sortable-flat-list-view.js",
     "import": "./dist/svelte-sortable-flat-list-view.esm.js"
   },
-  "types":  "./dist/svelte-sortable-flat-list-view.d.ts",
+  "types": "./dist/svelte-sortable-flat-list-view.d.ts",
   "svelte": "./src/svelte-sortable-flat-list-view.svelte",
   "scripts": {
     "build": "rimraf dist && rollup -c rollup.config.js",
@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "javascript-interface-library": "file:../javascript-interface-library",
+    "svelte-device-info": "file:../svelte-device-info",
     "svelte-drag-and-drop-actions": "file:../svelte-drag-and-drop-actions"
   }
 }

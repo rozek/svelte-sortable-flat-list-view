@@ -124,6 +124,7 @@
     })
 
     SelectionRangeBoundaryA = (ItemList.length === 1 ? ItemList[0] : undefined)
+    SelectionRangeBoundaryB = undefined
     triggerRedraw()
   }
 
@@ -145,7 +146,7 @@
       }
     })
 
-    SelectionRangeBoundaryA = undefined
+    SelectionRangeBoundaryA = SelectionRangeBoundaryB = undefined
     triggerRedraw()
   }
 
@@ -218,7 +219,7 @@
       }
     })
 
-    SelectionRangeBoundaryA = undefined
+    SelectionRangeBoundaryA = SelectionRangeBoundaryB = undefined
     triggerRedraw()
   }
 
@@ -232,7 +233,7 @@
       }
     })
 
-    SelectionRangeBoundaryA = undefined
+    SelectionRangeBoundaryA = SelectionRangeBoundaryB = undefined
     triggerRedraw()
   }
 
@@ -253,6 +254,7 @@
 
           if (ItemList.length === 1) {
             SelectionRangeBoundaryA = Item
+            SelectionRangeBoundaryB = undefined
           }
         }
       } else {

@@ -9,7 +9,7 @@ import postcss        from 'rollup-plugin-postcss'
 import { terser }     from 'rollup-plugin-terser'
 
 export default {
-  input: './src/svelte-sortable-flat-list-view.svelte',
+  input: './src/index.ts',
   output: [
     {
       file:     './dist/svelte-sortable-flat-list-view.js',
@@ -25,7 +25,7 @@ export default {
     }
   ],
   plugins: [
-    svelte({ preprocess:autoPreprocess() }),
+    svelte({ preprocess:autoPreprocess({ aliases:[['ts','typescript']] }) }),
     resolve({ browser:true, dedupe:['svelte'] }), commonjs(), typescript(),
     postcss({ extract:false, inject:{insertAt:'top'} }),
   ],

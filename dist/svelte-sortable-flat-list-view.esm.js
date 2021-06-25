@@ -840,7 +840,7 @@ const get_default_slot_context = ctx => ({
 	Index: /*Index*/ ctx[30]
 });
 
-// (242:2) {:else}
+// (267:2) {:else}
 function create_else_block(ctx) {
 	let li;
 	let t;
@@ -866,7 +866,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (230:2) {#if (List.length > 0)}
+// (255:2) {#if (List.length > 0)}
 function create_if_block(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -931,7 +931,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (237:29)            
+// (262:29)            
 function fallback_block(ctx) {
 	let t_value = /*KeyOf*/ ctx[5](/*Item*/ ctx[28]) + "";
 	let t;
@@ -952,7 +952,7 @@ function fallback_block(ctx) {
 	};
 }
 
-// (231:4) {#each List as Item,Index (KeyOf(Item))}
+// (256:4) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block(key_1, ctx) {
 	let li;
 	let t;
@@ -1135,7 +1135,7 @@ function instance($$self, $$props, $$invalidate) {
 
 	let $$restProps = compute_rest_props($$props, omit_props_names);
 	let { $$slots: slots = {}, $$scope } = $$props;
-	createEventDispatcher();
+	const dispatch = createEventDispatcher();
 	let { class: ClassNames } = $$props;
 	let { style } = $$props; // dto.
 	let { List } = $$props; // the (flat) list to be shown
@@ -1171,7 +1171,10 @@ function instance($$self, $$props, $$invalidate) {
 			let Key = KeyOf(Item);
 
 			if (Key in ItemSet) {
-				SelectionSet.set(Item, true);
+				if (!SelectionSet.has(Item)) {
+					SelectionSet.set(Item, true);
+					dispatch("selected", Item);
+				}
 			} else {
 				throwError("InvalidArgument: one or multiple of the given items to select " + "are not part of the given \"List\"");
 			}
@@ -1187,7 +1190,13 @@ function instance($$self, $$props, $$invalidate) {
 	} //  triggerRedraw()                                       // already done before
 
 	function selectAll() {
-		List.forEach(Item => SelectionSet.set(Item, true));
+		List.forEach(Item => {
+			if (!SelectionSet.has(Item)) {
+				SelectionSet.set(Item, true);
+				dispatch("selected", Item);
+			}
+		});
+
 		SelectionRangeBoundaryA = undefined;
 		triggerRedraw();
 	}
@@ -1215,7 +1224,10 @@ function instance($$self, $$props, $$invalidate) {
 		let lastIndex = Math.max(IndexA, IndexB);
 
 		for (let i = firstIndex; i <= lastIndex; i++) {
-			SelectionSet.set(List[i], true);
+			if (!SelectionSet.has(List[i])) {
+				SelectionSet.set(List[i], true);
+				dispatch("selected", List[i]);
+			}
 		}
 
 		SelectionRangeBoundaryB = RangeBoundary;
@@ -1230,7 +1242,10 @@ function instance($$self, $$props, $$invalidate) {
 		let lastIndex = Math.max(IndexA, IndexB);
 
 		for (let i = firstIndex; i <= lastIndex; i++) {
-			SelectionSet.delete(List[i]);
+			if (SelectionSet.has(List[i])) {
+				SelectionSet.delete(List[i]);
+				dispatch("deselected", List[i]);
+			}
 		}
 	}
 
@@ -1239,7 +1254,10 @@ function instance($$self, $$props, $$invalidate) {
 			let Key = KeyOf(Item);
 
 			if (Key in ItemSet) {
-				SelectionSet.delete(Item);
+				if (SelectionSet.has(Item)) {
+					SelectionSet.delete(Item);
+					dispatch("deselected", Item);
+				}
 			} else {
 				throwError("InvalidArgument: one or multiple of the given items to deselect " + "are not part of the given \"List\"");
 			}
@@ -1250,7 +1268,14 @@ function instance($$self, $$props, $$invalidate) {
 	}
 
 	function deselectAll() {
-		SelectionSet = new WeakMap();
+		List.forEach(Item => {
+			if (SelectionSet.has(Item)) {
+				SelectionSet.delete(Item);
+				dispatch("deselected", Item);
+			}
+		});
+
+		SelectionRangeBoundaryA = undefined;
 		triggerRedraw();
 	}
 
@@ -1263,8 +1288,10 @@ function instance($$self, $$props, $$invalidate) {
 			if (Key in ItemSet) {
 				if (SelectionSet.has(Item)) {
 					SelectionSet.delete(Item);
+					dispatch("deselected", Item);
 				} else {
 					SelectionSet.set(Item, true);
+					dispatch("selected", Item);
 
 					if (ItemList.length === 1) {
 						SelectionRangeBoundaryA = Item;

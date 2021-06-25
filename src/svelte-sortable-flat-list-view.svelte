@@ -111,7 +111,10 @@
     ItemList.forEach((Item) => {
       let Key = KeyOf(Item)
       if (Key in ItemSet) {
-        SelectionSet.set(Item,true)
+        if (! SelectionSet.has(Item)) {
+          SelectionSet.set(Item,true)
+          dispatch('selected',Item)
+        }
       } else {
         throwError(
           'InvalidArgument: one or multiple of the given items to select ' +
@@ -135,7 +138,12 @@
 /**** selectAll ****/
 
   export function selectAll ():void {
-    List.forEach((Item) => SelectionSet.set(Item,true))
+    List.forEach((Item) => {
+      if (! SelectionSet.has(Item)) {
+        SelectionSet.set(Item,true)
+        dispatch('selected',Item)
+      }
+    })
 
     SelectionRangeBoundaryA = undefined
     triggerRedraw()
@@ -165,7 +173,10 @@
     let lastIndex  = Math.max(IndexA,IndexB)
 
     for (let i = firstIndex; i <= lastIndex; i++) {
-      SelectionSet.set(List[i],true)
+      if (! SelectionSet.has(List[i])) {
+        SelectionSet.set(List[i],true)
+        dispatch('selected',List[i])
+      }
     }
 
     SelectionRangeBoundaryB = RangeBoundary
@@ -182,7 +193,10 @@
     let lastIndex  = Math.max(IndexA,IndexB)
 
     for (let i = firstIndex; i <= lastIndex; i++) {
-      SelectionSet.delete(List[i])
+      if (SelectionSet.has(List[i])) {
+        SelectionSet.delete(List[i])
+        dispatch('deselected',List[i])
+      }
     }
   }
 
@@ -192,7 +206,10 @@
     ItemList.forEach((Item) => {
       let Key = KeyOf(Item)
       if (Key in ItemSet) {
-        SelectionSet.delete(Item)
+        if (SelectionSet.has(Item)) {
+          SelectionSet.delete(Item)
+          dispatch('deselected',Item)
+        }
       } else {
         throwError(
           'InvalidArgument: one or multiple of the given items to deselect ' +
@@ -208,7 +225,14 @@
 /**** deselectAll ****/
 
   export function deselectAll ():void {
-    SelectionSet = new WeakMap()
+    List.forEach((Item) => {
+      if (SelectionSet.has(Item)) {
+        SelectionSet.delete(Item)
+        dispatch('deselected',Item)
+      }
+    })
+
+    SelectionRangeBoundaryA = undefined
     triggerRedraw()
   }
 
@@ -222,8 +246,11 @@
       if (Key in ItemSet) {
         if (SelectionSet.has(Item)) {
           SelectionSet.delete(Item)
+          dispatch('deselected',Item)
         } else {
           SelectionSet.set(Item,true)
+          dispatch('selected',Item)
+
           if (ItemList.length === 1) {
             SelectionRangeBoundaryA = Item
           }

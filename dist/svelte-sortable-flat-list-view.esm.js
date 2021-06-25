@@ -840,7 +840,7 @@ const get_default_slot_context = ctx => ({
 	Index: /*Index*/ ctx[30]
 });
 
-// (267:2) {:else}
+// (269:2) {:else}
 function create_else_block(ctx) {
 	let li;
 	let t;
@@ -866,7 +866,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (255:2) {#if (List.length > 0)}
+// (257:2) {#if (List.length > 0)}
 function create_if_block(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -931,7 +931,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (262:29)            
+// (264:29)            
 function fallback_block(ctx) {
 	let t_value = /*KeyOf*/ ctx[5](/*Item*/ ctx[28]) + "";
 	let t;
@@ -952,7 +952,7 @@ function fallback_block(ctx) {
 	};
 }
 
-// (256:4) {#each List as Item,Index (KeyOf(Item))}
+// (258:4) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block(key_1, ctx) {
 	let li;
 	let t;
@@ -1181,6 +1181,7 @@ function instance($$self, $$props, $$invalidate) {
 		});
 
 		SelectionRangeBoundaryA = ItemList.length === 1 ? ItemList[0] : undefined;
+		SelectionRangeBoundaryB = undefined;
 		triggerRedraw();
 	}
 
@@ -1197,7 +1198,7 @@ function instance($$self, $$props, $$invalidate) {
 			}
 		});
 
-		SelectionRangeBoundaryA = undefined;
+		SelectionRangeBoundaryA = SelectionRangeBoundaryB = undefined;
 		triggerRedraw();
 	}
 
@@ -1263,7 +1264,7 @@ function instance($$self, $$props, $$invalidate) {
 			}
 		});
 
-		SelectionRangeBoundaryA = undefined;
+		SelectionRangeBoundaryA = SelectionRangeBoundaryB = undefined;
 		triggerRedraw();
 	}
 
@@ -1275,7 +1276,7 @@ function instance($$self, $$props, $$invalidate) {
 			}
 		});
 
-		SelectionRangeBoundaryA = undefined;
+		SelectionRangeBoundaryA = SelectionRangeBoundaryB = undefined;
 		triggerRedraw();
 	}
 
@@ -1295,6 +1296,7 @@ function instance($$self, $$props, $$invalidate) {
 
 					if (ItemList.length === 1) {
 						SelectionRangeBoundaryA = Item;
+						SelectionRangeBoundaryB = undefined;
 					}
 				}
 			} else {

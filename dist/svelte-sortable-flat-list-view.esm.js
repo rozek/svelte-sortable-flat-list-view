@@ -812,8 +812,8 @@ styleInject(css_248z,{"insertAt":"top"});
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[10] = list[i];
-	child_ctx[12] = i;
+	child_ctx[24] = list[i];
+	child_ctx[26] = i;
 	return child_ctx;
 }
 
@@ -823,11 +823,11 @@ const get_default_slot_changes = dirty => ({
 });
 
 const get_default_slot_context = ctx => ({
-	Item: /*Item*/ ctx[10],
-	Index: /*Index*/ ctx[12]
+	Item: /*Item*/ ctx[24],
+	Index: /*Index*/ ctx[26]
 });
 
-// (67:2) {:else}
+// (178:2) {:else}
 function create_else_block(ctx) {
 	let li;
 	let t;
@@ -853,14 +853,14 @@ function create_else_block(ctx) {
 	};
 }
 
-// (59:2) {#if (List.length > 0)}
+// (170:2) {#if (List.length > 0)}
 function create_if_block(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
 	let each_1_anchor;
 	let current;
 	let each_value = /*List*/ ctx[0];
-	const get_key = ctx => /*KeyOf*/ ctx[4](/*Item*/ ctx[10]);
+	const get_key = ctx => /*KeyOf*/ ctx[4](/*Item*/ ctx[24]);
 
 	for (let i = 0; i < each_value.length; i += 1) {
 		let child_ctx = get_each_context(ctx, each_value, i);
@@ -885,7 +885,7 @@ function create_if_block(ctx) {
 			current = true;
 		},
 		p(ctx, dirty) {
-			if (dirty & /*KeyOf, List, $$scope*/ 145) {
+			if (dirty & /*KeyOf, List, $$scope*/ 16401) {
 				each_value = /*List*/ ctx[0];
 				group_outros();
 				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value, each_1_lookup, each_1_anchor.parentNode, outro_and_destroy_block, create_each_block, each_1_anchor, get_each_context);
@@ -918,9 +918,9 @@ function create_if_block(ctx) {
 	};
 }
 
-// (62:29)            
+// (173:29)            
 function fallback_block(ctx) {
-	let t_value = /*KeyOf*/ ctx[4](/*Item*/ ctx[10]) + "";
+	let t_value = /*KeyOf*/ ctx[4](/*Item*/ ctx[24]) + "";
 	let t;
 
 	return {
@@ -931,7 +931,7 @@ function fallback_block(ctx) {
 			insert(target, t, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty & /*KeyOf, List*/ 17 && t_value !== (t_value = /*KeyOf*/ ctx[4](/*Item*/ ctx[10]) + "")) set_data(t, t_value);
+			if (dirty & /*KeyOf, List*/ 17 && t_value !== (t_value = /*KeyOf*/ ctx[4](/*Item*/ ctx[24]) + "")) set_data(t, t_value);
 		},
 		d(detaching) {
 			if (detaching) detach(t);
@@ -939,13 +939,13 @@ function fallback_block(ctx) {
 	};
 }
 
-// (60:4) {#each List as Item,Index (KeyOf(Item))}
+// (171:4) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block(key_1, ctx) {
 	let li;
 	let t;
 	let current;
-	const default_slot_template = /*#slots*/ ctx[8].default;
-	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[7], get_default_slot_context);
+	const default_slot_template = /*#slots*/ ctx[15].default;
+	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[14], get_default_slot_context);
 	const default_slot_or_fallback = default_slot || fallback_block(ctx);
 
 	return {
@@ -972,8 +972,8 @@ function create_each_block(key_1, ctx) {
 			ctx = new_ctx;
 
 			if (default_slot) {
-				if (default_slot.p && (!current || dirty & /*$$scope, List*/ 129)) {
-					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[7], !current ? -1 : dirty, get_default_slot_changes, get_default_slot_context);
+				if (default_slot.p && (!current || dirty & /*$$scope, List*/ 16385)) {
+					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[14], !current ? -1 : dirty, get_default_slot_changes, get_default_slot_context);
 				}
 			} else {
 				if (default_slot_or_fallback && default_slot_or_fallback.p && (!current || dirty & /*KeyOf, List*/ 17)) {
@@ -1091,7 +1091,10 @@ function create_fragment(ctx) {
 }
 
 function instance($$self, $$props, $$invalidate) {
-	const omit_props_names = ["class","style","List","Key","Placeholder"];
+	const omit_props_names = [
+		"class","style","List","Key","Placeholder","select","selectOnly","selectAll","selectRange","deselect","deselectAll","selectedItems"
+	];
+
 	let $$restProps = compute_rest_props($$props, omit_props_names);
 	let { $$slots: slots = {}, $$scope } = $$props;
 	createEventDispatcher();
@@ -1102,6 +1105,127 @@ function instance($$self, $$props, $$invalidate) {
 	let { Placeholder } = $$props; // is shown when list is empty
 	let KeyOf;
 
+	/**** Key Validation and quick Lookup ****/
+	let ItemSet;
+
+	function updateItemSet(...ArgumentsAreForReactivityOnly) {
+		ItemSet = Object.create(null);
+
+		List.forEach(Item => {
+			let Key = KeyOf(Item);
+
+			if (Key in ItemSet) {
+				if (ItemSet[Key] === Item) {
+					throwError("InvalidArgument: the given \"List\" contains the same item " + "multiple times");
+				} else {
+					throwError("InvalidArgument: the given \"Key\" does not produce unique keys " + "for every \"List\" item");
+				}
+			} else {
+				ItemSet[Key] = Item;
+			}
+		});
+	}
+
+	let SelectionSet = new WeakMap();
+
+	function select(...ItemList) {
+		ItemList.forEach(Item => {
+			let Key = KeyOf(Item);
+
+			if (Key in ItemSet) {
+				SelectionSet.set(Item, true);
+			} else {
+				throwError("InvalidArgument: one or multiple of the given items to select " + "are not part of the given \"List\"");
+			}
+		});
+
+		SelectionRangeBoundaryA = ItemList.length === 1 ? ItemList[0] : undefined;
+		triggerRedraw();
+	}
+
+	function selectOnly(...ItemList) {
+		deselectAll();
+		select(...ItemList);
+	} //  triggerRedraw()                                       // already done before
+
+	function selectAll() {
+		List.forEach(Item => SelectionSet.set(Item, true));
+		SelectionRangeBoundaryA = undefined;
+		triggerRedraw();
+	}
+
+	let SelectionRangeBoundaryA;
+	let SelectionRangeBoundaryB;
+
+	function selectRange(RangeBoundary) {
+		if (SelectionRangeBoundaryA == null) {
+			select(RangeBoundary); // will also set SelectionRangeBoundaryA
+			return;
+		}
+
+		if (SelectionRangeBoundaryA === RangeBoundary) {
+			return;
+		}
+
+		if (SelectionRangeBoundaryB != null) {
+			deselectRange(SelectionRangeBoundaryB);
+		}
+
+		let IndexA = List.indexOf(SelectionRangeBoundaryA);
+		let IndexB = List.indexOf(RangeBoundary);
+		let firstIndex = Math.min(IndexA, IndexB);
+		let lastIndex = Math.max(IndexA, IndexB);
+
+		for (let i = firstIndex; i <= lastIndex; i++) {
+			SelectionSet.set(List[i], true);
+		}
+
+		SelectionRangeBoundaryB = RangeBoundary;
+		triggerRedraw();
+	}
+
+	/**** deselectRange (internal only) ****/
+	function deselectRange(RangeBoundary) {
+		let IndexA = List.indexOf(SelectionRangeBoundaryA);
+		let IndexB = List.indexOf(RangeBoundary);
+		let firstIndex = Math.min(IndexA, IndexB);
+		let lastIndex = Math.max(IndexA, IndexB);
+
+		for (let i = firstIndex; i <= lastIndex; i++) {
+			SelectionSet.delete(List[i]);
+		}
+	}
+
+	function deselect(...ItemList) {
+		ItemList.forEach(Item => {
+			let Key = KeyOf(Item);
+
+			if (Key in ItemSet) {
+				SelectionSet.delete(Item);
+			} else {
+				throwError("InvalidArgument: one or multiple of the given items to deselect " + "are not part of the given \"List\"");
+			}
+		});
+
+		SelectionRangeBoundaryA = undefined;
+		triggerRedraw();
+	}
+
+	function deselectAll() {
+		SelectionSet = new WeakMap();
+		triggerRedraw();
+	}
+
+	function selectedItems() {
+		let Result = List.filter(Item => SelectionSet.has(Item));
+		return Result;
+	}
+
+	/**** triggerRedraw ****/
+	function triggerRedraw() {
+		ItemSet = ItemSet;
+	}
+
 	$$self.$$set = $$new_props => {
 		$$props = assign(assign({}, $$props), exclude_internal_props($$new_props));
 		$$invalidate(5, $$restProps = compute_rest_props($$props, omit_props_names));
@@ -1110,7 +1234,7 @@ function instance($$self, $$props, $$invalidate) {
 		if ("List" in $$new_props) $$invalidate(0, List = $$new_props.List);
 		if ("Key" in $$new_props) $$invalidate(6, Key = $$new_props.Key);
 		if ("Placeholder" in $$new_props) $$invalidate(1, Placeholder = $$new_props.Placeholder);
-		if ("$$scope" in $$new_props) $$invalidate(7, $$scope = $$new_props.$$scope);
+		if ("$$scope" in $$new_props) $$invalidate(14, $$scope = $$new_props.$$scope);
 	};
 
 	$$self.$$.update = () => {
@@ -1145,9 +1269,30 @@ function instance($$self, $$props, $$invalidate) {
 		if ($$self.$$.dirty & /*Placeholder*/ 2) {
 			$$invalidate(1, Placeholder = allowedNonEmptyString("\"Placeholder\" attribute", Placeholder) || "(empty list)");
 		}
+
+		if ($$self.$$.dirty & /*List, Key*/ 65) {
+			updateItemSet(List, Key);
+		}
 	};
 
-	return [List, Placeholder, ClassNames, style, KeyOf, $$restProps, Key, $$scope, slots];
+	return [
+		List,
+		Placeholder,
+		ClassNames,
+		style,
+		KeyOf,
+		$$restProps,
+		Key,
+		select,
+		selectOnly,
+		selectAll,
+		selectRange,
+		deselect,
+		deselectAll,
+		selectedItems,
+		$$scope,
+		slots
+	];
 }
 
 class Svelte_sortable_flat_list_view extends SvelteComponent {
@@ -1159,7 +1304,14 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 			style: 3,
 			List: 0,
 			Key: 6,
-			Placeholder: 1
+			Placeholder: 1,
+			select: 7,
+			selectOnly: 8,
+			selectAll: 9,
+			selectRange: 10,
+			deselect: 11,
+			deselectAll: 12,
+			selectedItems: 13
 		});
 	}
 
@@ -1206,6 +1358,34 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	set Placeholder(Placeholder) {
 		this.$set({ Placeholder });
 		flush();
+	}
+
+	get select() {
+		return this.$$.ctx[7];
+	}
+
+	get selectOnly() {
+		return this.$$.ctx[8];
+	}
+
+	get selectAll() {
+		return this.$$.ctx[9];
+	}
+
+	get selectRange() {
+		return this.$$.ctx[10];
+	}
+
+	get deselect() {
+		return this.$$.ctx[11];
+	}
+
+	get deselectAll() {
+		return this.$$.ctx[12];
+	}
+
+	get selectedItems() {
+		return this.$$.ctx[13];
 	}
 }
 

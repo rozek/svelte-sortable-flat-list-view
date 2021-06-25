@@ -1,17 +1,32 @@
 // see https://remarkablemark.org/blog/2019/07/12/rollup-commonjs-umd/
 
-import commonjs   from '@rollup/plugin-commonjs'
-import resolve    from '@rollup/plugin-node-resolve'
-import typescript from '@rollup/plugin-typescript';
+import svelte         from 'rollup-plugin-svelte'
+import commonjs       from '@rollup/plugin-commonjs'
+import resolve        from '@rollup/plugin-node-resolve'
+import autoPreprocess from 'svelte-preprocess'
+import typescript     from '@rollup/plugin-typescript'
+import postcss        from 'rollup-plugin-postcss'
+import { terser }     from 'rollup-plugin-terser'
 
 export default {
-  input: './src/svelte-sortable-flat-list-view.ts',
-  output: {
-    file:     './dist/svelte-sortable-flat-list-view.esm.js',
-    format:   'esm',
-    sourcemap:true,
-  },
+  input: './src/svelte-sortable-flat-list-view.svelte',
+  output: [
+    {
+      file:     './dist/svelte-sortable-flat-list-view.js',
+      format:    'umd', // builds for both Node.js and Browser
+      name:      'sortableFlatListView', // required for UMD modules
+      noConflict:true,
+      sourcemap: true,
+      plugins: [terser({ format:{ comments:false, safari10:true } })],
+    },{
+      file:     './dist/svelte-sortable-flat-list-view.esm.js',
+      format:   'esm',
+      sourcemap:true,
+    }
+  ],
   plugins: [
-    resolve(), commonjs(), typescript(),
+    svelte({ preprocess:autoPreprocess() }),
+    resolve({ browser:true, dedupe:['svelte'] }), commonjs(), typescript(),
+    postcss({ extract:false, inject:{insertAt:'top'} }),
   ],
 };

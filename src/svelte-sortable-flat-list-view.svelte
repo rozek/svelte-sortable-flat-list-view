@@ -11,10 +11,19 @@
     list-style:none;
   }
 
+  .withoutTextSelection {
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none;
+    user-select:none;
+  }
+
   .List > li {
     display:block; position:relative;
     margin:0px; padding:0px;
     list-style:none;
+  }
+
+  .selectableItem.selected {
+    background:dodgerblue;
   }
 
   li.centered {
@@ -27,9 +36,10 @@
 <script lang="ts">
   import {
     throwError,
-    ValueIsNonEmptyString, ValueIsFunction, ValueIsList,
-    allowNonEmptyString, allowedNonEmptyString, allowedList
+    ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList,
+    allowNonEmptyString, allowedNonEmptyString, allowedListSatisfying
   } from 'javascript-interface-library'
+  import Device from 'svelte-device-info'
 
   import { createEventDispatcher } from 'svelte'
   const dispatch = createEventDispatcher()
@@ -44,7 +54,7 @@
   $: allowNonEmptyString('"class" attribute',ClassNames)
   $: allowNonEmptyString('"style" attribute',style)
 
-  $: List = allowedList('"List" attribute', List) || []
+  $: List = allowedListSatisfying('"List" attribute', List, ValueIsObject) || []
 
   let KeyOf:(Item:any) => string
   $: switch (true) {
@@ -202,6 +212,33 @@
     triggerRedraw()
   }
 
+/**** toggleSelectionOf - no check for multiply mentioned items ****/
+
+  export function toggleSelectionOf (...ItemList:{}[]):void {
+    SelectionRangeBoundaryA = undefined
+
+    ItemList.forEach((Item) => {
+      let Key = KeyOf(Item)
+      if (Key in ItemSet) {
+        if (SelectionSet.has(Item)) {
+          SelectionSet.delete(Item)
+        } else {
+          SelectionSet.set(Item,true)
+          if (ItemList.length === 1) {
+            SelectionRangeBoundaryA = Item
+          }
+        }
+      } else {
+        throwError(
+          'InvalidArgument: one or multiple of the given items to select ' +
+          'or deselect are not part of the given "List"'
+        )
+      }
+    })
+
+    triggerRedraw()
+  }
+
 /**** selectedItems ****/
 
   export function selectedItems ():{}[] {
@@ -209,19 +246,50 @@
     return Result
   }
 
+/**** isSelected ****/
+
+  export function isSelected (Item:{}):boolean {
+    return SelectionSet.has(Item)
+  }
+
+/**** handleOnClick ****/
+
+  function handleOnClick (Event:MouseEvent, Item:{}):void {
+    switch (true) {
+      case (Event.buttons === 0) && (Event.button  !== 0): return  // workaround
+      case (Event.buttons !== 0) && (Event.buttons !== 1): return  // ...for bug
+
+      case (Device.PointingAccuracy === 'coarse'):
+      case Event.ctrlKey:
+      case Event.metaKey:  toggleSelectionOf(Item); break
+      case Event.shiftKey: selectRange(Item);       break
+      default:             selectOnly(Item);        break
+    }
+
+    Event.preventDefault()
+    Event.stopPropagation()
+  }
+
 
 
 /**** triggerRedraw ****/
 
-  function triggerRedraw ():void { ItemSet = ItemSet }
+  function triggerRedraw ():void { List = List }
 </script>
 
-<ul class:List={(ClassNames == null) && (style == null)} class={ClassNames} {style}
+<ul
+  class:List={(ClassNames == null) && (style == null)}
+  class:withoutTextSelection={true}
+  class={ClassNames} {style}
   {...$$restProps}
 >
   {#if (List.length > 0)}
     {#each List as Item,Index (KeyOf(Item))}
-      <li>
+      <li
+        class:selectableItem={(ClassNames == null) && (style == null)}
+        class:selected={isSelected(Item)}
+        on:click={(Event) => handleOnClick(Event,Item)}
+      >
         <slot {Item} {Index}>
           {KeyOf(Item)}
         </slot>

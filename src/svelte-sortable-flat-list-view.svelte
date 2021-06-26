@@ -7,7 +7,7 @@
 <style>
   .List {
     display:inline-block; position:relative;
-    margin:0px; padding:0px;
+    margin:0px; padding:0px 0px 4px 0px;
     list-style:none;
   }
 
@@ -22,9 +22,10 @@
     list-style:none;
   }
 
-  .selectableItem.selected {
-    background:dodgerblue;
-  }
+  .List > li:hover { background:royalblue }
+
+  .selectableItem.selected       { background:dodgerblue }
+  .selectableItem.selected:hover { background:royalblue }
 
   li.centered {
     display:flex; position:absolute;
@@ -37,7 +38,8 @@
   import {
     throwError,
     ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList,
-    allowNonEmptyString, allowedNonEmptyString, allowedListSatisfying
+    allowedBoolean, allowNonEmptyString, allowedNonEmptyString,
+    allowedListSatisfying
   } from 'javascript-interface-library'
   import Device from 'svelte-device-info'
 
@@ -298,6 +300,68 @@
     Event.preventDefault()
     Event.stopPropagation()
   }
+
+  import type {
+    DropOperation, DataOfferSet, TypeAcceptanceSet
+  }                                  from 'svelte-drag-and-drop-actions'
+  import { asDroppable, asDropZone } from 'svelte-drag-and-drop-actions'
+
+  export let sortable:boolean          // does this list view support "sorting"?
+  export let onSort:undefined|          // opt. callback performing act. sorting
+    ((beforeItem:{}|undefined, ...ItemList:{}[]) => void)
+
+  export let DataToOffer:DataOfferSet|undefined
+  export let TypesToAccept:TypeAcceptanceSet|undefined
+  export let Operations:string|undefined
+
+  export let onOuterDropRequest:undefined|((// opt. callback before outside drop
+    x:number,y:number,
+    Operation:DropOperation, offeredTypeList:string[],
+    DroppableExtras:any, DropZoneExtras:any
+  ) => boolean|undefined)
+  export let onDroppedOutside:undefined|((   // opt. callback after outside drop
+    x:number,y:number,
+    Operation:DropOperation, TypeTransferred:string, DataTransferred:any,
+    DropZoneExtras:any, DroppableExtras:any
+  ) => void)
+  export let onDropFromOutside:undefined|((//opt. callback for drop from outside
+    x:number,y:number,
+    Operation:DropOperation, DataOffered:DataOfferSet,
+    DroppableExtras:any, DropZoneExtras:any
+  ) => string)
+
+  let isDragging:boolean = false
+
+  let DataOffered:DataOfferSet|undefined
+  let TypesAccepted:TypeAcceptanceSet|undefined
+  let wantedOperations:string|undefined
+
+  $: sortable = allowedBoolean('"sortable" attribute',sortable) || false
+
+/**** prepare for drag-and-drop ****/
+
+  import newUniqueId from 'unique-id-generator'
+  let privateKey:string = newUniqueId()
+
+  $: wantedOperations = (isDragging
+    ? wantedOperations
+    : sortable ? Operations || 'copy' : undefined
+  )    // 'copy' because of the better visual feedback from native drag-and-drop
+
+  $: DataOffered = (isDragging
+    ? DataOffered
+    : sortable
+      ? DataToOffer || Object.fromEntries([[privateKey,'']])
+      : undefined
+  )
+
+// @ts-ignore wantedOperations will definitely not be undefined if sortable
+  $: TypesAccepted = (isDragging
+    ? TypesAccepted
+    : sortable
+      ? TypesAccepted || Object.fromEntries([[privateKey,wantedOperations]])
+      : undefined
+  )
 
 
 

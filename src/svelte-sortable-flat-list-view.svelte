@@ -38,8 +38,11 @@
   import {
     throwError,
     ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList,
-    allowedBoolean, allowNonEmptyString, allowedNonEmptyString,
-    allowedListSatisfying
+    ValueIsOneOf,
+    allowedBoolean, allowedString, allowNonEmptyString, allowedNonEmptyString,
+    allowedFunction, allowPlainObject, allowedPlainObject,
+    allowListSatisfying, allowedListSatisfying,
+    quoted
   } from 'javascript-interface-library'
   import Device from 'svelte-device-info'
 
@@ -52,6 +55,8 @@
   export let List:{}[]                            // the (flat) list to be shown
   export let Key:string|Function|undefined   // the value to be used as list key
   export let Placeholder:string|undefined         // is shown when list is empty
+
+/**** Attribute Validation I ****/
 
   $: allowNonEmptyString('"class" attribute',ClassNames)
   $: allowNonEmptyString('"style" attribute',style)
@@ -104,6 +109,10 @@
   }
 
   $: updateItemSet(List,Key)
+
+//----------------------------------------------------------------------------//
+//                         Selection and Deselection                          //
+//----------------------------------------------------------------------------//
 
   let SelectionSet = new WeakMap()
 
@@ -283,9 +292,9 @@
     return SelectionSet.has(Item)
   }
 
-/**** handleOnClick ****/
+/**** handleClick ****/
 
-  function handleOnClick (Event:MouseEvent, Item:{}):void {
+  function handleClick (Event:MouseEvent, Item:{}):void {
     switch (true) {
       case (Event.buttons === 0) && (Event.button  !== 0): return  // workaround
       case (Event.buttons !== 0) && (Event.buttons !== 1): return  // ...for bug
@@ -301,14 +310,19 @@
     Event.stopPropagation()
   }
 
-  import type {
-    DropOperation, DataOfferSet, TypeAcceptanceSet
-  }                                  from 'svelte-drag-and-drop-actions'
-  import { asDroppable, asDropZone } from 'svelte-drag-and-drop-actions'
+//----------------------------------------------------------------------------//
+//                           Drag-and-Drop Handling                           //
+//----------------------------------------------------------------------------//
 
-  export let sortable:boolean          // does this list view support "sorting"?
+  import type { DropOperation, DataOfferSet, TypeAcceptanceSet } from 'svelte-drag-and-drop-actions'
+  import      { DropOperations, asDroppable, asDropZone }        from 'svelte-drag-and-drop-actions'
+
+  export let sortable:boolean = false  // does this list view support "sorting"?
   export let onSort:undefined|          // opt. callback performing act. sorting
     ((beforeItem:{}|undefined, ...ItemList:{}[]) => void)
+
+  export let shrinkable:boolean = false    // may this list give its items away?
+  export let extendable:boolean = false  // may this list receive foreign items?
 
   export let DataToOffer:DataOfferSet|undefined
   export let TypesToAccept:TypeAcceptanceSet|undefined
@@ -336,11 +350,62 @@
   let TypesAccepted:TypeAcceptanceSet|undefined
   let wantedOperations:string|undefined
 
+/**** Attribute Validation II ****/
+
   $: sortable = allowedBoolean('"sortable" attribute',sortable) || false
+  $: onSort   = allowedFunction  ('"onSort" callback',onSort)
+
+  $: shrinkable = allowedBoolean('"shrinkable" attribute',shrinkable) || false
+  $: extendable = allowedBoolean('"extendable" attribute',extendable) || false
+
+  $: DataOffered = Object.assign(
+    {}, allowedPlainObject('"DataToOffer" attribute',DataToOffer)
+  )
+  $: {
+    allowPlainObject('"TypesToAccept" attribute',TypesToAccept)
+    TypesAccepted = Object.create(null)
+      for (let Type in TypesToAccept) {
+        if (TypesToAccept.hasOwnProperty(Type)) {
+// @ts-ignore "TypesAccepted" is definitely not undefined
+          TypesAccepted[Type] = parsedOperations(
+            'list of accepted operations for type ' + quoted(Type),
+            TypesToAccept[Type]
+          )
+        }
+      }
+  }
+  $: wantedOperations = parsedOperations('list of allowed operations',Operations)
+
+  $: onOuterDropRequest = allowedFunction('"onOuterDropRequest" callback',onOuterDropRequest)
+  $: onDroppedOutside   = allowedFunction  ('"onDroppedOutside" callback',onDroppedOutside)
+  $: onDropFromOutside  = allowedFunction ('"onDropFromOutside" callback',onDropFromOutside)
+/**** parsedOperations ****/
+
+  function parsedOperations (
+    Description:string, Argument:any, Default:string='copy move link'
+  ):string {
+    let Operations = allowedString(Description,Argument) || Default
+
+    switch (Operations.trim()) {
+      case 'all':  return 'copy move link'
+      case 'none': return ''
+    }
+
+    let OperationList = Operations.trim().replace(/\s+/g,' ').split(' ')
+      allowListSatisfying(
+        Description,OperationList,
+        (Operation:string) => ValueIsOneOf(Operation,DropOperations)
+      )
+    return OperationList.reduce(
+      (Result:string, Operation:string) => (
+        Result.indexOf(Operation) < 0 ? Result + Operation + ' ': Result
+      ),' '
+    )
+  }
 
 /**** prepare for drag-and-drop ****/
 
-  import newUniqueId from 'unique-id-generator'
+  import newUniqueId from 'locally-unique-id-generator'
   let privateKey:string = newUniqueId()
 
   $: wantedOperations = (isDragging
@@ -381,7 +446,7 @@
       <li
         class:selectableItem={(ClassNames == null) && (style == null)}
         class:selected={isSelected(Item)}
-        on:click={(Event) => handleOnClick(Event,Item)}
+        on:click={(Event) => handleClick(Event,Item)}
       >
         <slot {Item} {Index}>
           {KeyOf(Item)}

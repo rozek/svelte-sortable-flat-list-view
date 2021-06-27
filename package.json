@@ -46,6 +46,7 @@
   },
   "dependencies": {
     "javascript-interface-library": "file:../javascript-interface-library",
+    "locally-unique-id-generator": "file:../locally-unique-id-generator",
     "svelte-device-info": "file:../svelte-device-info",
     "svelte-drag-and-drop-actions": "file:../svelte-drag-and-drop-actions"
   }

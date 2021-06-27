@@ -53,7 +53,7 @@
     allowedBoolean, allowedString, allowNonEmptyString, allowedNonEmptyString,
     allowedFunction, allowPlainObject, allowedPlainObject,
     allowListSatisfying, allowedListSatisfying,
-    quoted
+    ObjectIsNotEmpty, quoted
   } from 'javascript-interface-library'
   import Device from 'svelte-device-info'
 
@@ -332,9 +332,6 @@
   export let onSort:undefined|          // opt. callback performing act. sorting
     ((beforeItem:{}|undefined, ...ItemList:{}[]) => void)
 
-  export let shrinkable:boolean = false    // may this list give its items away?
-  export let extendable:boolean = false  // may this list receive foreign items?
-
   export let DataToOffer:DataOfferSet|undefined
   export let TypesToAccept:TypeAcceptanceSet|undefined
   export let Operations:string|undefined
@@ -365,9 +362,6 @@
 
   $: sortable = allowedBoolean('"sortable" attribute',sortable) || false
   $: onSort   = allowedFunction  ('"onSort" callback',onSort)
-
-  $: shrinkable = allowedBoolean('"shrinkable" attribute',shrinkable) || false
-  $: extendable = allowedBoolean('"extendable" attribute',extendable) || false
 
   $: DataOffered = Object.assign(
     {}, allowedPlainObject('"DataToOffer" attribute',DataToOffer)
@@ -419,12 +413,12 @@
   import newUniqueId from 'locally-unique-id-generator'
   let privateKey:string = newUniqueId()
 
-  $: wantedOperations = (isDragging
+  $: wantedOperations = (isDragging      // do not change while already dragging
     ? wantedOperations
     : sortable ? Operations || 'copy' : undefined
   )    // 'copy' because of the better visual feedback from native drag-and-drop
 
-  $: DataOffered = (isDragging
+  $: DataOffered = (isDragging           // do not change while already dragging
     ? DataOffered
     : sortable
       ? DataToOffer || Object.fromEntries([[privateKey,'']])
@@ -432,11 +426,21 @@
   )
 
 // @ts-ignore wantedOperations will definitely not be undefined if sortable
-  $: TypesAccepted = (isDragging
+  $: TypesAccepted = (isDragging         // do not change while already dragging
     ? TypesAccepted
     : sortable
       ? TypesAccepted || Object.fromEntries([[privateKey,wantedOperations]])
       : undefined
+  )
+
+  let shrinkable:boolean
+  $: shrinkable = (                      // do not change while already dragging
+    isDragging ? shrinkable : ObjectIsNotEmpty(DataOffered)
+  )
+
+  let extendable:boolean
+  $: extendable = (                      // do not change while already dragging
+    isDragging ? extendable : ObjectIsNotEmpty(TypesAccepted)
   )
 
 /**** onDragStart ****/

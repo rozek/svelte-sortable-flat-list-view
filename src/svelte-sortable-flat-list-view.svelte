@@ -18,11 +18,13 @@
 
   .List > li {
     display:block; position:relative;
+    border:none; border-top:solid 2px transparent;
     margin:0px; padding:0px;
     list-style:none;
   }
 
-  .List > li:hover { background:royalblue }
+  .List > li:hover            { background:royalblue }
+  .List > li:global(.hovered) { border-top:solid 2px #EEFF00 }
 
   .selectableItem.selected       { background:dodgerblue }
   .selectableItem.selected:hover { background:royalblue }
@@ -31,6 +33,15 @@
     display:flex; position:absolute;
     left:0px; top:0px; right:0px; height:100%; /* bottom:0px seems to fail */
     flex-flow:column nowrap; justify-content:center; align-items:center;
+  }
+
+  .Appendage {
+    display:block; position:relative;
+    width:100%; height:20px;
+    border:none; border-top:solid 2px transparent;
+    background:transparent;
+    margin:0px; padding:0px;
+    list-style:none;
   }
 </style>
 
@@ -314,8 +325,8 @@
 //                           Drag-and-Drop Handling                           //
 //----------------------------------------------------------------------------//
 
-  import type { DropOperation, DataOfferSet, TypeAcceptanceSet } from 'svelte-drag-and-drop-actions'
-  import      { DropOperations, asDroppable, asDropZone }        from 'svelte-drag-and-drop-actions'
+  import type { Position, DropOperation, DataOfferSet, TypeAcceptanceSet } from 'svelte-drag-and-drop-actions'
+  import      { DropOperations, asDroppable, asDropZone } from 'svelte-drag-and-drop-actions'
 
   export let sortable:boolean = false  // does this list view support "sorting"?
   export let onSort:undefined|          // opt. callback performing act. sorting
@@ -428,6 +439,69 @@
       : undefined
   )
 
+/**** onDragStart ****/
+
+  function onDragStart (DraggableExtras:any):Position {
+  }
+
+/**** onDragEnd ****/
+
+  function onDragEnd (
+    x:number,y:number, dx:number,dy:number, DraggableExtras:any
+  ):void {
+  }
+
+/**** onDropped ****/
+
+  function onDropped (
+    x:number,y:number, Operation:DropOperation,
+    TypeTransferred:string, DataTransferred:any,
+    DropZoneExtras:any, DroppableExtras:any
+  ):void {
+  }
+
+/**** onDroppableEnter ****/
+
+  function onDroppableEnter (
+    x:number,y:number, Operation:DropOperation,
+    offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:any
+  ):boolean {
+  }
+
+/**** onDroppableLeave ****/
+
+  function onDroppableLeave (DroppableExtras:any, DropZoneExtras:any):void {
+  }
+
+/**** onDrop ****/
+
+  function onDrop (
+    x:number,y:number, Operation:DropOperation,
+    DataOffered:any, DroppableExtras:any, DropZoneExtras:any
+  ):string {
+  }
+
+/**** onAppendageDroppableEnter ****/
+
+  function onAppendageDroppableEnter (
+    x:number,y:number, Operation:DropOperation,
+    offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:any
+  ):boolean {
+  }
+
+/**** onAppendageDroppableLeave ****/
+
+  function onAppendageDroppableLeave (DroppableExtras:any, DropZoneExtras:any):void {
+  }
+
+/**** onAppendageDrop ****/
+
+  function onAppendageDrop (
+    x:number,y:number, Operation:DropOperation,
+    DataOffered:any, DroppableExtras:any, DropZoneExtras:any
+  ):string {
+  }
+
 
 
 /**** triggerRedraw ****/
@@ -443,16 +517,34 @@
 >
   {#if (List.length > 0)}
     {#each List as Item,Index (KeyOf(Item))}
-      <li
-        class:selectableItem={(ClassNames == null) && (style == null)}
-        class:selected={isSelected(Item)}
-        on:click={(Event) => handleClick(Event,Item)}
-      >
-        <slot {Item} {Index}>
-          {KeyOf(Item)}
-        </slot>
-      </li>
+      {#if sortable || extendable || shrinkable}
+        <li
+          class:selectableItem={(ClassNames == null) && (style == null)}
+          class:selected={isSelected(Item)}
+          on:click={(Event) => handleClick(Event,Item)}
+          use:asDroppable={{ onDragStart, onDragEnd, onDropped}}
+          use:asDropZone={{ onDrop, onDroppableEnter, onDroppableLeave }}
+        >
+          <slot {Item} {Index}> {KeyOf(Item)} </slot>
+        </li>
+      {:else}
+        <li
+          class:selectableItem={(ClassNames == null) && (style == null)}
+          class:selected={isSelected(Item)}
+          on:click={(Event) => handleClick(Event,Item)}
+        >
+          <slot {Item} {Index}> {KeyOf(Item)} </slot>
+        </li>
+      {/if}
     {/each}
+
+    {#if sortable || extendable}
+      <li class="Appendage" use:asDropZone={{
+        onDroppableEnter:onAppendageDroppableEnter,
+        onDroppableLeave:onAppendageDroppableLeave,
+        onDrop:onAppendageDrop
+      }}></li>
+    {/if}
   {:else}
     <li class="centered">{Placeholder}</li>
   {/if}

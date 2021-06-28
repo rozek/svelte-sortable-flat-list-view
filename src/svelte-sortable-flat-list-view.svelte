@@ -18,30 +18,35 @@
 
   .List > li {
     display:block; position:relative;
-    border:none; border-top:solid 2px transparent;
-    margin:0px; padding:0px;
+    border:none; margin:0px; padding:0px;
     list-style:none;
   }
 
-  .List > li:hover            { background:royalblue }
-  .List > li:global(.hovered) { border-top:solid 2px #EEFF00 }
+  .List > li:hover { background:royalblue }
 
   .selectableItem.selected       { background:dodgerblue }
   .selectableItem.selected:hover { background:royalblue }
 
-  li.centered {
+  .InsertionPoint {
+    display:block; position:relative;
+    width:100%; height:20px;
+    background:transparent;
+    border:none; margin:0px; padding:0px;
+    list-style:none;
+  }
+
+  .AttachmentPoint {
+    display:block; position:relative;
+    width:100%; height:20px;
+    background:transparent;
+    border:none; margin:0px; padding:0px;
+    list-style:none;
+  }
+
+  .Placeholder {
     display:flex; position:absolute;
     left:0px; top:0px; right:0px; height:100%; /* bottom:0px seems to fail */
     flex-flow:column nowrap; justify-content:center; align-items:center;
-  }
-
-  .Appendage {
-    display:block; position:relative;
-    width:100%; height:20px;
-    border:none; border-top:solid 2px transparent;
-    background:transparent;
-    margin:0px; padding:0px;
-    list-style:none;
   }
 </style>
 
@@ -51,7 +56,7 @@
     ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList,
     ValueIsOneOf,
     allowedBoolean, allowedString, allowNonEmptyString, allowedNonEmptyString,
-    allowedFunction, allowPlainObject, allowedPlainObject,
+    allowFunction, allowPlainObject, allowedPlainObject,
     allowListSatisfying, allowedListSatisfying,
     ObjectIsNotEmpty, quoted
   } from 'javascript-interface-library'
@@ -60,17 +65,21 @@
   import { createEventDispatcher } from 'svelte'
   const dispatch = createEventDispatcher()
 
+  import newUniqueId from 'locally-unique-id-generator'
+  let privateKey:string = newUniqueId()
+
+/**** common Attributes ****/
+
   let ClassNames:string; export { ClassNames as class } // used to ctrl. styling
   export let style:string                                                // dto.
 
-  export let List:{}[]                            // the (flat) list to be shown
-  export let Key:string|Function|undefined   // the value to be used as list key
-  export let Placeholder:string|undefined         // is shown when list is empty
-
-/**** Attribute Validation I ****/
-
   $: allowNonEmptyString('"class" attribute',ClassNames)
   $: allowNonEmptyString('"style" attribute',style)
+
+  export let List:{}[]                            // the (flat) list to be shown
+  export let Key:string|Function|undefined   // the value to be used as list key
+  export let Instruction:string|undefined        // is shown in insertion points
+  export let Placeholder:string|undefined         // is shown when list is empty
 
   $: List = allowedListSatisfying('"List" attribute', List, ValueIsObject) || []
 
@@ -87,6 +96,10 @@
       'a non-empty string nor a function returning such a string'
     )
   }
+
+  $: Instruction = (
+    allowedNonEmptyString('"Instruction" attribute',Instruction) || 'drop here'
+  )
 
   $: Placeholder = (
     allowedNonEmptyString('"Placeholder" attribute',Placeholder) || '(empty list)'
@@ -125,7 +138,7 @@
 //                         Selection and Deselection                          //
 //----------------------------------------------------------------------------//
 
-  let SelectionSet = new WeakMap()
+  let SelectionSet = new WeakMap()    // automatically "updates" on list changes
 
 /**** select ****/
 
@@ -328,13 +341,28 @@
   import type { Position, DropOperation, DataOfferSet, TypeAcceptanceSet } from 'svelte-drag-and-drop-actions'
   import      { DropOperations, asDroppable, asDropZone } from 'svelte-drag-and-drop-actions'
 
-  export let sortable:boolean = false  // does this list view support "sorting"?
-  export let onSort:undefined|          // opt. callback performing act. sorting
-    ((beforeItem:{}|undefined, ...ItemList:{}[]) => void)
+  let isDragging:boolean = false
+  let InsertionPoint:any = undefined
 
+/**** Attributes for Sorting ****/
+
+  export let sortable:boolean = false  // does this list view support "sorting"?
+  export let onSortRequest:undefined|((          // opt. callback before sorting
+    x:number,y:number, DroppableExtras:any, DropZoneExtras:any
+  ) => boolean|undefined)
+  export let onSort:undefined|          // opt. callback performing act. sorting
+    ((beforeItem:any|undefined, ...ItemList:{}[]) => void)
+
+  $: sortable = allowedBoolean('"sortable" attribute',sortable) || false
+
+  $: allowFunction('"onSortRequest" callback',onSortRequest)
+  $: allowFunction       ('"onSort" callback',onSort)
+
+/**** Attributes for Drag-and-Drop ****/
+
+  export let Operations:string|undefined
   export let DataToOffer:DataOfferSet|undefined
   export let TypesToAccept:TypeAcceptanceSet|undefined
-  export let Operations:string|undefined
 
   export let onOuterDropRequest:undefined|((// opt. callback before outside drop
     x:number,y:number,
@@ -352,35 +380,26 @@
     DroppableExtras:any, DropZoneExtras:any
   ) => string)
 
-  import newUniqueId from 'locally-unique-id-generator'
-  let privateKey:string = newUniqueId()
-
-  let isDragging:boolean = false
-
+  let wantedOperations:string|undefined
   let DataOffered:DataOfferSet|undefined
   let TypesAccepted:TypeAcceptanceSet|undefined
-  let wantedOperations:string|undefined
 
-/**** Attribute Validation II ****/
+  $: wantedOperations = parsedOperations('list of allowed operations',Operations)
 
-  $: sortable = allowedBoolean('"sortable" attribute',sortable) || false
-  $: onSort   = allowedFunction  ('"onSort" callback',onSort)
+  $: allowPlainObject  ('"DataToOffer" attribute',DataToOffer)
+  $: allowPlainObject('"TypesToAccept" attribute',TypesToAccept)
 
-  $: {
-    wantedOperations = parsedOperations('list of allowed operations',Operations)
-    if (sortable && (wantedOperations === '')) { wantedOperations = 'copy' }
-  }    // 'copy' because of the better visual feedback from native drag-and-drop
+  $: allowFunction('"onOuterDropRequest" callback',onOuterDropRequest)
+  $: allowFunction  ('"onDroppedOutside" callback',onDroppedOutside)
+  $: allowFunction ('"onDropFromOutside" callback',onDropFromOutside)
 
-  $: {
-    DataOffered = Object.assign(
-      {}, allowedPlainObject('"DataToOffer" attribute',DataToOffer)
-    )
+  $: if (! isDragging) {                 // do not update while already dragging
+    DataOffered = Object.assign({}, DataToOffer)
 // @ts-ignore "DataOffered" is definitely not undefined
     if (sortable) { DataOffered[privateKey] = '' }
   }
 
-  $: {
-    allowPlainObject('"TypesToAccept" attribute',TypesToAccept)
+  $: if (! isDragging) {                 // do not update while already dragging
     TypesAccepted = {}
       for (let Type in TypesToAccept) {
         if (TypesToAccept.hasOwnProperty(Type)) {
@@ -392,12 +411,8 @@
         }
       }
 // @ts-ignore "TypesAccepted" is definitely not undefined
-    if (sortable) { TypesAccepted[privateKey] = wantedOperations || 'copy' }
+    if (sortable) { TypesAccepted[privateKey] = 'copy' }
   }    // 'copy' because of the better visual feedback from native drag-and-drop
-
-  $: onOuterDropRequest = allowedFunction('"onOuterDropRequest" callback',onOuterDropRequest)
-  $: onDroppedOutside   = allowedFunction  ('"onDroppedOutside" callback',onDroppedOutside)
-  $: onDropFromOutside  = allowedFunction ('"onDropFromOutside" callback',onDropFromOutside)
 
 /**** parsedOperations ****/
 
@@ -425,24 +440,21 @@
 
 /**** prepare for drag-and-drop ****/
 
-  function hasSomeTypes (TypeSet:any):boolean {
+  function hasNonPrivateTypes (TypeSet:any):boolean {
     for (let Type in Set) {
-      if ((Type !== privateKey) && Set.hasOwnProperty(Type)) {
+      if (Set.hasOwnProperty(Type) && (Type !== privateKey)) {
         return true
       }
     }
     return false
   }
 
-  let shrinkable:boolean
-  $: shrinkable = (                      // do not change while already dragging
-    isDragging ? shrinkable : hasSomeTypes(DataOffered)
-  )
-
-  let extendable:boolean
-  $: extendable = (                      // do not change while already dragging
-    isDragging ? extendable : hasSomeTypes(TypesAccepted)
-  )
+  let shrinkable:boolean = false
+  let extendable:boolean = false
+  $: if (! isDragging) {                 // do not update while already dragging
+    shrinkable = hasNonPrivateTypes(DataOffered)
+    extendable = hasNonPrivateTypes(TypesAccepted)
+  }
 
 /**** onDragStart ****/
 
@@ -473,6 +485,14 @@
   ):boolean {
   }
 
+/**** onDroppableMove ****/
+
+  function onDroppableMove (
+    x:number,y:number, Operation:DropOperation,
+    offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:any
+  ):boolean {
+  }
+
 /**** onDroppableLeave ****/
 
   function onDroppableLeave (DroppableExtras:any, DropZoneExtras:any):void {
@@ -489,6 +509,14 @@
 /**** onAppendageDroppableEnter ****/
 
   function onAppendageDroppableEnter (
+    x:number,y:number, Operation:DropOperation,
+    offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:any
+  ):boolean {
+  }
+
+/**** onAppendageDroppableMove ****/
+
+  function onAppendageDroppableMove (
     x:number,y:number, Operation:DropOperation,
     offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:any
   ):boolean {
@@ -523,12 +551,28 @@
   {#if (List.length > 0)}
     {#each List as Item,Index (KeyOf(Item))}
       {#if sortable || extendable || shrinkable}
+        {#if Item === InsertionPoint}
+          <li
+            class:InsertionPoint={(ClassNames == null) && (style == null)}
+            use:asDropZone={{
+              Extras:{ List, Item },
+              onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave
+            }}
+          >{Instruction}</li>
+        {/if}
+
         <li
           class:selectableItem={(ClassNames == null) && (style == null)}
           class:selected={isSelected(Item)}
           on:click={(Event) => handleClick(Event,Item)}
-          use:asDroppable={{ onDragStart, onDragEnd, onDropped}}
-          use:asDropZone={{ onDrop, onDroppableEnter, onDroppableLeave }}
+          use:asDroppable={{
+            Extras:{ List, Item },
+            onDragStart, onDragEnd, onDropped
+          }}
+          use:asDropZone={{
+            Extras:{ List, Item },
+            onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave
+          }}
         >
           <slot {Item} {Index}> {KeyOf(Item)} </slot>
         </li>
@@ -544,14 +588,16 @@
     {/each}
 
     {#if sortable || extendable}
-      <li class="Appendage" use:asDropZone={{
+      <li class="AttachmentPoint" use:asDropZone={{
+        Extras:{ List, Item:undefined },
         onDroppableEnter:onAppendageDroppableEnter,
+        onDroppableMove:onAppendageDroppableMove,
         onDroppableLeave:onAppendageDroppableLeave,
         onDrop:onAppendageDrop
-      }}></li>
+      }}>{Instruction}</li>
     {/if}
   {:else}
-    <li class="centered">{Placeholder}</li>
+    <li class="Placeholder">{Placeholder}</li>
   {/if}
 </ul>
 

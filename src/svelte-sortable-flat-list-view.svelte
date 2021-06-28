@@ -148,7 +148,7 @@
       if (Key in ItemSet) {
         if (! SelectionSet.has(Item)) {
           SelectionSet.set(Item,true)
-          dispatch('selected',Item)
+          dispatch('selected-item',Item)
         }
       } else {
         throwError(
@@ -177,7 +177,7 @@
     List.forEach((Item) => {
       if (! SelectionSet.has(Item)) {
         SelectionSet.set(Item,true)
-        dispatch('selected',Item)
+        dispatch('selected-item',Item)
       }
     })
 
@@ -211,7 +211,7 @@
     for (let i = firstIndex; i <= lastIndex; i++) {
       if (! SelectionSet.has(List[i])) {
         SelectionSet.set(List[i],true)
-        dispatch('selected',List[i])
+        dispatch('selected-item',List[i])
       }
     }
 
@@ -231,7 +231,7 @@
     for (let i = firstIndex; i <= lastIndex; i++) {
       if (SelectionSet.has(List[i])) {
         SelectionSet.delete(List[i])
-        dispatch('deselected',List[i])
+        dispatch('deselected-item',List[i])
       }
     }
   }
@@ -244,7 +244,7 @@
       if (Key in ItemSet) {
         if (SelectionSet.has(Item)) {
           SelectionSet.delete(Item)
-          dispatch('deselected',Item)
+          dispatch('deselected-item',Item)
         }
       } else {
         throwError(
@@ -264,7 +264,7 @@
     List.forEach((Item) => {
       if (SelectionSet.has(Item)) {
         SelectionSet.delete(Item)
-        dispatch('deselected',Item)
+        dispatch('deselected-item',Item)
       }
     })
 
@@ -282,10 +282,10 @@
       if (Key in ItemSet) {
         if (SelectionSet.has(Item)) {
           SelectionSet.delete(Item)
-          dispatch('deselected',Item)
+          dispatch('deselected-item',Item)
         } else {
           SelectionSet.set(Item,true)
-          dispatch('selected',Item)
+          dispatch('selected-item',Item)
 
           if (ItemList.length === 1) {
             SelectionRangeBoundaryA = Item
@@ -341,8 +341,8 @@
   import type { Position, DropOperation, DataOfferSet, TypeAcceptanceSet } from 'svelte-drag-and-drop-actions'
   import      { DropOperations, asDroppable, asDropZone } from 'svelte-drag-and-drop-actions'
 
-  let isDragging:boolean    = false
-  let draggedItemList:any[] = []
+  let isDragging:boolean              = false
+  let draggedItemList:any[]|undefined = undefined
 
   let InsertionPoint:any = undefined
 
@@ -354,7 +354,7 @@
 
   export let onSortRequest:undefined|((          // opt. callback before sorting
     x:number,y:number, DroppableExtras:any, DropZoneExtras:any
-  ) => boolean|undefined)
+  ) => boolean)
   export let onSort:undefined|          // opt. callback performing act. sorting
     ((beforeItem:any|undefined, ...ItemList:{}[]) => void)
 
@@ -376,7 +376,7 @@
     x:number,y:number,
     Operation:DropOperation, offeredTypeList:string[],
     DroppableExtras:any, DropZoneExtras:any
-  ) => boolean|undefined)
+  ) => boolean)
   export let onDroppedOutside:undefined|((   // opt. callback after outside drop
     x:number,y:number,
     Operation:DropOperation, TypeTransferred:string, DataTransferred:any,
@@ -469,12 +469,12 @@
   function dynamicDummy (
     DroppableExtras:any, Element:HTMLElement|SVGElement
   ):HTMLElement|SVGElement {
-    let auxiliaryElement = Element.cloneNode(true)
+    let auxiliaryElement = Element.cloneNode(true) as HTMLElement
       auxiliaryElement.style.display  = 'block'
       auxiliaryElement.style.position = 'absolute'
       auxiliaryElement.style.left     = (document.body.scrollWidth + 100)+'px'
 
-      if (draggedItemList.length > 1) {
+      if ((draggedItemList as any[]).length > 1) { // called after "onDragStart"
         let Badge = document.createElement('div')
           Badge.setAttribute('style',
             'display:block; position:absolute; ' +
@@ -483,7 +483,7 @@
             'border:none; border-radius:10px; margin:0px; padding:0px; ' +
             'line-height:20px; text-align:center'
           )
-          Badge.innerText = '+' + (draggedItemList.length-1)
+          Badge.innerText = '+' + ((draggedItemList as any[]).length-1)
         auxiliaryElement.appendChild(Badge)
       }
 
@@ -492,12 +492,21 @@
       setTimeout(() => {       // remove element after browser took its snapshot
         document.body.removeChild(auxiliaryElement)
       },0)
-    return auxiliaryElement
+    return auxiliaryElement as HTMLElement
   }
 
 /**** onDragStart ****/
 
-  function onDragStart (DraggableExtras:any):Position {
+  function onDragStart (DroppableExtras:any):Position {
+    isDragging = true
+
+    draggedItemList = selectedItems()
+    if (! isSelected(DroppableExtras.Item)) {
+      draggedItemList.push(DroppableExtras.Item)
+    }
+    DroppableExtras.ItemList = draggedItemList
+
+    return { x:0,y:0 }
   }
 
 /**** onDragEnd ****/
@@ -505,6 +514,8 @@
   function onDragEnd (
     x:number,y:number, dx:number,dy:number, DraggableExtras:any
   ):void {
+    isDragging      = false
+    draggedItemList = undefined
   }
 
 /**** onDropped ****/
@@ -514,6 +525,31 @@
     TypeTransferred:string, DataTransferred:any,
     DropZoneExtras:any, DroppableExtras:any
   ):void {
+    let droppedHere = (DropZoneExtras != null) && (DropZoneExtras.List === List)
+    if (! droppedHere) {
+      if (onDroppedOutside != null) {
+        try {
+          onDroppedOutside(
+            x,y, Operation, TypeTransferred,DataTransferred,
+            DropZoneExtras,DroppableExtras
+          )
+        } catch (Signal) {
+          console.error(
+            'RuntimeError: callback "onDroppedOutside" failed', Signal
+          )
+        }
+      } else {
+        let DroppableSet = SetOfItemsIn(DroppableExtras.ItemList)
+        for (let i = List.length-1; i >= 0; i--) {
+          let Key = KeyOf(List[i])
+          if (Key in DroppableSet) { List.splice(i,1) }
+        }
+
+        dispatch('removed-items',DroppableExtras.ItemList.slice())
+
+        triggerRedraw()
+      }
+    }
   }
 
 /**** onDroppableEnter ****/
@@ -522,19 +558,56 @@
     x:number,y:number, Operation:DropOperation,
     offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:any
   ):boolean {
+    let draggedItem = DroppableExtras && DroppableExtras.Item
+    if (draggedItem == (DropZoneExtras && DropZoneExtras.Item)) {
+      InsertionPoint = undefined
+      return false
+    }
+
+    let mayBeInsertedHere = true     // because dnd-action already checked a bit
+      if (List === (DroppableExtras && DroppableExtras.List)) {  // own elements
+        if (sortable) {
+          if (onSortRequest != null) {
+            try {
+              mayBeInsertedHere = onSortRequest(
+                x,y, DropZoneExtras,DroppableExtras
+              )
+            } catch (Signal) {
+              mayBeInsertedHere = false
+              console.error(
+                'RuntimeError: callback "onSortRequest" failed', Signal
+              )
+            }
+          }
+        } else {    // not sortable? then own list items may not be dropped here
+          mayBeInsertedHere = false
+        }
+      } else {                       // foreign elements want to be dropped here
+        if (onOuterDropRequest != null) {
+          try {
+            mayBeInsertedHere = onOuterDropRequest(
+              x,y, Operation,offeredTypeList, DropZoneExtras,DroppableExtras
+            )
+          } catch (Signal) {
+            mayBeInsertedHere = false
+            console.error(
+              'RuntimeError: callback "onOuterDropRequest" failed', Signal
+            )
+          }
+        }
+      }
+    InsertionPoint = (mayBeInsertedHere ? DropZoneExtras.Item : undefined)
+    return mayBeInsertedHere
   }
 
 /**** onDroppableMove ****/
 
-  function onDroppableMove (
-    x:number,y:number, Operation:DropOperation,
-    offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:any
-  ):boolean {
-  }
+  const onDroppableMove = onDroppableEnter
 
 /**** onDroppableLeave ****/
 
   function onDroppableLeave (DroppableExtras:any, DropZoneExtras:any):void {
+    InsertionPoint = undefined
   }
 
 /**** onDrop ****/
@@ -543,6 +616,26 @@
     x:number,y:number, Operation:DropOperation,
     DataOffered:any, DroppableExtras:any, DropZoneExtras:any
   ):string {
+    let draggedItem = DroppableExtras && DroppableExtras.Item
+    if (draggedItem == (DropZoneExtras && DropZoneExtras.Item)) {
+      InsertionPoint = undefined
+      return 'none'
+    }
+
+    if (List === (DroppableExtras && DroppableExtras.List)) {    // own elements
+      if (sortable) {
+        if (onSort != null) {
+          try {
+            onSort(DropZoneExtras.Item, DroppableExtras.ItemList)
+          } catch (Signal) {
+            console.error('RuntimeError: callback "onSort" failed', Signal)
+          }
+        }
+      } else {
+
+      }
+    } else {                         // foreign elements want to be dropped here
+    }
   }
 
 /**** onAppendageDroppableEnter ****/
@@ -572,6 +665,17 @@
     x:number,y:number, Operation:DropOperation,
     DataOffered:any, DroppableExtras:any, DropZoneExtras:any
   ):string {
+  }
+
+/**** SetOfItemsIn ****/
+
+  function SetOfItemsIn (ItemList:any[]):{} {
+    let ItemSet = Object.create(null)
+      ItemList.forEach((Item) => {
+        let Key:string = KeyOf(Item)
+        ItemSet[Key] = Item
+      })
+    return ItemSet
   }
 
 
@@ -609,7 +713,7 @@
             onDragStart, onDragEnd, onDropped
           }}
           use:asDropZone={{
-            Extras:{ List, Item },
+            Extras:{ List, Item, ItemList:undefined },
             onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave
           }}
         >

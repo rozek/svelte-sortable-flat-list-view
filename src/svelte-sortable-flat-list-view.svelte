@@ -341,12 +341,17 @@
   import type { Position, DropOperation, DataOfferSet, TypeAcceptanceSet } from 'svelte-drag-and-drop-actions'
   import      { DropOperations, asDroppable, asDropZone } from 'svelte-drag-and-drop-actions'
 
-  let isDragging:boolean = false
+  let isDragging:boolean    = false
+  let draggedItemList:any[] = []
+
   let InsertionPoint:any = undefined
 
 /**** Attributes for Sorting ****/
 
   export let sortable:boolean = false  // does this list view support "sorting"?
+  export let onlyFrom:string|undefined
+  export let neverFrom:string|undefined
+
   export let onSortRequest:undefined|((          // opt. callback before sorting
     x:number,y:number, DroppableExtras:any, DropZoneExtras:any
   ) => boolean|undefined)
@@ -354,6 +359,9 @@
     ((beforeItem:any|undefined, ...ItemList:{}[]) => void)
 
   $: sortable = allowedBoolean('"sortable" attribute',sortable) || false
+
+  $: allowNonEmptyString ('"onlyFrom" CSS selector list',onlyFrom)
+  $: allowNonEmptyString('"neverFrom" CSS selector list',neverFrom)
 
   $: allowFunction('"onSortRequest" callback',onSortRequest)
   $: allowFunction       ('"onSort" callback',onSort)
@@ -454,6 +462,37 @@
   $: if (! isDragging) {                 // do not update while already dragging
     shrinkable = hasNonPrivateTypes(DataOffered)
     extendable = hasNonPrivateTypes(TypesAccepted)
+  }
+
+/**** ad-hoc Dummy Creation ****/
+
+  function dynamicDummy (
+    DroppableExtras:any, Element:HTMLElement|SVGElement
+  ):HTMLElement|SVGElement {
+    let auxiliaryElement = Element.cloneNode(true)
+      auxiliaryElement.style.display  = 'block'
+      auxiliaryElement.style.position = 'absolute'
+      auxiliaryElement.style.left     = (document.body.scrollWidth + 100)+'px'
+
+      if (draggedItemList.length > 1) {
+        let Badge = document.createElement('div')
+          Badge.setAttribute('style',
+            'display:block; position:absolute; ' +
+            'top:-10px; right:-10px; width:20px; height:20px; ' +
+            'background:red; color:white; ' +
+            'border:none; border-radius:10px; margin:0px; padding:0px; ' +
+            'line-height:20px; text-align:center'
+          )
+          Badge.innerText = '+' + (draggedItemList.length-1)
+        auxiliaryElement.appendChild(Badge)
+      }
+
+      document.body.appendChild(auxiliaryElement)
+
+      setTimeout(() => {       // remove element after browser took its snapshot
+        document.body.removeChild(auxiliaryElement)
+      },0)
+    return auxiliaryElement
   }
 
 /**** onDragStart ****/
@@ -566,7 +605,7 @@
           class:selected={isSelected(Item)}
           on:click={(Event) => handleClick(Event,Item)}
           use:asDroppable={{
-            Extras:{ List, Item },
+            Extras:{ List, Item }, neverFrom, onlyFrom, Dummy:dynamicDummy,
             onDragStart, onDragEnd, onDropped
           }}
           use:asDropZone={{

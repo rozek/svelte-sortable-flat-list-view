@@ -352,6 +352,9 @@
     DroppableExtras:any, DropZoneExtras:any
   ) => string)
 
+  import newUniqueId from 'locally-unique-id-generator'
+  let privateKey:string = newUniqueId()
+
   let isDragging:boolean = false
 
   let DataOffered:DataOfferSet|undefined
@@ -363,12 +366,22 @@
   $: sortable = allowedBoolean('"sortable" attribute',sortable) || false
   $: onSort   = allowedFunction  ('"onSort" callback',onSort)
 
-  $: DataOffered = Object.assign(
-    {}, allowedPlainObject('"DataToOffer" attribute',DataToOffer)
-  )
+  $: {
+    wantedOperations = parsedOperations('list of allowed operations',Operations)
+    if (sortable && (wantedOperations === '')) { wantedOperations = 'copy' }
+  }    // 'copy' because of the better visual feedback from native drag-and-drop
+
+  $: {
+    DataOffered = Object.assign(
+      {}, allowedPlainObject('"DataToOffer" attribute',DataToOffer)
+    )
+// @ts-ignore "DataOffered" is definitely not undefined
+    if (sortable) { DataOffered[privateKey] = '' }
+  }
+
   $: {
     allowPlainObject('"TypesToAccept" attribute',TypesToAccept)
-    TypesAccepted = Object.create(null)
+    TypesAccepted = {}
       for (let Type in TypesToAccept) {
         if (TypesToAccept.hasOwnProperty(Type)) {
 // @ts-ignore "TypesAccepted" is definitely not undefined
@@ -378,12 +391,14 @@
           )
         }
       }
-  }
-  $: wantedOperations = parsedOperations('list of allowed operations',Operations)
+// @ts-ignore "TypesAccepted" is definitely not undefined
+    if (sortable) { TypesAccepted[privateKey] = wantedOperations || 'copy' }
+  }    // 'copy' because of the better visual feedback from native drag-and-drop
 
   $: onOuterDropRequest = allowedFunction('"onOuterDropRequest" callback',onOuterDropRequest)
   $: onDroppedOutside   = allowedFunction  ('"onDroppedOutside" callback',onDroppedOutside)
   $: onDropFromOutside  = allowedFunction ('"onDropFromOutside" callback',onDropFromOutside)
+
 /**** parsedOperations ****/
 
   function parsedOperations (
@@ -410,37 +425,23 @@
 
 /**** prepare for drag-and-drop ****/
 
-  import newUniqueId from 'locally-unique-id-generator'
-  let privateKey:string = newUniqueId()
-
-  $: wantedOperations = (isDragging      // do not change while already dragging
-    ? wantedOperations
-    : sortable ? Operations || 'copy' : undefined
-  )    // 'copy' because of the better visual feedback from native drag-and-drop
-
-  $: DataOffered = (isDragging           // do not change while already dragging
-    ? DataOffered
-    : sortable
-      ? DataToOffer || Object.fromEntries([[privateKey,'']])
-      : undefined
-  )
-
-// @ts-ignore wantedOperations will definitely not be undefined if sortable
-  $: TypesAccepted = (isDragging         // do not change while already dragging
-    ? TypesAccepted
-    : sortable
-      ? TypesAccepted || Object.fromEntries([[privateKey,wantedOperations]])
-      : undefined
-  )
+  function hasSomeTypes (TypeSet:any):boolean {
+    for (let Type in Set) {
+      if ((Type !== privateKey) && Set.hasOwnProperty(Type)) {
+        return true
+      }
+    }
+    return false
+  }
 
   let shrinkable:boolean
   $: shrinkable = (                      // do not change while already dragging
-    isDragging ? shrinkable : ObjectIsNotEmpty(DataOffered)
+    isDragging ? shrinkable : hasSomeTypes(DataOffered)
   )
 
   let extendable:boolean
   $: extendable = (                      // do not change while already dragging
-    isDragging ? extendable : ObjectIsNotEmpty(TypesAccepted)
+    isDragging ? extendable : hasSomeTypes(TypesAccepted)
   )
 
 /**** onDragStart ****/

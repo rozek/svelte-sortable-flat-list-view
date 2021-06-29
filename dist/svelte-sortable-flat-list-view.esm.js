@@ -1516,6 +1516,7 @@ function asDroppable(Element, Options) {
         currentDropOperation = undefined;
         currentTypeTransferred = undefined;
         currentDataTransferred = undefined;
+        isDragged = true;
         setTimeout(function () { return Element.classList.add('dragged'); }, 0);
         originalEvent.stopPropagation();
     }
@@ -1584,6 +1585,7 @@ function asDroppable(Element, Options) {
             invokeHandler('onDragEnd', Options, x, y, dx, dy, Options.Extras);
         }
         currentDroppableExtras = undefined;
+        isDragged = false;
         Element.classList.remove('dragged', 'droppable');
         originalEvent.stopPropagation();
     }
@@ -1704,6 +1706,7 @@ function asDropZone(Element, Options) {
         if ((originalEvent.dataTransfer == null) ||
             (originalEvent.dataTransfer.effectAllowed === 'none') ||
             (currentDropZoneElement !== Element)) {
+            Element.classList.remove('hovered');
             return;
         }
         var Options = currentDropZoneOptions;
@@ -1730,8 +1733,8 @@ function asDropZone(Element, Options) {
                 currentDropZoneExtras = undefined;
                 currentDropZoneElement = undefined;
                 currentDropZonePosition = undefined;
-                Element.classList.remove('hovered');
             }
+            Element.classList.remove('hovered');
             return;
         }
         currentDropZonePosition = asPosition(e.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, Element)); // relative to DropZone element
@@ -1750,9 +1753,9 @@ function asDropZone(Element, Options) {
     }
     /**** leftByDroppable ****/
     function leftByDroppable(originalEvent) {
+        Element.classList.remove('hovered');
         var Options = currentDropZoneOptions;
         if (currentDropZoneElement === Element) {
-            Element.classList.remove('hovered');
             if (currentTypeTransferred == null) {
                 currentDropZoneExtras = undefined;
                 currentDropZoneElement = undefined;
@@ -1768,6 +1771,7 @@ function asDropZone(Element, Options) {
     }
     /**** droppedByDroppable ****/
     function droppedByDroppable(originalEvent) {
+        Element.classList.remove('hovered');
         if ((originalEvent.dataTransfer == null) ||
             (originalEvent.dataTransfer.effectAllowed === 'none') ||
             (currentDropZoneElement !== Element)) {
@@ -1775,7 +1779,6 @@ function asDropZone(Element, Options) {
         }
         //    originalEvent.preventDefault()
         originalEvent.stopPropagation();
-        Element.classList.remove('hovered');
         var Options = currentDropZoneOptions;
         var wantedOperation = originalEvent.dataTransfer.dropEffect;
         if (wantedOperation === 'none') { // workaround for browser bug
@@ -1833,7 +1836,6 @@ function asDropZone(Element, Options) {
             //        invokeHandler('onDroppableLeave', Options, currentDroppableExtras, Options.Extras)
         }
         currentDropZoneElement = undefined;
-        Element.classList.remove('hovered');
     }
     /**** updateDropZoneOptions ****/
     function updateDropZoneOptions(Options) {
@@ -2000,7 +2002,7 @@ function styleInject(css, ref) {
   }
 }
 
-var css_248z = ".defaultListView.svelte-fps44t{display:inline-block;position:relative;margin:0px;padding:0px 0px 4px 0px;list-style:none}.withoutTextSelection.svelte-fps44t{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.defaultListView.svelte-fps44t>.ListItemView{display:block;position:relative;height:30px;line-height:30px;border:solid 1px transparent;margin:0px 2px 0px 2px;padding:0px 4px 0px 4px;list-style:none}.defaultListView.svelte-fps44t>.ListItemView:hover{border:solid 1px }.defaultListView.svelte-fps44t>.ListItemView.selected{background:dodgerblue }.defaultListView.svelte-fps44t>.ListItemView.dragged{height:5px;opacity:0 }.defaultListView.svelte-fps44t>.InsertionRegion{display:block;position:relative;height:10px;background:transparent;border:solid 1px transparent;margin:0px;padding:0px;list-style:none}.defaultListView.svelte-fps44t>.AttachmentRegion{display:block;position:relative;height:20px;background:transparent;border:solid 1px transparent;margin:0px;padding:0px;list-style:none}.defaultListView.svelte-fps44t>.Placeholder{display:flex;position:absolute;left:0px;top:0px;right:0px;height:100%;flex-flow:column nowrap;justify-content:center;align-items:center}";
+var css_248z = ".defaultListView.svelte-1mdxcz3{display:inline-flex;flex-flow:column nowrap;position:relative;justify-content:flex-start;align-items:stretch;margin:0px;padding:0px;list-style:none}.withoutTextSelection.svelte-1mdxcz3{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.defaultListView.svelte-1mdxcz3>.ListItemView{display:block;position:relative;flex:0 0 auto;height:30px;line-height:30px;border:solid 1px transparent;margin:0px 2px 0px 2px;padding:0px 4px 0px 4px;list-style:none}.defaultListView.svelte-1mdxcz3>.ListItemView:hover:not(.dragged){border:solid 1px }.defaultListView.svelte-1mdxcz3>.ListItemView.selected:not(.dragged){background:dodgerblue }.defaultListView.svelte-1mdxcz3>.ListItemView.dragged{opacity:0.3 }.defaultListView.svelte-1mdxcz3>.InsertionRegion{display:block;position:relative;height:5px;background:transparent;border:solid 1px transparent;margin:0px;padding:0px;list-style:none}.defaultListView.svelte-1mdxcz3>.AttachmentRegion{display:block;position:relative;flex:1 1 auto;min-height:20px;background:transparent;border:solid 1px transparent;margin:0px 2px 2px 2px;padding:0px;list-style:none}.defaultListView.svelte-1mdxcz3>.AttachmentRegion.hovered{border:solid 1px }.defaultListView.svelte-1mdxcz3>.Placeholder{display:flex;position:absolute;left:0px;top:0px;right:0px;height:100%;flex-flow:column nowrap;justify-content:center;align-items:center}";
 styleInject(css_248z,{"insertAt":"top"});
 
 /* src/svelte-sortable-flat-list-view.svelte generated by Svelte v3.38.3 */
@@ -2039,7 +2041,7 @@ const get_default_slot_context = ctx => ({
 	Index: /*Index*/ ctx[66]
 });
 
-// (647:2) {:else}
+// (654:2) {:else}
 function create_else_block_1(ctx) {
 	let li;
 	let raw_value = (/*Placeholder*/ ctx[6] || "(empty list)") + "";
@@ -2063,7 +2065,7 @@ function create_else_block_1(ctx) {
 	};
 }
 
-// (595:2) {#if (List.length > 0)}
+// (601:2) {#if (List.length > 0)}
 function create_if_block(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2073,7 +2075,7 @@ function create_if_block(ctx) {
 	const if_blocks = [];
 
 	function select_block_type_1(ctx, dirty) {
-		if (/*sortable*/ ctx[1] || /*extendable*/ ctx[15] || /*shrinkable*/ ctx[14]) return 0;
+		if (/*sortable*/ ctx[1] || /*extendable*/ ctx[16] || /*shrinkable*/ ctx[15]) return 0;
 		return 1;
 	}
 
@@ -2133,7 +2135,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (636:4) {:else}
+// (643:4) {:else}
 function create_else_block(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -2165,7 +2167,7 @@ function create_else_block(ctx) {
 			current = true;
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*isSelected, List, handleClick, KeyOf*/ 69761 | dirty[1] & /*$$scope*/ 32768) {
+			if (dirty[0] & /*isSelected, List, handleClick, KeyOf*/ 135297 | dirty[1] & /*$$scope*/ 65536) {
 				each_value_1 = /*List*/ ctx[0];
 				group_outros();
 				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value_1, each_1_lookup, each_1_anchor.parentNode, outro_and_destroy_block, create_each_block_1, each_1_anchor, get_each_context_1);
@@ -2198,7 +2200,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (596:4) {#if sortable || extendable || shrinkable}
+// (602:4) {#if sortable || extendable || shrinkable}
 function create_if_block_1(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -2214,7 +2216,7 @@ function create_if_block_1(ctx) {
 		each_1_lookup.set(key, each_blocks[i] = create_each_block(key, child_ctx));
 	}
 
-	let if_block = (/*sortable*/ ctx[1] || /*extendable*/ ctx[15]) && create_if_block_2(ctx);
+	let if_block = (/*sortable*/ ctx[1] || /*extendable*/ ctx[16]) && create_if_block_2(ctx);
 
 	return {
 		c() {
@@ -2237,14 +2239,14 @@ function create_if_block_1(ctx) {
 			current = true;
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*neverFrom, onlyFrom, dynamicDummy, List, DataOffered, onDragStart, onDragEnd, onDropped, TypesAccepted, onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave, isSelected, handleClick, KeyOf, ClassNames, InsertionRegion, InsertionPoint*/ 33505173 | dirty[1] & /*$$scope*/ 32768) {
+			if (dirty[0] & /*neverFrom, onlyFrom, dynamicDummy, List, DataOffered, onDragStart, onDragEnd, onDropped, TypesAccepted, onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave, draggedItemList, isSelected, handleClick, KeyOf, ClassNames, InsertionRegion, InsertionPoint*/ 67010453 | dirty[1] & /*$$scope*/ 65536) {
 				each_value = /*List*/ ctx[0];
 				group_outros();
 				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value, each_1_lookup, t.parentNode, outro_and_destroy_block, create_each_block, t, get_each_context);
 				check_outros();
 			}
 
-			if (/*sortable*/ ctx[1] || /*extendable*/ ctx[15]) {
+			if (/*sortable*/ ctx[1] || /*extendable*/ ctx[16]) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -2285,7 +2287,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (643:31)  
+// (650:31)  
 function fallback_block_1(ctx) {
 	let t_value = /*KeyOf*/ ctx[12](/*Item*/ ctx[64]) + "";
 	let t;
@@ -2306,19 +2308,19 @@ function fallback_block_1(ctx) {
 	};
 }
 
-// (637:6) {#each List as Item,Index (KeyOf(Item))}
+// (644:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block_1(key_1, ctx) {
 	let li;
 	let t;
 	let current;
 	let mounted;
 	let dispose;
-	const default_slot_template = /*#slots*/ ctx[47].default;
-	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[46], get_default_slot_context_1);
+	const default_slot_template = /*#slots*/ ctx[48].default;
+	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[47], get_default_slot_context_1);
 	const default_slot_or_fallback = default_slot || fallback_block_1(ctx);
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[49](/*Item*/ ctx[64], ...args);
+		return /*click_handler_1*/ ctx[50](/*Item*/ ctx[64], ...args);
 	}
 
 	return {
@@ -2351,8 +2353,8 @@ function create_each_block_1(key_1, ctx) {
 			ctx = new_ctx;
 
 			if (default_slot) {
-				if (default_slot.p && (!current || dirty[0] & /*List*/ 1 | dirty[1] & /*$$scope*/ 32768)) {
-					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[46], !current ? [-1, -1, -1] : dirty, get_default_slot_changes_1, get_default_slot_context_1);
+				if (default_slot.p && (!current || dirty[0] & /*List*/ 1 | dirty[1] & /*$$scope*/ 65536)) {
+					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[47], !current ? [-1, -1, -1] : dirty, get_default_slot_changes_1, get_default_slot_context_1);
 				}
 			} else {
 				if (default_slot_or_fallback && default_slot_or_fallback.p && (!current || dirty[0] & /*KeyOf, List*/ 4097)) {
@@ -2382,7 +2384,7 @@ function create_each_block_1(key_1, ctx) {
 	};
 }
 
-// (598:8) {#if Item === InsertionPoint}
+// (604:8) {#if Item === InsertionPoint}
 function create_if_block_3(ctx) {
 	let li;
 	let raw_value = (/*InsertionRegion*/ ctx[4] || "") + "";
@@ -2408,10 +2410,10 @@ function create_if_block_3(ctx) {
 						ItemList: undefined
 					},
 					TypesToAccept: /*TypesAccepted*/ ctx[11],
-					onDrop: /*onDrop*/ ctx[24],
-					onDroppableEnter: /*onDroppableEnter*/ ctx[21],
-					onDroppableMove: /*onDroppableMove*/ ctx[22],
-					onDroppableLeave: /*onDroppableLeave*/ ctx[23]
+					onDrop: /*onDrop*/ ctx[25],
+					onDroppableEnter: /*onDroppableEnter*/ ctx[22],
+					onDroppableMove: /*onDroppableMove*/ ctx[23],
+					onDroppableLeave: /*onDroppableLeave*/ ctx[24]
 				}));
 
 				mounted = true;
@@ -2427,10 +2429,10 @@ function create_if_block_3(ctx) {
 					ItemList: undefined
 				},
 				TypesToAccept: /*TypesAccepted*/ ctx[11],
-				onDrop: /*onDrop*/ ctx[24],
-				onDroppableEnter: /*onDroppableEnter*/ ctx[21],
-				onDroppableMove: /*onDroppableMove*/ ctx[22],
-				onDroppableLeave: /*onDroppableLeave*/ ctx[23]
+				onDrop: /*onDrop*/ ctx[25],
+				onDroppableEnter: /*onDroppableEnter*/ ctx[22],
+				onDroppableMove: /*onDroppableMove*/ ctx[23],
+				onDroppableLeave: /*onDroppableLeave*/ ctx[24]
 			});
 
 			if (dirty[0] & /*ClassNames*/ 4) {
@@ -2445,7 +2447,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (623:31)  
+// (630:31)  
 function fallback_block(ctx) {
 	let t_value = /*KeyOf*/ ctx[12](/*Item*/ ctx[64]) + "";
 	let t;
@@ -2466,7 +2468,7 @@ function fallback_block(ctx) {
 	};
 }
 
-// (597:6) {#each List as Item,Index (KeyOf(Item))}
+// (603:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block(key_1, ctx) {
 	let first;
 	let t;
@@ -2476,13 +2478,13 @@ function create_each_block(key_1, ctx) {
 	let current;
 	let mounted;
 	let dispose;
-	let if_block = /*Item*/ ctx[64] === /*InsertionPoint*/ ctx[13] && create_if_block_3(ctx);
-	const default_slot_template = /*#slots*/ ctx[47].default;
-	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[46], get_default_slot_context);
+	let if_block = /*Item*/ ctx[64] === /*InsertionPoint*/ ctx[14] && create_if_block_3(ctx);
+	const default_slot_template = /*#slots*/ ctx[48].default;
+	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[47], get_default_slot_context);
 	const default_slot_or_fallback = default_slot || fallback_block(ctx);
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[48](/*Item*/ ctx[64], ...args);
+		return /*click_handler*/ ctx[49](/*Item*/ ctx[64], ...args);
 	}
 
 	return {
@@ -2495,6 +2497,7 @@ function create_each_block(key_1, ctx) {
 			li = element("li");
 			if (default_slot_or_fallback) default_slot_or_fallback.c();
 			toggle_class(li, "ListItemView", true);
+			toggle_class(li, "dragged", /*draggedItemList*/ ctx[13].indexOf(/*Item*/ ctx[64]) >= 0);
 			toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[64]));
 			this.first = first;
 		},
@@ -2516,15 +2519,15 @@ function create_each_block(key_1, ctx) {
 					action_destroyer(asDroppable_action = asDroppable.call(null, li, {
 						neverFrom: /*neverFrom*/ ctx[9],
 						onlyFrom: /*onlyFrom*/ ctx[8],
-						Dummy: /*dynamicDummy*/ ctx[17],
+						Dummy: /*dynamicDummy*/ ctx[18],
 						Extras: {
 							List: /*List*/ ctx[0],
 							Item: /*Item*/ ctx[64]
 						},
 						DataToOffer: /*DataOffered*/ ctx[10],
-						onDragStart: /*onDragStart*/ ctx[18],
-						onDragEnd: /*onDragEnd*/ ctx[19],
-						onDropped: /*onDropped*/ ctx[20]
+						onDragStart: /*onDragStart*/ ctx[19],
+						onDragEnd: /*onDragEnd*/ ctx[20],
+						onDropped: /*onDropped*/ ctx[21]
 					})),
 					action_destroyer(asDropZone_action = asDropZone.call(null, li, {
 						Extras: {
@@ -2533,10 +2536,10 @@ function create_each_block(key_1, ctx) {
 							ItemList: undefined
 						},
 						TypesToAccept: /*TypesAccepted*/ ctx[11],
-						onDrop: /*onDrop*/ ctx[24],
-						onDroppableEnter: /*onDroppableEnter*/ ctx[21],
-						onDroppableMove: /*onDroppableMove*/ ctx[22],
-						onDroppableLeave: /*onDroppableLeave*/ ctx[23]
+						onDrop: /*onDrop*/ ctx[25],
+						onDroppableEnter: /*onDroppableEnter*/ ctx[22],
+						onDroppableMove: /*onDroppableMove*/ ctx[23],
+						onDroppableLeave: /*onDroppableLeave*/ ctx[24]
 					}))
 				];
 
@@ -2546,7 +2549,7 @@ function create_each_block(key_1, ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (/*Item*/ ctx[64] === /*InsertionPoint*/ ctx[13]) {
+			if (/*Item*/ ctx[64] === /*InsertionPoint*/ ctx[14]) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -2560,8 +2563,8 @@ function create_each_block(key_1, ctx) {
 			}
 
 			if (default_slot) {
-				if (default_slot.p && (!current || dirty[0] & /*List*/ 1 | dirty[1] & /*$$scope*/ 32768)) {
-					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[46], !current ? [-1, -1, -1] : dirty, get_default_slot_changes, get_default_slot_context);
+				if (default_slot.p && (!current || dirty[0] & /*List*/ 1 | dirty[1] & /*$$scope*/ 65536)) {
+					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[47], !current ? [-1, -1, -1] : dirty, get_default_slot_changes, get_default_slot_context);
 				}
 			} else {
 				if (default_slot_or_fallback && default_slot_or_fallback.p && (!current || dirty[0] & /*KeyOf, List*/ 4097)) {
@@ -2572,15 +2575,15 @@ function create_each_block(key_1, ctx) {
 			if (asDroppable_action && is_function(asDroppable_action.update) && dirty[0] & /*neverFrom, onlyFrom, List, DataOffered*/ 1793) asDroppable_action.update.call(null, {
 				neverFrom: /*neverFrom*/ ctx[9],
 				onlyFrom: /*onlyFrom*/ ctx[8],
-				Dummy: /*dynamicDummy*/ ctx[17],
+				Dummy: /*dynamicDummy*/ ctx[18],
 				Extras: {
 					List: /*List*/ ctx[0],
 					Item: /*Item*/ ctx[64]
 				},
 				DataToOffer: /*DataOffered*/ ctx[10],
-				onDragStart: /*onDragStart*/ ctx[18],
-				onDragEnd: /*onDragEnd*/ ctx[19],
-				onDropped: /*onDropped*/ ctx[20]
+				onDragStart: /*onDragStart*/ ctx[19],
+				onDragEnd: /*onDragEnd*/ ctx[20],
+				onDropped: /*onDropped*/ ctx[21]
 			});
 
 			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List, TypesAccepted*/ 2049) asDropZone_action.update.call(null, {
@@ -2590,11 +2593,15 @@ function create_each_block(key_1, ctx) {
 					ItemList: undefined
 				},
 				TypesToAccept: /*TypesAccepted*/ ctx[11],
-				onDrop: /*onDrop*/ ctx[24],
-				onDroppableEnter: /*onDroppableEnter*/ ctx[21],
-				onDroppableMove: /*onDroppableMove*/ ctx[22],
-				onDroppableLeave: /*onDroppableLeave*/ ctx[23]
+				onDrop: /*onDrop*/ ctx[25],
+				onDroppableEnter: /*onDroppableEnter*/ ctx[22],
+				onDroppableMove: /*onDroppableMove*/ ctx[23],
+				onDroppableLeave: /*onDroppableLeave*/ ctx[24]
 			});
+
+			if (dirty[0] & /*draggedItemList, List*/ 8193) {
+				toggle_class(li, "dragged", /*draggedItemList*/ ctx[13].indexOf(/*Item*/ ctx[64]) >= 0);
+			}
 
 			if (dirty[0] & /*isSelected, List*/ 129) {
 				toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[64]));
@@ -2621,7 +2628,7 @@ function create_each_block(key_1, ctx) {
 	};
 }
 
-// (627:6) {#if sortable || extendable}
+// (634:6) {#if sortable || extendable}
 function create_if_block_2(ctx) {
 	let li;
 	let raw_value = (/*AttachmentRegion*/ ctx[5] || "") + "";
@@ -2646,9 +2653,9 @@ function create_if_block_2(ctx) {
 						ItemList: undefined
 					},
 					TypesToAccept: /*TypesAccepted*/ ctx[11],
-					onDroppableEnter: /*onDroppableEnter*/ ctx[21],
-					onDroppableMove: /*onDroppableMove*/ ctx[22],
-					onDrop: /*onDrop*/ ctx[24]
+					onDroppableEnter: /*onDroppableEnter*/ ctx[22],
+					onDroppableMove: /*onDroppableMove*/ ctx[23],
+					onDrop: /*onDrop*/ ctx[25]
 				}));
 
 				mounted = true;
@@ -2663,9 +2670,9 @@ function create_if_block_2(ctx) {
 					ItemList: undefined
 				},
 				TypesToAccept: /*TypesAccepted*/ ctx[11],
-				onDroppableEnter: /*onDroppableEnter*/ ctx[21],
-				onDroppableMove: /*onDroppableMove*/ ctx[22],
-				onDrop: /*onDrop*/ ctx[24]
+				onDroppableEnter: /*onDroppableEnter*/ ctx[22],
+				onDroppableMove: /*onDroppableMove*/ ctx[23],
+				onDrop: /*onDrop*/ ctx[25]
 			});
 		},
 		d(detaching) {
@@ -2695,7 +2702,7 @@ function create_fragment(ctx) {
 	let ul_levels = [
 		{ class: /*ClassNames*/ ctx[2] },
 		{ style: /*style*/ ctx[3] },
-		/*$$restProps*/ ctx[25]
+		/*$$restProps*/ ctx[26]
 	];
 
 	let ul_data = {};
@@ -2711,7 +2718,7 @@ function create_fragment(ctx) {
 			set_attributes(ul, ul_data);
 			toggle_class(ul, "defaultListView", /*ClassNames*/ ctx[2] == null);
 			toggle_class(ul, "withoutTextSelection", true);
-			toggle_class(ul, "svelte-fps44t", true);
+			toggle_class(ul, "svelte-1mdxcz3", true);
 		},
 		m(target, anchor) {
 			insert(target, ul, anchor);
@@ -2748,12 +2755,12 @@ function create_fragment(ctx) {
 			set_attributes(ul, ul_data = get_spread_update(ul_levels, [
 				(!current || dirty[0] & /*ClassNames*/ 4) && { class: /*ClassNames*/ ctx[2] },
 				(!current || dirty[0] & /*style*/ 8) && { style: /*style*/ ctx[3] },
-				dirty[0] & /*$$restProps*/ 33554432 && /*$$restProps*/ ctx[25]
+				dirty[0] & /*$$restProps*/ 67108864 && /*$$restProps*/ ctx[26]
 			]));
 
 			toggle_class(ul, "defaultListView", /*ClassNames*/ ctx[2] == null);
 			toggle_class(ul, "withoutTextSelection", true);
-			toggle_class(ul, "svelte-fps44t", true);
+			toggle_class(ul, "svelte-1mdxcz3", true);
 		},
 		i(local) {
 			if (current) return;
@@ -3032,7 +3039,7 @@ function instance($$self, $$props, $$invalidate) {
 
 	
 	let isDragging = false;
-	let draggedItemList = undefined;
+	let draggedItemList = [];
 	let InsertionPoint = undefined;
 	let { sortable = false } = $$props; // does this list view support "sorting"?
 	let { onlyFrom } = $$props;
@@ -3090,6 +3097,8 @@ function instance($$self, $$props, $$invalidate) {
 		auxiliaryElement.style.display = "block";
 		auxiliaryElement.style.position = "absolute";
 		auxiliaryElement.style.left = document.body.scrollWidth + 100 + "px";
+		auxiliaryElement.style.width = Element.clientWidth + "px"; // not perfect
+		auxiliaryElement.style.height = Element.clientHeight + "px"; // dto.
 
 		if (draggedItemList.length > 1) {
 			// called after "onDragStart"
@@ -3114,21 +3123,21 @@ function instance($$self, $$props, $$invalidate) {
 
 	/**** onDragStart ****/
 	function onDragStart(DroppableExtras) {
-		$$invalidate(45, isDragging = true);
-		draggedItemList = selectedItems();
+		$$invalidate(46, isDragging = true);
 
 		if (!isSelected(DroppableExtras.Item)) {
-			draggedItemList.push(DroppableExtras.Item);
+			selectOnly(DroppableExtras.Item);
 		}
 
+		$$invalidate(13, draggedItemList = selectedItems());
 		DroppableExtras.ItemList = draggedItemList;
 		return { x: 0, y: 0 };
 	}
 
 	/**** onDragEnd ****/
 	function onDragEnd(x, y, dx, dy, DraggableExtras) {
-		$$invalidate(45, isDragging = false);
-		draggedItemList = undefined;
+		$$invalidate(46, isDragging = false);
+		$$invalidate(13, draggedItemList.length = 0, draggedItemList);
 	}
 
 	/**** onDropped ****/
@@ -3173,8 +3182,11 @@ function instance($$self, $$props, $$invalidate) {
 	function onDroppableEnter(x, y, Operation, offeredTypeList, DroppableExtras, DropZoneExtras) {
 		let draggedItem = DroppableExtras && DroppableExtras.Item;
 
-		if (draggedItem == (DropZoneExtras && DropZoneExtras.Item)) {
-			$$invalidate(13, InsertionPoint = undefined);
+		if (draggedItemList.indexOf(draggedItem) >= 0 && // not a foreign item
+		draggedItemList.indexOf(DropZoneExtras && DropZoneExtras.Item) >= 0) {
+			// don't allow dragged items to be dropped onto themselves
+			$$invalidate(14, InsertionPoint = undefined);
+
 			triggerRedraw();
 			return false;
 		}
@@ -3208,7 +3220,7 @@ function instance($$self, $$props, $$invalidate) {
 			}
 		}
 
-		$$invalidate(13, InsertionPoint = mayBeInsertedHere ? DropZoneExtras.Item : undefined);
+		$$invalidate(14, InsertionPoint = mayBeInsertedHere ? DropZoneExtras.Item : undefined);
 		triggerRedraw();
 		return mayBeInsertedHere && Operation !== "link";
 	}
@@ -3218,18 +3230,20 @@ function instance($$self, $$props, $$invalidate) {
 
 	/**** onDroppableLeave ****/
 	function onDroppableLeave(DroppableExtras, DropZoneExtras) {
-		$$invalidate(13, InsertionPoint = undefined);
+		$$invalidate(14, InsertionPoint = undefined);
 		triggerRedraw();
 	}
 
 	/**** onDrop ****/
 	function onDrop(x, y, Operation, DataOffered, DroppableExtras, DropZoneExtras) {
-		$$invalidate(13, InsertionPoint = undefined);
+		$$invalidate(14, InsertionPoint = undefined);
 		let draggedItem = DroppableExtras && DroppableExtras.Item;
 
-		if (draggedItem == (DropZoneExtras && DropZoneExtras.Item)) {
+		if (draggedItemList.indexOf(draggedItem) >= 0 && // not a foreign item
+		draggedItemList.indexOf(DropZoneExtras && DropZoneExtras.Item) >= 0) {
+			// don't allow dragged items to be dropped onto themselves
 			return "none";
-		} // oops, draggable drop zone was dropped onto itself
+		}
 
 		if (List === (DroppableExtras && DroppableExtras.List)) {
 			// own elements
@@ -3329,27 +3343,27 @@ function instance($$self, $$props, $$invalidate) {
 
 	$$self.$$set = $$new_props => {
 		$$props = assign(assign({}, $$props), exclude_internal_props($$new_props));
-		$$invalidate(25, $$restProps = compute_rest_props($$props, omit_props_names));
+		$$invalidate(26, $$restProps = compute_rest_props($$props, omit_props_names));
 		if ("class" in $$new_props) $$invalidate(2, ClassNames = $$new_props.class);
 		if ("style" in $$new_props) $$invalidate(3, style = $$new_props.style);
 		if ("List" in $$new_props) $$invalidate(0, List = $$new_props.List);
-		if ("Key" in $$new_props) $$invalidate(26, Key = $$new_props.Key);
-		if ("SelectionLimit" in $$new_props) $$invalidate(27, SelectionLimit = $$new_props.SelectionLimit);
+		if ("Key" in $$new_props) $$invalidate(27, Key = $$new_props.Key);
+		if ("SelectionLimit" in $$new_props) $$invalidate(28, SelectionLimit = $$new_props.SelectionLimit);
 		if ("InsertionRegion" in $$new_props) $$invalidate(4, InsertionRegion = $$new_props.InsertionRegion);
 		if ("AttachmentRegion" in $$new_props) $$invalidate(5, AttachmentRegion = $$new_props.AttachmentRegion);
 		if ("Placeholder" in $$new_props) $$invalidate(6, Placeholder = $$new_props.Placeholder);
 		if ("sortable" in $$new_props) $$invalidate(1, sortable = $$new_props.sortable);
 		if ("onlyFrom" in $$new_props) $$invalidate(8, onlyFrom = $$new_props.onlyFrom);
 		if ("neverFrom" in $$new_props) $$invalidate(9, neverFrom = $$new_props.neverFrom);
-		if ("onSortRequest" in $$new_props) $$invalidate(37, onSortRequest = $$new_props.onSortRequest);
-		if ("onSort" in $$new_props) $$invalidate(38, onSort = $$new_props.onSort);
-		if ("Operations" in $$new_props) $$invalidate(39, Operations = $$new_props.Operations);
-		if ("DataToOffer" in $$new_props) $$invalidate(40, DataToOffer = $$new_props.DataToOffer);
-		if ("TypesToAccept" in $$new_props) $$invalidate(41, TypesToAccept = $$new_props.TypesToAccept);
-		if ("onOuterDropRequest" in $$new_props) $$invalidate(42, onOuterDropRequest = $$new_props.onOuterDropRequest);
-		if ("onDroppedOutside" in $$new_props) $$invalidate(43, onDroppedOutside = $$new_props.onDroppedOutside);
-		if ("onDropFromOutside" in $$new_props) $$invalidate(44, onDropFromOutside = $$new_props.onDropFromOutside);
-		if ("$$scope" in $$new_props) $$invalidate(46, $$scope = $$new_props.$$scope);
+		if ("onSortRequest" in $$new_props) $$invalidate(38, onSortRequest = $$new_props.onSortRequest);
+		if ("onSort" in $$new_props) $$invalidate(39, onSort = $$new_props.onSort);
+		if ("Operations" in $$new_props) $$invalidate(40, Operations = $$new_props.Operations);
+		if ("DataToOffer" in $$new_props) $$invalidate(41, DataToOffer = $$new_props.DataToOffer);
+		if ("TypesToAccept" in $$new_props) $$invalidate(42, TypesToAccept = $$new_props.TypesToAccept);
+		if ("onOuterDropRequest" in $$new_props) $$invalidate(43, onOuterDropRequest = $$new_props.onOuterDropRequest);
+		if ("onDroppedOutside" in $$new_props) $$invalidate(44, onDroppedOutside = $$new_props.onDroppedOutside);
+		if ("onDropFromOutside" in $$new_props) $$invalidate(45, onDropFromOutside = $$new_props.onDropFromOutside);
+		if ("$$scope" in $$new_props) $$invalidate(47, $$scope = $$new_props.$$scope);
 	};
 
 	$$self.$$.update = () => {
@@ -3365,7 +3379,7 @@ function instance($$self, $$props, $$invalidate) {
 			$$invalidate(0, List = allowedListSatisfying("\"List\" attribute", List, ValueIsObject$1) || []);
 		}
 
-		if ($$self.$$.dirty[0] & /*Key*/ 67108864) {
+		if ($$self.$$.dirty[0] & /*Key*/ 134217728) {
 			switch (true) {
 				case Key == null:
 					$$invalidate(12, KeyOf = Item => String(Item));
@@ -3381,7 +3395,7 @@ function instance($$self, $$props, $$invalidate) {
 			}
 		}
 
-		if ($$self.$$.dirty[0] & /*SelectionLimit*/ 134217728) {
+		if ($$self.$$.dirty[0] & /*SelectionLimit*/ 268435456) {
 			allowOrdinal("selection limit", SelectionLimit);
 		}
 
@@ -3397,11 +3411,11 @@ function instance($$self, $$props, $$invalidate) {
 			allowNonEmptyString$1("\"Placeholder\" attribute", Placeholder);
 		}
 
-		if ($$self.$$.dirty[0] & /*List, Key*/ 67108865) {
+		if ($$self.$$.dirty[0] & /*List, Key*/ 134217729) {
 			updateItemSet(List, Key);
 		}
 
-		if ($$self.$$.dirty[0] & /*SelectionLimit, List*/ 134217729) {
+		if ($$self.$$.dirty[0] & /*SelectionLimit, List*/ 268435457) {
 			if (SelectionLimit != null && SelectionCount() > SelectionLimit) {
 				let Count = 0;
 
@@ -3429,39 +3443,39 @@ function instance($$self, $$props, $$invalidate) {
 			allowNonEmptyString$1("\"neverFrom\" CSS selector list", neverFrom);
 		}
 
-		if ($$self.$$.dirty[1] & /*onSortRequest*/ 64) {
+		if ($$self.$$.dirty[1] & /*onSortRequest*/ 128) {
 			allowFunction$1("\"onSortRequest\" callback", onSortRequest);
 		}
 
-		if ($$self.$$.dirty[1] & /*onSort*/ 128) {
+		if ($$self.$$.dirty[1] & /*onSort*/ 256) {
 			allowFunction$1("\"onSort\" callback", onSort);
 		}
 
-		if ($$self.$$.dirty[1] & /*Operations*/ 256) {
+		if ($$self.$$.dirty[1] & /*Operations*/ 512) {
 			parsedOperations("list of allowed operations", Operations);
 		}
 
-		if ($$self.$$.dirty[1] & /*DataToOffer*/ 512) {
+		if ($$self.$$.dirty[1] & /*DataToOffer*/ 1024) {
 			allowPlainObject$1("\"DataToOffer\" attribute", DataToOffer);
 		}
 
-		if ($$self.$$.dirty[1] & /*TypesToAccept*/ 1024) {
+		if ($$self.$$.dirty[1] & /*TypesToAccept*/ 2048) {
 			allowPlainObject$1("\"TypesToAccept\" attribute", TypesToAccept);
 		}
 
-		if ($$self.$$.dirty[1] & /*onOuterDropRequest*/ 2048) {
+		if ($$self.$$.dirty[1] & /*onOuterDropRequest*/ 4096) {
 			allowFunction$1("\"onOuterDropRequest\" callback", onOuterDropRequest);
 		}
 
-		if ($$self.$$.dirty[1] & /*onDroppedOutside*/ 4096) {
+		if ($$self.$$.dirty[1] & /*onDroppedOutside*/ 8192) {
 			allowFunction$1("\"onDroppedOutside\" callback", onDroppedOutside);
 		}
 
-		if ($$self.$$.dirty[1] & /*onDropFromOutside*/ 8192) {
+		if ($$self.$$.dirty[1] & /*onDropFromOutside*/ 16384) {
 			allowFunction$1("\"onDropFromOutside\" callback", onDropFromOutside);
 		}
 
-		if ($$self.$$.dirty[0] & /*sortable*/ 2 | $$self.$$.dirty[1] & /*isDragging, DataToOffer*/ 16896) {
+		if ($$self.$$.dirty[0] & /*sortable*/ 2 | $$self.$$.dirty[1] & /*isDragging, DataToOffer*/ 33792) {
 			if (!isDragging) {
 				// do not update while already dragging
 				$$invalidate(10, DataOffered = Object.assign({}, DataToOffer));
@@ -3473,7 +3487,7 @@ function instance($$self, $$props, $$invalidate) {
 			}
 		}
 
-		if ($$self.$$.dirty[0] & /*sortable*/ 2 | $$self.$$.dirty[1] & /*isDragging, TypesToAccept*/ 17408) {
+		if ($$self.$$.dirty[0] & /*sortable*/ 2 | $$self.$$.dirty[1] & /*isDragging, TypesToAccept*/ 34816) {
 			if (!isDragging) {
 				// do not update while already dragging
 				$$invalidate(11, TypesAccepted = {});
@@ -3492,12 +3506,12 @@ function instance($$self, $$props, $$invalidate) {
 			} // 'copy' because of the better visual feedback from native drag-and-drop
 		}
 
-		if ($$self.$$.dirty[0] & /*DataOffered, TypesAccepted*/ 3072 | $$self.$$.dirty[1] & /*isDragging*/ 16384) {
+		if ($$self.$$.dirty[0] & /*DataOffered, TypesAccepted*/ 3072 | $$self.$$.dirty[1] & /*isDragging*/ 32768) {
 			if (!isDragging) {
 				// do not update while already dragging
-				$$invalidate(14, shrinkable = hasNonPrivateTypes());
+				$$invalidate(15, shrinkable = hasNonPrivateTypes());
 
-				$$invalidate(15, extendable = hasNonPrivateTypes());
+				$$invalidate(16, extendable = hasNonPrivateTypes());
 			}
 		}
 	};
@@ -3516,6 +3530,7 @@ function instance($$self, $$props, $$invalidate) {
 		DataOffered,
 		TypesAccepted,
 		KeyOf,
+		draggedItemList,
 		InsertionPoint,
 		shrinkable,
 		extendable,
@@ -3570,32 +3585,32 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 				class: 2,
 				style: 3,
 				List: 0,
-				Key: 26,
-				SelectionLimit: 27,
+				Key: 27,
+				SelectionLimit: 28,
 				InsertionRegion: 4,
 				AttachmentRegion: 5,
 				Placeholder: 6,
-				select: 28,
-				selectOnly: 29,
-				selectAll: 30,
-				selectRange: 31,
-				deselect: 32,
-				deselectAll: 33,
-				toggleSelectionOf: 34,
-				selectedItems: 35,
-				SelectionCount: 36,
+				select: 29,
+				selectOnly: 30,
+				selectAll: 31,
+				selectRange: 32,
+				deselect: 33,
+				deselectAll: 34,
+				toggleSelectionOf: 35,
+				selectedItems: 36,
+				SelectionCount: 37,
 				isSelected: 7,
 				sortable: 1,
 				onlyFrom: 8,
 				neverFrom: 9,
-				onSortRequest: 37,
-				onSort: 38,
-				Operations: 39,
-				DataToOffer: 40,
-				TypesToAccept: 41,
-				onOuterDropRequest: 42,
-				onDroppedOutside: 43,
-				onDropFromOutside: 44
+				onSortRequest: 38,
+				onSort: 39,
+				Operations: 40,
+				DataToOffer: 41,
+				TypesToAccept: 42,
+				onOuterDropRequest: 43,
+				onDroppedOutside: 44,
+				onDropFromOutside: 45
 			},
 			[-1, -1, -1]
 		);
@@ -3629,7 +3644,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get Key() {
-		return this.$$.ctx[26];
+		return this.$$.ctx[27];
 	}
 
 	set Key(Key) {
@@ -3638,7 +3653,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get SelectionLimit() {
-		return this.$$.ctx[27];
+		return this.$$.ctx[28];
 	}
 
 	set SelectionLimit(SelectionLimit) {
@@ -3674,39 +3689,39 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get select() {
-		return this.$$.ctx[28];
-	}
-
-	get selectOnly() {
 		return this.$$.ctx[29];
 	}
 
-	get selectAll() {
+	get selectOnly() {
 		return this.$$.ctx[30];
 	}
 
-	get selectRange() {
+	get selectAll() {
 		return this.$$.ctx[31];
 	}
 
-	get deselect() {
+	get selectRange() {
 		return this.$$.ctx[32];
 	}
 
-	get deselectAll() {
+	get deselect() {
 		return this.$$.ctx[33];
 	}
 
-	get toggleSelectionOf() {
+	get deselectAll() {
 		return this.$$.ctx[34];
 	}
 
-	get selectedItems() {
+	get toggleSelectionOf() {
 		return this.$$.ctx[35];
 	}
 
-	get SelectionCount() {
+	get selectedItems() {
 		return this.$$.ctx[36];
+	}
+
+	get SelectionCount() {
+		return this.$$.ctx[37];
 	}
 
 	get isSelected() {
@@ -3741,7 +3756,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get onSortRequest() {
-		return this.$$.ctx[37];
+		return this.$$.ctx[38];
 	}
 
 	set onSortRequest(onSortRequest) {
@@ -3750,7 +3765,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get onSort() {
-		return this.$$.ctx[38];
+		return this.$$.ctx[39];
 	}
 
 	set onSort(onSort) {
@@ -3759,7 +3774,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get Operations() {
-		return this.$$.ctx[39];
+		return this.$$.ctx[40];
 	}
 
 	set Operations(Operations) {
@@ -3768,7 +3783,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get DataToOffer() {
-		return this.$$.ctx[40];
+		return this.$$.ctx[41];
 	}
 
 	set DataToOffer(DataToOffer) {
@@ -3777,7 +3792,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get TypesToAccept() {
-		return this.$$.ctx[41];
+		return this.$$.ctx[42];
 	}
 
 	set TypesToAccept(TypesToAccept) {
@@ -3786,7 +3801,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get onOuterDropRequest() {
-		return this.$$.ctx[42];
+		return this.$$.ctx[43];
 	}
 
 	set onOuterDropRequest(onOuterDropRequest) {
@@ -3795,7 +3810,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get onDroppedOutside() {
-		return this.$$.ctx[43];
+		return this.$$.ctx[44];
 	}
 
 	set onDroppedOutside(onDroppedOutside) {
@@ -3804,7 +3819,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get onDropFromOutside() {
-		return this.$$.ctx[44];
+		return this.$$.ctx[45];
 	}
 
 	set onDropFromOutside(onDropFromOutside) {

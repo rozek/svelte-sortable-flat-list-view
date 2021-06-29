@@ -31,7 +31,7 @@
   .defaultListView > :global(.ListItemView.dragged) { opacity:0.3 }
 
   .defaultListView > :global(.InsertionRegion) {
-    display:block; position:relative;
+    display:block; position:relative; flex:0 0 auto;
     height:5px;
     background:transparent;
     border:solid 1px transparent; margin:0px; padding:0px;
@@ -391,6 +391,8 @@
 
   let InsertionPoint:any = undefined
 
+  let LeavingRetarder:any                       // for a really weird workaround
+
 /**** Attributes for Sorting ****/
 
   export let sortable:boolean = false  // does this list view support "sorting"?
@@ -464,7 +466,7 @@
         }
       }
 // @ts-ignore "TypesAccepted" is definitely not undefined
-    if (sortable) { TypesAccepted[privateKey] = 'copy' }
+    if (sortable) { TypesAccepted[privateKey] = 'copy move' }
   }    // 'copy' because of the better visual feedback from native drag-and-drop
 
 /**** parsedOperations ****/
@@ -607,6 +609,11 @@
     x:number,y:number, Operation:DropOperation,
     offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:any
   ):boolean {
+    if (LeavingRetarder != null) {       // abort any pending "onDroppableLeave"
+      clearTimeout(LeavingRetarder)
+      LeavingRetarder = undefined
+    }
+
     let draggedItem = DroppableExtras && DroppableExtras.Item
     if (
       (draggedItemList.indexOf(draggedItem) >= 0) &&       // not a foreign item
@@ -662,9 +669,13 @@
 /**** onDroppableLeave ****/
 
   function onDroppableLeave (DroppableExtras:any, DropZoneExtras:any):void {
-    InsertionPoint = undefined
-    triggerRedraw()
-  }
+    LeavingRetarder = setTimeout(() => { // very weird workaround: on some
+      LeavingRetarder = undefined        // platforms, "dragleave" is sent to
+                                         // aggressively. "svelte-dnd-actions"
+      InsertionPoint = undefined         // try to handle this, causing rapid
+//    triggerRedraw()                    // sequences of "DroppableLeave" and
+    },10)                                // "DroppableEnter". This is to swallow
+  }                                      // unnecessary "DroppableLeave" calls
 
 /**** onDrop ****/
 

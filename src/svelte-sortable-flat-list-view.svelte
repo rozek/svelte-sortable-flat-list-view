@@ -6,8 +6,9 @@
 
 <style>
   .defaultListView {
-    display:inline-block; position:relative;
-    margin:0px; padding:0px 0px 4px 0px;
+    display:inline-flex; flex-flow:column nowrap; position:relative;
+    justify-content:flex-start; align-items:stretch;
+    margin:0px; padding:0px;
     list-style:none;
   }
 
@@ -17,33 +18,34 @@
   }
 
   .defaultListView > :global(.ListItemView) {
-    display:block; position:relative;
+    display:block; position:relative; flex:0 0 auto;
     height:30px; line-height:30px;
     border:solid 1px transparent;
     margin:0px 2px 0px 2px; padding:0px 4px 0px 4px;
     list-style:none;
   }
 
-  .defaultListView > :global(.ListItemView:hover)    { border:solid 1px }
-  .defaultListView > :global(.ListItemView.selected) { background:dodgerblue }
+  .defaultListView > :global(.ListItemView:hover:not(.dragged))    { border:solid 1px }
+  .defaultListView > :global(.ListItemView.selected:not(.dragged)) { background:dodgerblue }
 
-  .defaultListView > :global(.ListItemView.dragged) { height:5px; opacity:0 }
+  .defaultListView > :global(.ListItemView.dragged) { opacity:0.3 }
 
   .defaultListView > :global(.InsertionRegion) {
     display:block; position:relative;
-    height:10px;
+    height:5px;
     background:transparent;
     border:solid 1px transparent; margin:0px; padding:0px;
     list-style:none;
   }
 
   .defaultListView > :global(.AttachmentRegion) {
-    display:block; position:relative;
-    height:20px;
+    display:block; position:relative; flex:1 1 auto;
+    min-height:20px;
     background:transparent;
-    border:solid 1px transparent; margin:0px; padding:0px;
+    border:solid 1px transparent; margin:0px 2px 2px 2px; padding:0px;
     list-style:none;
   }
+  .defaultListView > :global(.AttachmentRegion.hovered) { border:solid 1px }
 
   .defaultListView > :global(.Placeholder) {
     display:flex; position:absolute;
@@ -384,8 +386,8 @@
   import type { Position, DropOperation, DataOfferSet, TypeAcceptanceSet } from 'svelte-drag-and-drop-actions'
   import      { DropOperations, asDroppable, asDropZone } from 'svelte-drag-and-drop-actions'
 
-  let isDragging:boolean              = false
-  let draggedItemList:any[]|undefined = undefined
+  let isDragging:boolean    = false
+  let draggedItemList:any[] = []
 
   let InsertionPoint:any = undefined
 
@@ -516,8 +518,10 @@
       auxiliaryElement.style.display  = 'block'
       auxiliaryElement.style.position = 'absolute'
       auxiliaryElement.style.left     = (document.body.scrollWidth + 100)+'px'
+      auxiliaryElement.style.width    = Element.clientWidth+'px'  // not perfect
+      auxiliaryElement.style.height   = Element.clientHeight+'px'        // dto.
 
-      if ((draggedItemList as any[]).length > 1) { // called after "onDragStart"
+      if (draggedItemList.length > 1) {            // called after "onDragStart"
         let Badge = document.createElement('div')
           Badge.setAttribute('style',
             'display:block; position:absolute; ' +
@@ -526,7 +530,7 @@
             'border:none; border-radius:10px; margin:0px; padding:0px 4px 0px 4px; ' +
             'line-height:20px; text-align:center'
           )
-          Badge.innerText = '+' + ((draggedItemList as any[]).length-1)
+          Badge.innerText = '+' + (draggedItemList.length-1)
         auxiliaryElement.appendChild(Badge)
       }
 
@@ -543,10 +547,11 @@
   function onDragStart (DroppableExtras:any):Position {
     isDragging = true
 
-    draggedItemList = selectedItems()
     if (! isSelected(DroppableExtras.Item)) {
-      draggedItemList.push(DroppableExtras.Item)
+      selectOnly(DroppableExtras.Item)
     }
+
+    draggedItemList = selectedItems()
     DroppableExtras.ItemList = draggedItemList
 
     return { x:0,y:0 }
@@ -557,8 +562,8 @@
   function onDragEnd (
     x:number,y:number, dx:number,dy:number, DraggableExtras:any
   ):void {
-    isDragging      = false
-    draggedItemList = undefined
+    isDragging = false
+    draggedItemList.length = 0
   }
 
 /**** onDropped ****/
@@ -603,7 +608,10 @@
     offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:any
   ):boolean {
     let draggedItem = DroppableExtras && DroppableExtras.Item
-    if (draggedItem == (DropZoneExtras && DropZoneExtras.Item)) {
+    if (
+      (draggedItemList.indexOf(draggedItem) >= 0) &&       // not a foreign item
+      (draggedItemList.indexOf(DropZoneExtras && DropZoneExtras.Item) >= 0)
+    ) {               // don't allow dragged items to be dropped onto themselves
       InsertionPoint = undefined
       triggerRedraw()
       return false
@@ -667,9 +675,12 @@
     InsertionPoint = undefined
 
     let draggedItem = DroppableExtras && DroppableExtras.Item
-    if (draggedItem == (DropZoneExtras && DropZoneExtras.Item)) {
+    if (
+      (draggedItemList.indexOf(draggedItem) >= 0) &&       // not a foreign item
+      (draggedItemList.indexOf(DropZoneExtras && DropZoneExtras.Item) >= 0)
+    ) {               // don't allow dragged items to be dropped onto themselves
       return 'none'
-    }                       // oops, draggable drop zone was dropped onto itself
+    }
 
     if (List === (DroppableExtras && DroppableExtras.List)) {    // own elements
       if (sortable) {
@@ -774,6 +785,7 @@
 
         <li
           class:ListItemView={true}
+          class:dragged={draggedItemList.indexOf(Item) >= 0}
           class:selected={isSelected(Item)}
           on:click={(Event) => handleClick(Event,Item)}
           use:asDroppable={{

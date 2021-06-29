@@ -1705,10 +1705,11 @@ function asDropZone(Element, Options) {
     function hoveredByDroppable(originalEvent) {
         if ((originalEvent.dataTransfer == null) ||
             (originalEvent.dataTransfer.effectAllowed === 'none') ||
-            (currentDropZoneElement !== Element)) {
+            (currentDropZoneElement != null) && (currentDropZoneElement !== Element)) {
             Element.classList.remove('hovered');
             return;
         }
+        // in some browsers, it may be that (currentDropZone !== Element)!
         var Options = currentDropZoneOptions;
         var wantedOperation = originalEvent.dataTransfer.dropEffect;
         if (wantedOperation === 'none') { // workaround for browser bug
@@ -1739,16 +1740,20 @@ function asDropZone(Element, Options) {
         }
         currentDropZonePosition = asPosition(e.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, Element)); // relative to DropZone element
         var accepted = ResultOfHandler('onDroppableMove', Options, currentDropZonePosition.x, currentDropZonePosition.y, wantedOperation, offeredTypeList, currentDroppableExtras, Options.Extras);
-        if (accepted === false) {
+        if (accepted) { // warning: sometimes (currentDropZone !== Element)!
+            currentDropZoneExtras = Options.Extras;
+            currentDropZoneElement = Element;
+            //      currentDropZonePosition has already been set before
+            Element.classList.add('hovered');
+            originalEvent.preventDefault(); // never allow default action!
+            //      originalEvent.stopPropagation()
+            return false; // special return value when drop seems acceptable
+        }
+        else {
             currentDropZoneExtras = undefined;
             currentDropZoneElement = undefined;
             currentDropZonePosition = undefined;
             Element.classList.remove('hovered');
-        }
-        else {
-            originalEvent.preventDefault(); // never allow default action!
-            //      originalEvent.stopPropagation()
-            return false; // special return value when drop seems acceptable
         }
     }
     /**** leftByDroppable ****/
@@ -1756,7 +1761,7 @@ function asDropZone(Element, Options) {
         Element.classList.remove('hovered');
         var Options = currentDropZoneOptions;
         if (currentDropZoneElement === Element) {
-            if (currentTypeTransferred == null) {
+            if (currentTypeTransferred == null) { // see explanation below
                 currentDropZoneExtras = undefined;
                 currentDropZoneElement = undefined;
                 DroppableWasDropped = false;
@@ -2002,15 +2007,15 @@ function styleInject(css, ref) {
   }
 }
 
-var css_248z = ".defaultListView.svelte-1mdxcz3{display:inline-flex;flex-flow:column nowrap;position:relative;justify-content:flex-start;align-items:stretch;margin:0px;padding:0px;list-style:none}.withoutTextSelection.svelte-1mdxcz3{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.defaultListView.svelte-1mdxcz3>.ListItemView{display:block;position:relative;flex:0 0 auto;height:30px;line-height:30px;border:solid 1px transparent;margin:0px 2px 0px 2px;padding:0px 4px 0px 4px;list-style:none}.defaultListView.svelte-1mdxcz3>.ListItemView:hover:not(.dragged){border:solid 1px }.defaultListView.svelte-1mdxcz3>.ListItemView.selected:not(.dragged){background:dodgerblue }.defaultListView.svelte-1mdxcz3>.ListItemView.dragged{opacity:0.3 }.defaultListView.svelte-1mdxcz3>.InsertionRegion{display:block;position:relative;height:5px;background:transparent;border:solid 1px transparent;margin:0px;padding:0px;list-style:none}.defaultListView.svelte-1mdxcz3>.AttachmentRegion{display:block;position:relative;flex:1 1 auto;min-height:20px;background:transparent;border:solid 1px transparent;margin:0px 2px 2px 2px;padding:0px;list-style:none}.defaultListView.svelte-1mdxcz3>.AttachmentRegion.hovered{border:solid 1px }.defaultListView.svelte-1mdxcz3>.Placeholder{display:flex;position:absolute;left:0px;top:0px;right:0px;height:100%;flex-flow:column nowrap;justify-content:center;align-items:center}";
+var css_248z = ".defaultListView.svelte-1r8v79e{display:inline-flex;flex-flow:column nowrap;position:relative;justify-content:flex-start;align-items:stretch;margin:0px;padding:0px;list-style:none}.withoutTextSelection.svelte-1r8v79e{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.defaultListView.svelte-1r8v79e>.ListItemView{display:block;position:relative;flex:0 0 auto;height:30px;line-height:30px;border:solid 1px transparent;margin:0px 2px 0px 2px;padding:0px 4px 0px 4px;list-style:none}.defaultListView.svelte-1r8v79e>.ListItemView:hover:not(.dragged){border:solid 1px }.defaultListView.svelte-1r8v79e>.ListItemView.selected:not(.dragged){background:dodgerblue }.defaultListView.svelte-1r8v79e>.ListItemView.dragged{opacity:0.3 }.defaultListView.svelte-1r8v79e>.InsertionRegion{display:block;position:relative;flex:0 0 auto;height:5px;background:transparent;border:solid 1px transparent;margin:0px;padding:0px;list-style:none}.defaultListView.svelte-1r8v79e>.AttachmentRegion{display:block;position:relative;flex:1 1 auto;min-height:20px;background:transparent;border:solid 1px transparent;margin:0px 2px 2px 2px;padding:0px;list-style:none}.defaultListView.svelte-1r8v79e>.AttachmentRegion.hovered{border:solid 1px }.defaultListView.svelte-1r8v79e>.Placeholder{display:flex;position:absolute;left:0px;top:0px;right:0px;height:100%;flex-flow:column nowrap;justify-content:center;align-items:center}";
 styleInject(css_248z,{"insertAt":"top"});
 
 /* src/svelte-sortable-flat-list-view.svelte generated by Svelte v3.38.3 */
 
 function get_each_context_1(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[64] = list[i];
-	child_ctx[66] = i;
+	child_ctx[65] = list[i];
+	child_ctx[67] = i;
 	return child_ctx;
 }
 
@@ -2020,14 +2025,14 @@ const get_default_slot_changes_1 = dirty => ({
 });
 
 const get_default_slot_context_1 = ctx => ({
-	Item: /*Item*/ ctx[64],
-	Index: /*Index*/ ctx[66]
+	Item: /*Item*/ ctx[65],
+	Index: /*Index*/ ctx[67]
 });
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[64] = list[i];
-	child_ctx[66] = i;
+	child_ctx[65] = list[i];
+	child_ctx[67] = i;
 	return child_ctx;
 }
 
@@ -2037,11 +2042,11 @@ const get_default_slot_changes = dirty => ({
 });
 
 const get_default_slot_context = ctx => ({
-	Item: /*Item*/ ctx[64],
-	Index: /*Index*/ ctx[66]
+	Item: /*Item*/ ctx[65],
+	Index: /*Index*/ ctx[67]
 });
 
-// (654:2) {:else}
+// (663:2) {:else}
 function create_else_block_1(ctx) {
 	let li;
 	let raw_value = (/*Placeholder*/ ctx[6] || "(empty list)") + "";
@@ -2065,7 +2070,7 @@ function create_else_block_1(ctx) {
 	};
 }
 
-// (601:2) {#if (List.length > 0)}
+// (610:2) {#if (List.length > 0)}
 function create_if_block(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2135,14 +2140,14 @@ function create_if_block(ctx) {
 	};
 }
 
-// (643:4) {:else}
+// (652:4) {:else}
 function create_else_block(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
 	let each_1_anchor;
 	let current;
 	let each_value_1 = /*List*/ ctx[0];
-	const get_key = ctx => /*KeyOf*/ ctx[12](/*Item*/ ctx[64]);
+	const get_key = ctx => /*KeyOf*/ ctx[12](/*Item*/ ctx[65]);
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
 		let child_ctx = get_each_context_1(ctx, each_value_1, i);
@@ -2200,7 +2205,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (602:4) {#if sortable || extendable || shrinkable}
+// (611:4) {#if sortable || extendable || shrinkable}
 function create_if_block_1(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -2208,7 +2213,7 @@ function create_if_block_1(ctx) {
 	let if_block_anchor;
 	let current;
 	let each_value = /*List*/ ctx[0];
-	const get_key = ctx => /*KeyOf*/ ctx[12](/*Item*/ ctx[64]);
+	const get_key = ctx => /*KeyOf*/ ctx[12](/*Item*/ ctx[65]);
 
 	for (let i = 0; i < each_value.length; i += 1) {
 		let child_ctx = get_each_context(ctx, each_value, i);
@@ -2287,9 +2292,9 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (650:31)  
+// (659:31)  
 function fallback_block_1(ctx) {
-	let t_value = /*KeyOf*/ ctx[12](/*Item*/ ctx[64]) + "";
+	let t_value = /*KeyOf*/ ctx[12](/*Item*/ ctx[65]) + "";
 	let t;
 
 	return {
@@ -2300,7 +2305,7 @@ function fallback_block_1(ctx) {
 			insert(target, t, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*KeyOf, List*/ 4097 && t_value !== (t_value = /*KeyOf*/ ctx[12](/*Item*/ ctx[64]) + "")) set_data(t, t_value);
+			if (dirty[0] & /*KeyOf, List*/ 4097 && t_value !== (t_value = /*KeyOf*/ ctx[12](/*Item*/ ctx[65]) + "")) set_data(t, t_value);
 		},
 		d(detaching) {
 			if (detaching) detach(t);
@@ -2308,7 +2313,7 @@ function fallback_block_1(ctx) {
 	};
 }
 
-// (644:6) {#each List as Item,Index (KeyOf(Item))}
+// (653:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block_1(key_1, ctx) {
 	let li;
 	let t;
@@ -2320,7 +2325,7 @@ function create_each_block_1(key_1, ctx) {
 	const default_slot_or_fallback = default_slot || fallback_block_1(ctx);
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[50](/*Item*/ ctx[64], ...args);
+		return /*click_handler_1*/ ctx[50](/*Item*/ ctx[65], ...args);
 	}
 
 	return {
@@ -2331,7 +2336,7 @@ function create_each_block_1(key_1, ctx) {
 			if (default_slot_or_fallback) default_slot_or_fallback.c();
 			t = space();
 			toggle_class(li, "ListItemView", true);
-			toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[64]));
+			toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[65]));
 			this.first = li;
 		},
 		m(target, anchor) {
@@ -2363,7 +2368,7 @@ function create_each_block_1(key_1, ctx) {
 			}
 
 			if (dirty[0] & /*isSelected, List*/ 129) {
-				toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[64]));
+				toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[65]));
 			}
 		},
 		i(local) {
@@ -2384,7 +2389,7 @@ function create_each_block_1(key_1, ctx) {
 	};
 }
 
-// (604:8) {#if Item === InsertionPoint}
+// (613:8) {#if Item === InsertionPoint}
 function create_if_block_3(ctx) {
 	let li;
 	let raw_value = (/*InsertionRegion*/ ctx[4] || "") + "";
@@ -2406,7 +2411,7 @@ function create_if_block_3(ctx) {
 				dispose = action_destroyer(asDropZone_action = asDropZone.call(null, li, {
 					Extras: {
 						List: /*List*/ ctx[0],
-						Item: /*Item*/ ctx[64],
+						Item: /*Item*/ ctx[65],
 						ItemList: undefined
 					},
 					TypesToAccept: /*TypesAccepted*/ ctx[11],
@@ -2425,7 +2430,7 @@ function create_if_block_3(ctx) {
 			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List, TypesAccepted*/ 2049) asDropZone_action.update.call(null, {
 				Extras: {
 					List: /*List*/ ctx[0],
-					Item: /*Item*/ ctx[64],
+					Item: /*Item*/ ctx[65],
 					ItemList: undefined
 				},
 				TypesToAccept: /*TypesAccepted*/ ctx[11],
@@ -2447,9 +2452,9 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (630:31)  
+// (639:31)  
 function fallback_block(ctx) {
-	let t_value = /*KeyOf*/ ctx[12](/*Item*/ ctx[64]) + "";
+	let t_value = /*KeyOf*/ ctx[12](/*Item*/ ctx[65]) + "";
 	let t;
 
 	return {
@@ -2460,7 +2465,7 @@ function fallback_block(ctx) {
 			insert(target, t, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*KeyOf, List*/ 4097 && t_value !== (t_value = /*KeyOf*/ ctx[12](/*Item*/ ctx[64]) + "")) set_data(t, t_value);
+			if (dirty[0] & /*KeyOf, List*/ 4097 && t_value !== (t_value = /*KeyOf*/ ctx[12](/*Item*/ ctx[65]) + "")) set_data(t, t_value);
 		},
 		d(detaching) {
 			if (detaching) detach(t);
@@ -2468,7 +2473,7 @@ function fallback_block(ctx) {
 	};
 }
 
-// (603:6) {#each List as Item,Index (KeyOf(Item))}
+// (612:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block(key_1, ctx) {
 	let first;
 	let t;
@@ -2478,13 +2483,13 @@ function create_each_block(key_1, ctx) {
 	let current;
 	let mounted;
 	let dispose;
-	let if_block = /*Item*/ ctx[64] === /*InsertionPoint*/ ctx[14] && create_if_block_3(ctx);
+	let if_block = /*Item*/ ctx[65] === /*InsertionPoint*/ ctx[14] && create_if_block_3(ctx);
 	const default_slot_template = /*#slots*/ ctx[48].default;
 	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[47], get_default_slot_context);
 	const default_slot_or_fallback = default_slot || fallback_block(ctx);
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[49](/*Item*/ ctx[64], ...args);
+		return /*click_handler*/ ctx[49](/*Item*/ ctx[65], ...args);
 	}
 
 	return {
@@ -2497,8 +2502,8 @@ function create_each_block(key_1, ctx) {
 			li = element("li");
 			if (default_slot_or_fallback) default_slot_or_fallback.c();
 			toggle_class(li, "ListItemView", true);
-			toggle_class(li, "dragged", /*draggedItemList*/ ctx[13].indexOf(/*Item*/ ctx[64]) >= 0);
-			toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[64]));
+			toggle_class(li, "dragged", /*draggedItemList*/ ctx[13].indexOf(/*Item*/ ctx[65]) >= 0);
+			toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[65]));
 			this.first = first;
 		},
 		m(target, anchor) {
@@ -2522,7 +2527,7 @@ function create_each_block(key_1, ctx) {
 						Dummy: /*dynamicDummy*/ ctx[18],
 						Extras: {
 							List: /*List*/ ctx[0],
-							Item: /*Item*/ ctx[64]
+							Item: /*Item*/ ctx[65]
 						},
 						DataToOffer: /*DataOffered*/ ctx[10],
 						onDragStart: /*onDragStart*/ ctx[19],
@@ -2532,7 +2537,7 @@ function create_each_block(key_1, ctx) {
 					action_destroyer(asDropZone_action = asDropZone.call(null, li, {
 						Extras: {
 							List: /*List*/ ctx[0],
-							Item: /*Item*/ ctx[64],
+							Item: /*Item*/ ctx[65],
 							ItemList: undefined
 						},
 						TypesToAccept: /*TypesAccepted*/ ctx[11],
@@ -2549,7 +2554,7 @@ function create_each_block(key_1, ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (/*Item*/ ctx[64] === /*InsertionPoint*/ ctx[14]) {
+			if (/*Item*/ ctx[65] === /*InsertionPoint*/ ctx[14]) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -2578,7 +2583,7 @@ function create_each_block(key_1, ctx) {
 				Dummy: /*dynamicDummy*/ ctx[18],
 				Extras: {
 					List: /*List*/ ctx[0],
-					Item: /*Item*/ ctx[64]
+					Item: /*Item*/ ctx[65]
 				},
 				DataToOffer: /*DataOffered*/ ctx[10],
 				onDragStart: /*onDragStart*/ ctx[19],
@@ -2589,7 +2594,7 @@ function create_each_block(key_1, ctx) {
 			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List, TypesAccepted*/ 2049) asDropZone_action.update.call(null, {
 				Extras: {
 					List: /*List*/ ctx[0],
-					Item: /*Item*/ ctx[64],
+					Item: /*Item*/ ctx[65],
 					ItemList: undefined
 				},
 				TypesToAccept: /*TypesAccepted*/ ctx[11],
@@ -2600,11 +2605,11 @@ function create_each_block(key_1, ctx) {
 			});
 
 			if (dirty[0] & /*draggedItemList, List*/ 8193) {
-				toggle_class(li, "dragged", /*draggedItemList*/ ctx[13].indexOf(/*Item*/ ctx[64]) >= 0);
+				toggle_class(li, "dragged", /*draggedItemList*/ ctx[13].indexOf(/*Item*/ ctx[65]) >= 0);
 			}
 
 			if (dirty[0] & /*isSelected, List*/ 129) {
-				toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[64]));
+				toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[65]));
 			}
 		},
 		i(local) {
@@ -2628,7 +2633,7 @@ function create_each_block(key_1, ctx) {
 	};
 }
 
-// (634:6) {#if sortable || extendable}
+// (643:6) {#if sortable || extendable}
 function create_if_block_2(ctx) {
 	let li;
 	let raw_value = (/*AttachmentRegion*/ ctx[5] || "") + "";
@@ -2718,7 +2723,7 @@ function create_fragment(ctx) {
 			set_attributes(ul, ul_data);
 			toggle_class(ul, "defaultListView", /*ClassNames*/ ctx[2] == null);
 			toggle_class(ul, "withoutTextSelection", true);
-			toggle_class(ul, "svelte-1mdxcz3", true);
+			toggle_class(ul, "svelte-1r8v79e", true);
 		},
 		m(target, anchor) {
 			insert(target, ul, anchor);
@@ -2760,7 +2765,7 @@ function create_fragment(ctx) {
 
 			toggle_class(ul, "defaultListView", /*ClassNames*/ ctx[2] == null);
 			toggle_class(ul, "withoutTextSelection", true);
-			toggle_class(ul, "svelte-1mdxcz3", true);
+			toggle_class(ul, "svelte-1r8v79e", true);
 		},
 		i(local) {
 			if (current) return;
@@ -3041,6 +3046,7 @@ function instance($$self, $$props, $$invalidate) {
 	let isDragging = false;
 	let draggedItemList = [];
 	let InsertionPoint = undefined;
+	let LeavingRetarder; // for a really weird workaround
 	let { sortable = false } = $$props; // does this list view support "sorting"?
 	let { onlyFrom } = $$props;
 	let { neverFrom } = $$props;
@@ -3180,6 +3186,13 @@ function instance($$self, $$props, $$invalidate) {
 
 	/**** onDroppableEnter ****/
 	function onDroppableEnter(x, y, Operation, offeredTypeList, DroppableExtras, DropZoneExtras) {
+		if (LeavingRetarder != null) {
+			// abort any pending "onDroppableLeave"
+			clearTimeout(LeavingRetarder);
+
+			LeavingRetarder = undefined;
+		}
+
 		let draggedItem = DroppableExtras && DroppableExtras.Item;
 
 		if (draggedItemList.indexOf(draggedItem) >= 0 && // not a foreign item
@@ -3230,9 +3243,18 @@ function instance($$self, $$props, $$invalidate) {
 
 	/**** onDroppableLeave ****/
 	function onDroppableLeave(DroppableExtras, DropZoneExtras) {
-		$$invalidate(14, InsertionPoint = undefined);
-		triggerRedraw();
-	}
+		LeavingRetarder = setTimeout(
+			() => {
+				LeavingRetarder = undefined; //    triggerRedraw()                    // sequences of "DroppableLeave" and
+				// platforms, "dragleave" is sent to
+
+				// aggressively. "svelte-dnd-actions"
+				$$invalidate(14, InsertionPoint = undefined); // try to handle this, causing rapid
+			},
+			10
+		); //    triggerRedraw()                    // sequences of "DroppableLeave" and
+		// "DroppableEnter". This is to swallow
+	} // unnecessary "DroppableLeave" calls
 
 	/**** onDrop ****/
 	function onDrop(x, y, Operation, DataOffered, DroppableExtras, DropZoneExtras) {
@@ -3501,7 +3523,7 @@ function instance($$self, $$props, $$invalidate) {
 
 				// @ts-ignore "TypesAccepted" is definitely not undefined
 				if (sortable) {
-					$$invalidate(11, TypesAccepted[privateKey] = "copy", TypesAccepted);
+					$$invalidate(11, TypesAccepted[privateKey] = "copy move", TypesAccepted);
 				}
 			} // 'copy' because of the better visual feedback from native drag-and-drop
 		}

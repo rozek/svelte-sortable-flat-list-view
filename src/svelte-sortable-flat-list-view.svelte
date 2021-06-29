@@ -55,10 +55,9 @@
     throwError,
     ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList,
     ValueIsOneOf,
-    allowedBoolean, allowedString, allowNonEmptyString, allowedNonEmptyString,
-    allowFunction, allowPlainObject, allowedPlainObject,
-    allowListSatisfying, allowedListSatisfying,
-    ObjectIsNotEmpty, quoted
+    allowedBoolean, allowOrdinal, allowedString, allowNonEmptyString,
+    allowFunction, allowPlainObject, allowListSatisfying, allowedListSatisfying,
+    ValuesDiffer, quoted
   } from 'javascript-interface-library'
   import Device from 'svelte-device-info'
 
@@ -78,6 +77,7 @@
 
   export let List:{}[]                            // the (flat) list to be shown
   export let Key:string|Function|undefined   // the value to be used as list key
+  export let SelectionLimit:number|undefined    // max. number of selected items
   export let Instruction:string|undefined        // is shown in insertion points
   export let Placeholder:string|undefined         // is shown when list is empty
 
@@ -97,13 +97,10 @@
     )
   }
 
-  $: Instruction = (
-    allowedNonEmptyString('"Instruction" attribute',Instruction) || 'drop here'
-  )
+  $: allowOrdinal('selection limit',SelectionLimit)
 
-  $: Placeholder = (
-    allowedNonEmptyString('"Placeholder" attribute',Placeholder) || '(empty list)'
-  )
+  $: allowNonEmptyString('"Instruction" attribute',Instruction)
+  $: allowNonEmptyString('"Placeholder" attribute',Placeholder)
 
 /**** Key Validation and quick Lookup ****/
 
@@ -143,12 +140,15 @@
 /**** select ****/
 
   export function select (...ItemList:{}[]):void {
+    let curSelectionCount = SelectionCount()
     ItemList.forEach((Item) => {
       let Key = KeyOf(Item)
       if (Key in ItemSet) {
         if (! SelectionSet.has(Item)) {
-          SelectionSet.set(Item,true)
-          dispatch('selected-item',Item)
+          if ((SelectionLimit == null) || (curSelectionCount < SelectionLimit)) {
+            SelectionSet.set(Item,true); curSelectionCount++
+            dispatch('selected-item',Item)
+          }
         }
       } else {
         throwError(
@@ -166,18 +166,23 @@
 /**** selectOnly ****/
 
   export function selectOnly (...ItemList:{}[]):void {
-    deselectAll()
-    select(...ItemList)
-//  triggerRedraw()                                       // already done before
+    if (ValuesDiffer(selectedItems(),ItemList)) {              // not perfect...
+      deselectAll()
+      select(...ItemList)
+//    triggerRedraw()                                     // already done before
+    }
   }
 
 /**** selectAll ****/
 
   export function selectAll ():void {
+    let curSelectionCount = SelectionCount()
     List.forEach((Item) => {
       if (! SelectionSet.has(Item)) {
-        SelectionSet.set(Item,true)
-        dispatch('selected-item',Item)
+        if ((SelectionLimit == null) || (curSelectionCount < SelectionLimit)) {
+          SelectionSet.set(Item,true); curSelectionCount++
+          dispatch('selected-item',Item)
+        }
       }
     })
 
@@ -208,10 +213,13 @@
     let firstIndex = Math.min(IndexA,IndexB)
     let lastIndex  = Math.max(IndexA,IndexB)
 
+    let curSelectionCount = SelectionCount()
     for (let i = firstIndex; i <= lastIndex; i++) {
       if (! SelectionSet.has(List[i])) {
-        SelectionSet.set(List[i],true)
-        dispatch('selected-item',List[i])
+        if ((SelectionLimit == null) || (curSelectionCount < SelectionLimit)) {
+          SelectionSet.set(List[i],true)
+          dispatch('selected-item',List[i])
+        }
       }
     }
 
@@ -277,26 +285,39 @@
   export function toggleSelectionOf (...ItemList:{}[]):void {
     SelectionRangeBoundaryA = undefined
 
-    ItemList.forEach((Item) => {
+    let ItemsToBeSelected:{}[] = []
+    ItemList.forEach((Item) => {  // deselect first (because of potential limit)
       let Key = KeyOf(Item)
       if (Key in ItemSet) {
         if (SelectionSet.has(Item)) {
           SelectionSet.delete(Item)
           dispatch('deselected-item',Item)
         } else {
-          SelectionSet.set(Item,true)
-          dispatch('selected-item',Item)
-
-          if (ItemList.length === 1) {
-            SelectionRangeBoundaryA = Item
-            SelectionRangeBoundaryB = undefined
-          }
+          ItemsToBeSelected.push(Item)
         }
       } else {
         throwError(
           'InvalidArgument: one or multiple of the given items to select ' +
           'or deselect are not part of the given "List"'
         )
+      }
+    })
+
+    let curSelectionCount = SelectionCount()
+    if (SelectionLimit != null) {
+      let maxToBeSelected = SelectionLimit-curSelectionCount
+      if (maxToBeSelected < ItemsToBeSelected.length) {
+        ItemsToBeSelected.length = maxToBeSelected
+      }
+    }
+
+    ItemsToBeSelected.forEach((Item) => { // now select as many items as allowed
+      SelectionSet.set(Item,true)
+      dispatch('selected-item',Item)
+
+      if (ItemList.length === 1) {
+        SelectionRangeBoundaryA = Item
+        SelectionRangeBoundaryB = undefined
       }
     })
 
@@ -309,6 +330,24 @@
     let Result:{}[] = List.filter((Item) => SelectionSet.has(Item))
     return Result
   }
+
+/**** SelectionCount ****/
+
+  export function SelectionCount ():number {
+    return List.reduce(
+      (Count:number,Item) => Count + (SelectionSet.has(Item) ? 1 : 0),0
+    )
+  }
+
+  $: if ((SelectionLimit != null) && (SelectionCount() > SelectionLimit)) {
+    let Count = 0
+    List.forEach((Item) => {
+      if (SelectionSet.has(Item)) {
+        Count++
+        if (Count > (SelectionLimit as number)) { deselect(Item) }
+      }
+    })
+  } // decreasing the selection limit with an active selection is very bad style
 
 /**** isSelected ****/
 
@@ -721,7 +760,7 @@
               Extras:{ List, Item },
               onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave
             }}
-          >{Instruction}</li>
+          >{Instruction || 'drop here'}</li>
         {/if}
 
         <li
@@ -757,7 +796,7 @@
       }}>{Instruction}</li>
     {/if}
   {:else}
-    <li class="Placeholder">{Placeholder}</li>
+    <li class="Placeholder">{Placeholder || '(empty list)'}</li>
   {/if}
 </ul>
 

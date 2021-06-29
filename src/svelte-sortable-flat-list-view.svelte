@@ -537,7 +537,9 @@
           console.error(
             'RuntimeError: callback "onDroppedOutside" failed', Signal
           )
-        }
+        }           // no event to be dispatched (there is already the callback)
+
+        triggerRedraw()                           // just to be on the safe side
       } else {
         let DroppableSet = SetOfItemsIn(DroppableExtras.ItemList)
         for (let i = List.length-1; i >= 0; i--) {
@@ -546,7 +548,6 @@
         }
 
         dispatch('removed-items',DroppableExtras.ItemList.slice())
-
         triggerRedraw()
       }
     }
@@ -597,7 +598,7 @@
         }
       }
     InsertionPoint = (mayBeInsertedHere ? DropZoneExtras.Item : undefined)
-    return mayBeInsertedHere
+    return mayBeInsertedHere && (Operation !== 'link')
   }
 
 /**** onDroppableMove ****/
@@ -616,55 +617,74 @@
     x:number,y:number, Operation:DropOperation,
     DataOffered:any, DroppableExtras:any, DropZoneExtras:any
   ):string {
+    InsertionPoint = undefined
+
     let draggedItem = DroppableExtras && DroppableExtras.Item
     if (draggedItem == (DropZoneExtras && DropZoneExtras.Item)) {
-      InsertionPoint = undefined
       return 'none'
-    }
+    }                       // oops, draggable drop zone was dropped onto itself
 
     if (List === (DroppableExtras && DroppableExtras.List)) {    // own elements
       if (sortable) {
-        if (onSort != null) {
+        if (onSort == null) {
+          let ItemsToBeShifted = DroppableExtras.ItemList
+
+          let DroppableSet = SetOfItemsIn(ItemsToBeShifted)
+          for (let i = List.length-1; i >= 0; i--) {
+            let Key = KeyOf(List[i])
+            if (Key in DroppableSet) { List.splice(i,1) }
+          }
+
+          let InsertionIndex = List.indexOf(DropZoneExtras && DropZoneExtras.Item)
+          if (InsertionIndex < 0) { InsertionIndex = List.length } // for append
+
+// @ts-ignore argument list of "apply" is known to be correct
+          List.splice.apply(List, [InsertionIndex,0].concat(ItemsToBeShifted))
+
+          dispatch('shifted-items',[ItemsToBeShifted,InsertionIndex])
+          triggerRedraw()
+        } else {
           try {
             onSort(DropZoneExtras.Item, DroppableExtras.ItemList)
           } catch (Signal) {
             console.error('RuntimeError: callback "onSort" failed', Signal)
-          }
-        }
-      } else {
+          }         // no event to be dispatched (there is already the callback)
 
+          triggerRedraw()                         // just to be on the safe side
+        }
+        return Operation   // should be 'move', but 'copy' gives better feedback
+      } else {
+        return 'none'
       }
     } else {                         // foreign elements want to be dropped here
+      if (onDropFromOutside == null) {
+        let ItemsToBeInserted = (DroppableExtras && DroppableExtras.ItemList)
+        if (! ValueIsList(ItemsToBeInserted)) { return 'none' }
+
+        let InsertionIndex = List.indexOf(DropZoneExtras && DropZoneExtras.Item)
+        if (InsertionIndex < 0) { InsertionIndex = List.length } // for "append"
+
+// @ts-ignore argument list of "apply" is known to be correct
+        List.splice.apply(List, [InsertionIndex,0].concat(ItemsToBeInserted))
+
+        dispatch('inserted-items',[ItemsToBeInserted,InsertionIndex])
+        triggerRedraw()
+
+        return Operation
+      } else {
+        let actualOperation:string = 'none'
+          try {
+            actualOperation = onDropFromOutside(
+              x,y, Operation,DataOffered, DroppableExtras,DropZoneExtras
+            )
+          } catch (Signal) {
+            console.error('RuntimeError: callback "onSort" failed', Signal)
+          }         // no event to be dispatched (there is already the callback)
+
+          triggerRedraw()                         // just to be on the safe side
+        return actualOperation || 'none'
+      }
     }
-  }
-
-/**** onAppendageDroppableEnter ****/
-
-  function onAppendageDroppableEnter (
-    x:number,y:number, Operation:DropOperation,
-    offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:any
-  ):boolean {
-  }
-
-/**** onAppendageDroppableMove ****/
-
-  function onAppendageDroppableMove (
-    x:number,y:number, Operation:DropOperation,
-    offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:any
-  ):boolean {
-  }
-
-/**** onAppendageDroppableLeave ****/
-
-  function onAppendageDroppableLeave (DroppableExtras:any, DropZoneExtras:any):void {
-  }
-
-/**** onAppendageDrop ****/
-
-  function onAppendageDrop (
-    x:number,y:number, Operation:DropOperation,
-    DataOffered:any, DroppableExtras:any, DropZoneExtras:any
-  ):string {
   }
 
 /**** SetOfItemsIn ****/
@@ -732,11 +752,8 @@
 
     {#if sortable || extendable}
       <li class="AttachmentPoint" use:asDropZone={{
-        Extras:{ List, Item:undefined },
-        onDroppableEnter:onAppendageDroppableEnter,
-        onDroppableMove:onAppendageDroppableMove,
-        onDroppableLeave:onAppendageDroppableLeave,
-        onDrop:onAppendageDrop
+        Extras:{ List, Item:undefined, ItemList:undefined },
+        onDroppableEnter, onDroppableMove, onDrop
       }}>{Instruction}</li>
     {/if}
   {:else}

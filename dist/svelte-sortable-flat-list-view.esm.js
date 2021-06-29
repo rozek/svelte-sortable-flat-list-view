@@ -636,6 +636,14 @@ function throwError$1(Message) {
 function ValueIsBoolean(Value) {
     return (typeof Value === 'boolean') || (Value instanceof Boolean);
 }
+/**** ValueIsOrdinal ****/
+function ValueIsOrdinal(Value) {
+    if ((typeof Value !== 'number') && !(Value instanceof Number)) {
+        return false;
+    }
+    Value = Value.valueOf();
+    return isFinite(Value) && (Math.round(Value) === Value) && (Value >= 0);
+}
 /**** ValueIsString ****/
 function ValueIsString$1(Value) {
     return (typeof Value === 'string') || (Value instanceof String);
@@ -784,10 +792,12 @@ function FunctionWithName$1(originalFunction, desiredName) {
 } // also works with older JavaScript engines
 /**** allow/expect[ed]Boolean ****/
 var allowBoolean = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsBoolean, acceptNil$1, 'boolean value'), allowedBoolean = allowBoolean;
+/**** allow/expect[ed]Ordinal ****/
+var allowOrdinal = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsOrdinal, acceptNil$1, 'ordinal number');
 /**** allow/expect[ed]String ****/
 var allowString$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsString$1, acceptNil$1, 'literal string'), allowedString$1 = allowString$1;
 /**** allow/expect[ed]NonEmptyString ****/
-var allowNonEmptyString$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsNonEmptyString$1, acceptNil$1, 'non-empty literal string'), allowedNonEmptyString$1 = allowNonEmptyString$1;
+var allowNonEmptyString$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsNonEmptyString$1, acceptNil$1, 'non-empty literal string');
 /**** allow/expect[ed]Function ****/
 var allowFunction$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsFunction$1, acceptNil$1, 'JavaScript function');
 /**** allow/expect[ed]PlainObject ****/
@@ -873,6 +883,72 @@ function quotable$1(Text, Quote) {
 function quoted$1(Text, Quote) {
     if (Quote === void 0) { Quote = '"'; }
     return Quote + quotable$1(Text, Quote) + Quote;
+}
+/**** ValuesDiffer ****/
+function ValuesDiffer(thisValue, otherValue) {
+    if (thisValue === otherValue) {
+        return false;
+    }
+    var thisType = typeof thisValue;
+    if (thisType !== typeof otherValue) {
+        return true;
+    }
+    /**** ArraysDiffer ****/
+    function ArraysDiffer(thisArray, otherArray) {
+        if (!Array.isArray(otherArray)) {
+            return true;
+        }
+        if (thisArray.length !== otherArray.length) {
+            return true;
+        }
+        for (var i = 0, l = thisArray.length; i < l; i++) {
+            if (ValuesDiffer(thisArray[i], otherArray[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**** ObjectsDiffer ****/
+    function ObjectsDiffer(thisObject, otherObject) {
+        if (Object.getPrototypeOf(thisObject) !== Object.getPrototypeOf(otherObject)) {
+            return true;
+        }
+        for (var key in thisObject) {
+            if (!(key in otherObject)) {
+                return true;
+            }
+        }
+        for (var key in otherObject) {
+            if (!(key in thisObject)) {
+                return true;
+            }
+            if (ValuesDiffer(thisObject[key], otherObject[key])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    switch (thisType) {
+        case 'undefined':
+        case 'boolean':
+        case 'string':
+        case 'function': return true; // most primitives are compared using "==="
+        case 'number': return ((isNaN(thisValue) !== isNaN(otherValue)) ||
+            (Math.abs(thisValue - otherValue) > Number.EPSILON));
+        case 'object':
+            if (thisValue == null) {
+                return true;
+            } // since "other_value" != null!
+            if (otherValue == null) {
+                return true;
+            } // since "this_value" != null!
+            if (Array.isArray(thisValue)) {
+                return ArraysDiffer(thisValue, otherValue);
+            }
+            return ObjectsDiffer(thisValue, otherValue);
+        default: return true; // unsupported property type
+    }
+    return true;
 }
 
 var e$1,n=!1;e$1=navigator.userAgent||navigator.vendor||window.opera,(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(e$1)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(e$1.substr(0,4)))&&(n=!0);var i=!1;if(n){var t$1=window.innerWidth,a=window.innerHeight,o=Math.min(t$1,a),r$1=Math.max(t$1,a);i=o<=480&&r$1<=896;}var c=window.matchMedia||window.webkitMatchmedia||window.mozMatchmedia||window.oMatchmedia;function d(e){return null!=c&&c(e).matches}function s(){return "interactive"===document.readyState||"complete"===document.readyState}var l,m=!d("(pointer:fine)")&&!d("(pointer:coarse)")&&!d("-moz-touch-enabled")&&("ontouchstart"in Window||(navigator.maxTouchPoints||0)>0||/touch|android|iphone|ipod|ipad/i.test(navigator.userAgent));function u(){var e="fine";switch(!0){case d("(pointer:none)"):e="none";break;case d("(pointer:coarse)"):case d("-moz-touch-enabled"):case m:e="coarse";}if(l=e,s())switch(document.body.classList.remove("noPointer","finePointer","coarsePointer"),e){case"none":document.body.classList.add("noPointer");break;case"fine":document.body.classList.add("finePointer");break;case"coarse":document.body.classList.add("coarsePointer");}}u(),s()||window.addEventListener("DOMContentLoaded",u);var p=[];function h(e,n){if("function"!=typeof e)throw new Error("handler function expected");for(var i=0,t=p.length;i<t;i++)if(p[i].Handler===e)return void(p[i].onceOnly=n);p.push({Handler:e,onceOnly:n}),1===p.length&&(v=setInterval((function(){var e=l;u(),l!==e&&function(){for(var e=0,n=p.length;e<n;e++){var i=p[e],t=i.Handler,a=i.onceOnly;try{t(l);}catch(e){console.warn("PointingAccuracy observation function failed with",e);}a&&g(t);}}();}),500));}function g(e){for(var n=0,i=p.length;n<i;n++)if(p[n].Handler===e){p.splice(n,1);break}0===p.length&&(clearInterval(v),v=void 0);}var v=void 0;function w(e,n){return "function"==typeof e.item?e.item(n):e[n]}function f(e,n){for(var i=0,t=e.length;i<t;i++)if(n.test(w(e,i)))return !0;return !1}if(m){for(var b=document.styleSheets,y=0,k=b.length;y<k;y++)for(var x=b[y].cssRules||b[y].rules,P=0,z=x.length;P<z;P++){var A=x[P];if(A.type===CSSRule.MEDIA_RULE&&f(A.media,/handheld/i)){var M=A.media;M.mediaText=M.mediaText.replace("handheld","screen");}}var L=document.getElementsByTagName("link");for(y=0,k=L.length;y<k;y++){var T=L[y];/handheld/i.test(T.media)&&(T.media=T.media.replace("handheld","screen"));}}var j={get isMobile(){return n},get isPhone(){return i},get isTablet(){return n&&!i},get isLegacyTouchDevice(){return m},get PointingAccuracy(){return l},onPointingAccuracyChanged:function(e){h(e,!1);},oncePointingAccuracyChanged:function(e){h(e,!0);},offPointingAccuracyChanged:function(e){g(e);},get observesPointingAccuracy(){return null!=v}};
@@ -1931,8 +2007,8 @@ styleInject(css_248z,{"insertAt":"top"});
 
 function get_each_context(ctx, list, i) {
 	const child_ctx = ctx.slice();
-	child_ctx[61] = list[i];
-	child_ctx[63] = i;
+	child_ctx[63] = list[i];
+	child_ctx[65] = i;
 	return child_ctx;
 }
 
@@ -1942,8 +2018,8 @@ const get_default_slot_changes_1 = dirty => ({
 });
 
 const get_default_slot_context_1 = ctx => ({
-	Item: /*Item*/ ctx[61],
-	Index: /*Index*/ ctx[63]
+	Item: /*Item*/ ctx[63],
+	Index: /*Index*/ ctx[65]
 });
 
 const get_default_slot_changes = dirty => ({
@@ -1952,19 +2028,20 @@ const get_default_slot_changes = dirty => ({
 });
 
 const get_default_slot_context = ctx => ({
-	Item: /*Item*/ ctx[61],
-	Index: /*Index*/ ctx[63]
+	Item: /*Item*/ ctx[63],
+	Index: /*Index*/ ctx[65]
 });
 
-// (592:2) {:else}
+// (633:2) {:else}
 function create_else_block_1(ctx) {
 	let li;
+	let t_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
 	let t;
 
 	return {
 		c() {
 			li = element("li");
-			t = text(/*Placeholder*/ ctx[2]);
+			t = text(t_value);
 			attr(li, "class", "Placeholder svelte-xq0rks");
 		},
 		m(target, anchor) {
@@ -1972,7 +2049,7 @@ function create_else_block_1(ctx) {
 			append(li, t);
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*Placeholder*/ 4) set_data(t, /*Placeholder*/ ctx[2]);
+			if (dirty[0] & /*Placeholder*/ 32 && t_value !== (t_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "")) set_data(t, t_value);
 		},
 		i: noop,
 		o: noop,
@@ -1982,7 +2059,7 @@ function create_else_block_1(ctx) {
 	};
 }
 
-// (547:2) {#if (List.length > 0)}
+// (588:2) {#if (List.length > 0)}
 function create_if_block(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -1990,7 +2067,7 @@ function create_if_block(ctx) {
 	let if_block_anchor;
 	let current;
 	let each_value = /*List*/ ctx[0];
-	const get_key = ctx => /*KeyOf*/ ctx[9](/*Item*/ ctx[61]);
+	const get_key = ctx => /*KeyOf*/ ctx[9](/*Item*/ ctx[63]);
 
 	for (let i = 0; i < each_value.length; i += 1) {
 		let child_ctx = get_each_context(ctx, each_value, i);
@@ -1998,7 +2075,7 @@ function create_if_block(ctx) {
 		each_1_lookup.set(key, each_blocks[i] = create_each_block(key, child_ctx));
 	}
 
-	let if_block = (/*sortable*/ ctx[3] || /*extendable*/ ctx[12]) && create_if_block_1(ctx);
+	let if_block = (/*sortable*/ ctx[1] || /*extendable*/ ctx[12]) && create_if_block_1(ctx);
 
 	return {
 		c() {
@@ -2021,14 +2098,14 @@ function create_if_block(ctx) {
 			current = true;
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*List, neverFrom, onlyFrom, dynamicDummy, onDragStart, onDragEnd, onDropped, onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave, ClassNames, style, isSelected, handleClick, KeyOf, Instruction, InsertionPoint, sortable, extendable, shrinkable*/ 4194299 | dirty[1] & /*$$scope*/ 4096) {
+			if (dirty[0] & /*List, neverFrom, onlyFrom, dynamicDummy, onDragStart, onDragEnd, onDropped, onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave, ClassNames, style, isSelected, handleClick, KeyOf, Instruction, InsertionPoint, sortable, extendable, shrinkable*/ 4194271 | dirty[1] & /*$$scope*/ 16384) {
 				each_value = /*List*/ ctx[0];
 				group_outros();
 				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value, each_1_lookup, t.parentNode, outro_and_destroy_block, create_each_block, t, get_each_context);
 				check_outros();
 			}
 
-			if (/*sortable*/ ctx[3] || /*extendable*/ ctx[12]) {
+			if (/*sortable*/ ctx[1] || /*extendable*/ ctx[12]) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -2069,18 +2146,18 @@ function create_if_block(ctx) {
 	};
 }
 
-// (575:6) {:else}
+// (616:6) {:else}
 function create_else_block(ctx) {
 	let li;
 	let current;
 	let mounted;
 	let dispose;
-	const default_slot_template = /*#slots*/ ctx[44].default;
-	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[43], get_default_slot_context_1);
+	const default_slot_template = /*#slots*/ ctx[46].default;
+	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[45], get_default_slot_context_1);
 	const default_slot_or_fallback = default_slot || fallback_block_1(ctx);
 
 	function click_handler_1(...args) {
-		return /*click_handler_1*/ ctx[46](/*Item*/ ctx[61], ...args);
+		return /*click_handler_1*/ ctx[48](/*Item*/ ctx[63], ...args);
 	}
 
 	return {
@@ -2088,8 +2165,8 @@ function create_else_block(ctx) {
 			li = element("li");
 			if (default_slot_or_fallback) default_slot_or_fallback.c();
 			attr(li, "class", "svelte-xq0rks");
-			toggle_class(li, "selectableItem", /*ClassNames*/ ctx[4] == null && /*style*/ ctx[5] == null);
-			toggle_class(li, "selected", /*isSelected*/ ctx[6](/*Item*/ ctx[61]));
+			toggle_class(li, "selectableItem", /*ClassNames*/ ctx[2] == null && /*style*/ ctx[3] == null);
+			toggle_class(li, "selected", /*isSelected*/ ctx[6](/*Item*/ ctx[63]));
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -2109,8 +2186,8 @@ function create_else_block(ctx) {
 			ctx = new_ctx;
 
 			if (default_slot) {
-				if (default_slot.p && (!current || dirty[0] & /*List*/ 1 | dirty[1] & /*$$scope*/ 4096)) {
-					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[43], !current ? [-1, -1, -1] : dirty, get_default_slot_changes_1, get_default_slot_context_1);
+				if (default_slot.p && (!current || dirty[0] & /*List*/ 1 | dirty[1] & /*$$scope*/ 16384)) {
+					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[45], !current ? [-1, -1, -1] : dirty, get_default_slot_changes_1, get_default_slot_context_1);
 				}
 			} else {
 				if (default_slot_or_fallback && default_slot_or_fallback.p && (!current || dirty[0] & /*KeyOf, List*/ 513)) {
@@ -2118,12 +2195,12 @@ function create_else_block(ctx) {
 				}
 			}
 
-			if (dirty[0] & /*ClassNames, style*/ 48) {
-				toggle_class(li, "selectableItem", /*ClassNames*/ ctx[4] == null && /*style*/ ctx[5] == null);
+			if (dirty[0] & /*ClassNames, style*/ 12) {
+				toggle_class(li, "selectableItem", /*ClassNames*/ ctx[2] == null && /*style*/ ctx[3] == null);
 			}
 
 			if (dirty[0] & /*isSelected, List*/ 65) {
-				toggle_class(li, "selected", /*isSelected*/ ctx[6](/*Item*/ ctx[61]));
+				toggle_class(li, "selected", /*isSelected*/ ctx[6](/*Item*/ ctx[63]));
 			}
 		},
 		i(local) {
@@ -2144,7 +2221,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (549:6) {#if sortable || extendable || shrinkable}
+// (590:6) {#if sortable || extendable || shrinkable}
 function create_if_block_2(ctx) {
 	let t;
 	let li;
@@ -2153,13 +2230,13 @@ function create_if_block_2(ctx) {
 	let current;
 	let mounted;
 	let dispose;
-	let if_block = /*Item*/ ctx[61] === /*InsertionPoint*/ ctx[10] && create_if_block_3(ctx);
-	const default_slot_template = /*#slots*/ ctx[44].default;
-	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[43], get_default_slot_context);
+	let if_block = /*Item*/ ctx[63] === /*InsertionPoint*/ ctx[10] && create_if_block_3(ctx);
+	const default_slot_template = /*#slots*/ ctx[46].default;
+	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[45], get_default_slot_context);
 	const default_slot_or_fallback = default_slot || fallback_block(ctx);
 
 	function click_handler(...args) {
-		return /*click_handler*/ ctx[45](/*Item*/ ctx[61], ...args);
+		return /*click_handler*/ ctx[47](/*Item*/ ctx[63], ...args);
 	}
 
 	return {
@@ -2169,8 +2246,8 @@ function create_if_block_2(ctx) {
 			li = element("li");
 			if (default_slot_or_fallback) default_slot_or_fallback.c();
 			attr(li, "class", "svelte-xq0rks");
-			toggle_class(li, "selectableItem", /*ClassNames*/ ctx[4] == null && /*style*/ ctx[5] == null);
-			toggle_class(li, "selected", /*isSelected*/ ctx[6](/*Item*/ ctx[61]));
+			toggle_class(li, "selectableItem", /*ClassNames*/ ctx[2] == null && /*style*/ ctx[3] == null);
+			toggle_class(li, "selected", /*isSelected*/ ctx[6](/*Item*/ ctx[63]));
 		},
 		m(target, anchor) {
 			if (if_block) if_block.m(target, anchor);
@@ -2189,7 +2266,7 @@ function create_if_block_2(ctx) {
 					action_destroyer(asDroppable_action = asDroppable.call(null, li, {
 						Extras: {
 							List: /*List*/ ctx[0],
-							Item: /*Item*/ ctx[61]
+							Item: /*Item*/ ctx[63]
 						},
 						neverFrom: /*neverFrom*/ ctx[8],
 						onlyFrom: /*onlyFrom*/ ctx[7],
@@ -2201,7 +2278,7 @@ function create_if_block_2(ctx) {
 					action_destroyer(asDropZone_action = asDropZone.call(null, li, {
 						Extras: {
 							List: /*List*/ ctx[0],
-							Item: /*Item*/ ctx[61],
+							Item: /*Item*/ ctx[63],
 							ItemList: undefined
 						},
 						onDrop: /*onDrop*/ ctx[21],
@@ -2217,7 +2294,7 @@ function create_if_block_2(ctx) {
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
 
-			if (/*Item*/ ctx[61] === /*InsertionPoint*/ ctx[10]) {
+			if (/*Item*/ ctx[63] === /*InsertionPoint*/ ctx[10]) {
 				if (if_block) {
 					if_block.p(ctx, dirty);
 				} else {
@@ -2231,8 +2308,8 @@ function create_if_block_2(ctx) {
 			}
 
 			if (default_slot) {
-				if (default_slot.p && (!current || dirty[0] & /*List*/ 1 | dirty[1] & /*$$scope*/ 4096)) {
-					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[43], !current ? [-1, -1, -1] : dirty, get_default_slot_changes, get_default_slot_context);
+				if (default_slot.p && (!current || dirty[0] & /*List*/ 1 | dirty[1] & /*$$scope*/ 16384)) {
+					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[45], !current ? [-1, -1, -1] : dirty, get_default_slot_changes, get_default_slot_context);
 				}
 			} else {
 				if (default_slot_or_fallback && default_slot_or_fallback.p && (!current || dirty[0] & /*KeyOf, List*/ 513)) {
@@ -2243,7 +2320,7 @@ function create_if_block_2(ctx) {
 			if (asDroppable_action && is_function(asDroppable_action.update) && dirty[0] & /*List, neverFrom, onlyFrom*/ 385) asDroppable_action.update.call(null, {
 				Extras: {
 					List: /*List*/ ctx[0],
-					Item: /*Item*/ ctx[61]
+					Item: /*Item*/ ctx[63]
 				},
 				neverFrom: /*neverFrom*/ ctx[8],
 				onlyFrom: /*onlyFrom*/ ctx[7],
@@ -2256,7 +2333,7 @@ function create_if_block_2(ctx) {
 			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List*/ 1) asDropZone_action.update.call(null, {
 				Extras: {
 					List: /*List*/ ctx[0],
-					Item: /*Item*/ ctx[61],
+					Item: /*Item*/ ctx[63],
 					ItemList: undefined
 				},
 				onDrop: /*onDrop*/ ctx[21],
@@ -2265,12 +2342,12 @@ function create_if_block_2(ctx) {
 				onDroppableLeave: /*onDroppableLeave*/ ctx[20]
 			});
 
-			if (dirty[0] & /*ClassNames, style*/ 48) {
-				toggle_class(li, "selectableItem", /*ClassNames*/ ctx[4] == null && /*style*/ ctx[5] == null);
+			if (dirty[0] & /*ClassNames, style*/ 12) {
+				toggle_class(li, "selectableItem", /*ClassNames*/ ctx[2] == null && /*style*/ ctx[3] == null);
 			}
 
 			if (dirty[0] & /*isSelected, List*/ 65) {
-				toggle_class(li, "selected", /*isSelected*/ ctx[6](/*Item*/ ctx[61]));
+				toggle_class(li, "selected", /*isSelected*/ ctx[6](/*Item*/ ctx[63]));
 			}
 		},
 		i(local) {
@@ -2293,9 +2370,9 @@ function create_if_block_2(ctx) {
 	};
 }
 
-// (581:31)  
+// (622:31)  
 function fallback_block_1(ctx) {
-	let t_value = /*KeyOf*/ ctx[9](/*Item*/ ctx[61]) + "";
+	let t_value = /*KeyOf*/ ctx[9](/*Item*/ ctx[63]) + "";
 	let t;
 
 	return {
@@ -2306,7 +2383,7 @@ function fallback_block_1(ctx) {
 			insert(target, t, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*KeyOf, List*/ 513 && t_value !== (t_value = /*KeyOf*/ ctx[9](/*Item*/ ctx[61]) + "")) set_data(t, t_value);
+			if (dirty[0] & /*KeyOf, List*/ 513 && t_value !== (t_value = /*KeyOf*/ ctx[9](/*Item*/ ctx[63]) + "")) set_data(t, t_value);
 		},
 		d(detaching) {
 			if (detaching) detach(t);
@@ -2314,9 +2391,10 @@ function fallback_block_1(ctx) {
 	};
 }
 
-// (550:8) {#if Item === InsertionPoint}
+// (591:8) {#if Item === InsertionPoint}
 function create_if_block_3(ctx) {
 	let li;
+	let t_value = (/*Instruction*/ ctx[4] || "drop here") + "";
 	let t;
 	let asDropZone_action;
 	let mounted;
@@ -2325,9 +2403,9 @@ function create_if_block_3(ctx) {
 	return {
 		c() {
 			li = element("li");
-			t = text(/*Instruction*/ ctx[1]);
+			t = text(t_value);
 			attr(li, "class", "svelte-xq0rks");
-			toggle_class(li, "InsertionPoint", /*ClassNames*/ ctx[4] == null && /*style*/ ctx[5] == null);
+			toggle_class(li, "InsertionPoint", /*ClassNames*/ ctx[2] == null && /*style*/ ctx[3] == null);
 		},
 		m(target, anchor) {
 			insert(target, li, anchor);
@@ -2337,7 +2415,7 @@ function create_if_block_3(ctx) {
 				dispose = action_destroyer(asDropZone_action = asDropZone.call(null, li, {
 					Extras: {
 						List: /*List*/ ctx[0],
-						Item: /*Item*/ ctx[61]
+						Item: /*Item*/ ctx[63]
 					},
 					onDrop: /*onDrop*/ ctx[21],
 					onDroppableEnter: /*onDroppableEnter*/ ctx[18],
@@ -2350,12 +2428,12 @@ function create_if_block_3(ctx) {
 		},
 		p(new_ctx, dirty) {
 			ctx = new_ctx;
-			if (dirty[0] & /*Instruction*/ 2) set_data(t, /*Instruction*/ ctx[1]);
+			if (dirty[0] & /*Instruction*/ 16 && t_value !== (t_value = (/*Instruction*/ ctx[4] || "drop here") + "")) set_data(t, t_value);
 
 			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List*/ 1) asDropZone_action.update.call(null, {
 				Extras: {
 					List: /*List*/ ctx[0],
-					Item: /*Item*/ ctx[61]
+					Item: /*Item*/ ctx[63]
 				},
 				onDrop: /*onDrop*/ ctx[21],
 				onDroppableEnter: /*onDroppableEnter*/ ctx[18],
@@ -2363,8 +2441,8 @@ function create_if_block_3(ctx) {
 				onDroppableLeave: /*onDroppableLeave*/ ctx[20]
 			});
 
-			if (dirty[0] & /*ClassNames, style*/ 48) {
-				toggle_class(li, "InsertionPoint", /*ClassNames*/ ctx[4] == null && /*style*/ ctx[5] == null);
+			if (dirty[0] & /*ClassNames, style*/ 12) {
+				toggle_class(li, "InsertionPoint", /*ClassNames*/ ctx[2] == null && /*style*/ ctx[3] == null);
 			}
 		},
 		d(detaching) {
@@ -2375,9 +2453,9 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (573:31)  
+// (614:31)  
 function fallback_block(ctx) {
-	let t_value = /*KeyOf*/ ctx[9](/*Item*/ ctx[61]) + "";
+	let t_value = /*KeyOf*/ ctx[9](/*Item*/ ctx[63]) + "";
 	let t;
 
 	return {
@@ -2388,7 +2466,7 @@ function fallback_block(ctx) {
 			insert(target, t, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*KeyOf, List*/ 513 && t_value !== (t_value = /*KeyOf*/ ctx[9](/*Item*/ ctx[61]) + "")) set_data(t, t_value);
+			if (dirty[0] & /*KeyOf, List*/ 513 && t_value !== (t_value = /*KeyOf*/ ctx[9](/*Item*/ ctx[63]) + "")) set_data(t, t_value);
 		},
 		d(detaching) {
 			if (detaching) detach(t);
@@ -2396,7 +2474,7 @@ function fallback_block(ctx) {
 	};
 }
 
-// (548:4) {#each List as Item,Index (KeyOf(Item))}
+// (589:4) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block(key_1, ctx) {
 	let first;
 	let current_block_type_index;
@@ -2407,7 +2485,7 @@ function create_each_block(key_1, ctx) {
 	const if_blocks = [];
 
 	function select_block_type_1(ctx, dirty) {
-		if (/*sortable*/ ctx[3] || /*extendable*/ ctx[12] || /*shrinkable*/ ctx[11]) return 0;
+		if (/*sortable*/ ctx[1] || /*extendable*/ ctx[12] || /*shrinkable*/ ctx[11]) return 0;
 		return 1;
 	}
 
@@ -2474,7 +2552,7 @@ function create_each_block(key_1, ctx) {
 	};
 }
 
-// (586:4) {#if sortable || extendable}
+// (627:4) {#if sortable || extendable}
 function create_if_block_1(ctx) {
 	let li;
 	let t;
@@ -2485,7 +2563,7 @@ function create_if_block_1(ctx) {
 	return {
 		c() {
 			li = element("li");
-			t = text(/*Instruction*/ ctx[1]);
+			t = text(/*Instruction*/ ctx[4]);
 			attr(li, "class", "AttachmentPoint svelte-xq0rks");
 		},
 		m(target, anchor) {
@@ -2508,7 +2586,7 @@ function create_if_block_1(ctx) {
 			}
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*Instruction*/ 2) set_data(t, /*Instruction*/ ctx[1]);
+			if (dirty[0] & /*Instruction*/ 16) set_data(t, /*Instruction*/ ctx[4]);
 
 			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List*/ 1) asDropZone_action.update.call(null, {
 				Extras: {
@@ -2546,8 +2624,8 @@ function create_fragment(ctx) {
 	if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
 
 	let ul_levels = [
-		{ class: /*ClassNames*/ ctx[4] },
-		{ style: /*style*/ ctx[5] },
+		{ class: /*ClassNames*/ ctx[2] },
+		{ style: /*style*/ ctx[3] },
 		/*$$restProps*/ ctx[22]
 	];
 
@@ -2562,7 +2640,7 @@ function create_fragment(ctx) {
 			ul = element("ul");
 			if_block.c();
 			set_attributes(ul, ul_data);
-			toggle_class(ul, "List", /*ClassNames*/ ctx[4] == null && /*style*/ ctx[5] == null);
+			toggle_class(ul, "List", /*ClassNames*/ ctx[2] == null && /*style*/ ctx[3] == null);
 			toggle_class(ul, "withoutTextSelection", true);
 			toggle_class(ul, "svelte-xq0rks", true);
 		},
@@ -2599,12 +2677,12 @@ function create_fragment(ctx) {
 			}
 
 			set_attributes(ul, ul_data = get_spread_update(ul_levels, [
-				(!current || dirty[0] & /*ClassNames*/ 16) && { class: /*ClassNames*/ ctx[4] },
-				(!current || dirty[0] & /*style*/ 32) && { style: /*style*/ ctx[5] },
+				(!current || dirty[0] & /*ClassNames*/ 4) && { class: /*ClassNames*/ ctx[2] },
+				(!current || dirty[0] & /*style*/ 8) && { style: /*style*/ ctx[3] },
 				dirty[0] & /*$$restProps*/ 4194304 && /*$$restProps*/ ctx[22]
 			]));
 
-			toggle_class(ul, "List", /*ClassNames*/ ctx[4] == null && /*style*/ ctx[5] == null);
+			toggle_class(ul, "List", /*ClassNames*/ ctx[2] == null && /*style*/ ctx[3] == null);
 			toggle_class(ul, "withoutTextSelection", true);
 			toggle_class(ul, "svelte-xq0rks", true);
 		},
@@ -2626,7 +2704,7 @@ function create_fragment(ctx) {
 
 function instance($$self, $$props, $$invalidate) {
 	const omit_props_names = [
-		"class","style","List","Key","Instruction","Placeholder","select","selectOnly","selectAll","selectRange","deselect","deselectAll","toggleSelectionOf","selectedItems","isSelected","sortable","onlyFrom","neverFrom","onSortRequest","onSort","Operations","DataToOffer","TypesToAccept","onOuterDropRequest","onDroppedOutside","onDropFromOutside"
+		"class","style","List","Key","SelectionLimit","Instruction","Placeholder","select","selectOnly","selectAll","selectRange","deselect","deselectAll","toggleSelectionOf","selectedItems","SelectionCount","isSelected","sortable","onlyFrom","neverFrom","onSortRequest","onSort","Operations","DataToOffer","TypesToAccept","onOuterDropRequest","onDroppedOutside","onDropFromOutside"
 	];
 
 	let $$restProps = compute_rest_props($$props, omit_props_names);
@@ -2640,6 +2718,7 @@ function instance($$self, $$props, $$invalidate) {
 	let { style } = $$props; // dto.
 	let { List } = $$props; // the (flat) list to be shown
 	let { Key } = $$props; // the value to be used as list key
+	let { SelectionLimit } = $$props; // max. number of selected items
 	let { Instruction } = $$props; // is shown in insertion points
 	let { Placeholder } = $$props; // is shown when list is empty
 	let KeyOf;
@@ -2671,13 +2750,18 @@ function instance($$self, $$props, $$invalidate) {
 	let SelectionSet = new WeakMap(); // automatically "updates" on list changes
 
 	function select(...ItemList) {
+		let curSelectionCount = SelectionCount();
+
 		ItemList.forEach(Item => {
 			let Key = KeyOf(Item);
 
 			if (Key in ItemSet) {
 				if (!SelectionSet.has(Item)) {
-					SelectionSet.set(Item, true);
-					dispatch("selected-item", Item);
+					if (SelectionLimit == null || curSelectionCount < SelectionLimit) {
+						SelectionSet.set(Item, true);
+						curSelectionCount++;
+						dispatch("selected-item", Item);
+					}
 				}
 			} else {
 				throwError$1("InvalidArgument: one or multiple of the given items to select " + "are not part of the given \"List\"");
@@ -2690,15 +2774,24 @@ function instance($$self, $$props, $$invalidate) {
 	}
 
 	function selectOnly(...ItemList) {
-		deselectAll();
-		select(...ItemList);
-	} //  triggerRedraw()                                       // already done before
+		if (ValuesDiffer(selectedItems(), ItemList)) {
+			// not perfect...
+			deselectAll();
+
+			select(...ItemList);
+		} //    triggerRedraw()                                     // already done before
+	}
 
 	function selectAll() {
+		let curSelectionCount = SelectionCount();
+
 		List.forEach(Item => {
 			if (!SelectionSet.has(Item)) {
-				SelectionSet.set(Item, true);
-				dispatch("selected-item", Item);
+				if (SelectionLimit == null || curSelectionCount < SelectionLimit) {
+					SelectionSet.set(Item, true);
+					curSelectionCount++;
+					dispatch("selected-item", Item);
+				}
 			}
 		});
 
@@ -2727,11 +2820,14 @@ function instance($$self, $$props, $$invalidate) {
 		let IndexB = List.indexOf(RangeBoundary);
 		let firstIndex = Math.min(IndexA, IndexB);
 		let lastIndex = Math.max(IndexA, IndexB);
+		let curSelectionCount = SelectionCount();
 
 		for (let i = firstIndex; i <= lastIndex; i++) {
 			if (!SelectionSet.has(List[i])) {
-				SelectionSet.set(List[i], true);
-				dispatch("selected-item", List[i]);
+				if (SelectionLimit == null || curSelectionCount < SelectionLimit) {
+					SelectionSet.set(List[i], true);
+					dispatch("selected-item", List[i]);
+				}
 			}
 		}
 
@@ -2786,6 +2882,7 @@ function instance($$self, $$props, $$invalidate) {
 
 	function toggleSelectionOf(...ItemList) {
 		SelectionRangeBoundaryA = undefined;
+		let ItemsToBeSelected = [];
 
 		ItemList.forEach(Item => {
 			let Key = KeyOf(Item);
@@ -2795,16 +2892,30 @@ function instance($$self, $$props, $$invalidate) {
 					SelectionSet.delete(Item);
 					dispatch("deselected-item", Item);
 				} else {
-					SelectionSet.set(Item, true);
-					dispatch("selected-item", Item);
-
-					if (ItemList.length === 1) {
-						SelectionRangeBoundaryA = Item;
-						SelectionRangeBoundaryB = undefined;
-					}
+					ItemsToBeSelected.push(Item);
 				}
 			} else {
 				throwError$1("InvalidArgument: one or multiple of the given items to select " + "or deselect are not part of the given \"List\"");
+			}
+		});
+
+		let curSelectionCount = SelectionCount();
+
+		if (SelectionLimit != null) {
+			let maxToBeSelected = SelectionLimit - curSelectionCount;
+
+			if (maxToBeSelected < ItemsToBeSelected.length) {
+				ItemsToBeSelected.length = maxToBeSelected;
+			}
+		}
+
+		ItemsToBeSelected.forEach(Item => {
+			SelectionSet.set(Item, true);
+			dispatch("selected-item", Item);
+
+			if (ItemList.length === 1) {
+				SelectionRangeBoundaryA = Item;
+				SelectionRangeBoundaryB = undefined;
 			}
 		});
 
@@ -2814,6 +2925,10 @@ function instance($$self, $$props, $$invalidate) {
 	function selectedItems() {
 		let Result = List.filter(Item => SelectionSet.has(Item));
 		return Result;
+	}
+
+	function SelectionCount() {
+		return List.reduce((Count, Item) => Count + (SelectionSet.has(Item) ? 1 : 0), 0);
 	}
 
 	function isSelected(Item) {
@@ -2929,7 +3044,7 @@ function instance($$self, $$props, $$invalidate) {
 
 	/**** onDragStart ****/
 	function onDragStart(DroppableExtras) {
-		$$invalidate(40, isDragging = true);
+		$$invalidate(42, isDragging = true);
 		draggedItemList = selectedItems();
 
 		if (!isSelected(DroppableExtras.Item)) {
@@ -2942,7 +3057,7 @@ function instance($$self, $$props, $$invalidate) {
 
 	/**** onDragEnd ****/
 	function onDragEnd(x, y, dx, dy, DraggableExtras) {
-		$$invalidate(40, isDragging = false);
+		$$invalidate(42, isDragging = false);
 		draggedItemList = undefined;
 	}
 
@@ -3142,32 +3257,33 @@ function instance($$self, $$props, $$invalidate) {
 	$$self.$$set = $$new_props => {
 		$$props = assign(assign({}, $$props), exclude_internal_props($$new_props));
 		$$invalidate(22, $$restProps = compute_rest_props($$props, omit_props_names));
-		if ("class" in $$new_props) $$invalidate(4, ClassNames = $$new_props.class);
-		if ("style" in $$new_props) $$invalidate(5, style = $$new_props.style);
+		if ("class" in $$new_props) $$invalidate(2, ClassNames = $$new_props.class);
+		if ("style" in $$new_props) $$invalidate(3, style = $$new_props.style);
 		if ("List" in $$new_props) $$invalidate(0, List = $$new_props.List);
 		if ("Key" in $$new_props) $$invalidate(23, Key = $$new_props.Key);
-		if ("Instruction" in $$new_props) $$invalidate(1, Instruction = $$new_props.Instruction);
-		if ("Placeholder" in $$new_props) $$invalidate(2, Placeholder = $$new_props.Placeholder);
-		if ("sortable" in $$new_props) $$invalidate(3, sortable = $$new_props.sortable);
+		if ("SelectionLimit" in $$new_props) $$invalidate(24, SelectionLimit = $$new_props.SelectionLimit);
+		if ("Instruction" in $$new_props) $$invalidate(4, Instruction = $$new_props.Instruction);
+		if ("Placeholder" in $$new_props) $$invalidate(5, Placeholder = $$new_props.Placeholder);
+		if ("sortable" in $$new_props) $$invalidate(1, sortable = $$new_props.sortable);
 		if ("onlyFrom" in $$new_props) $$invalidate(7, onlyFrom = $$new_props.onlyFrom);
 		if ("neverFrom" in $$new_props) $$invalidate(8, neverFrom = $$new_props.neverFrom);
-		if ("onSortRequest" in $$new_props) $$invalidate(32, onSortRequest = $$new_props.onSortRequest);
-		if ("onSort" in $$new_props) $$invalidate(33, onSort = $$new_props.onSort);
-		if ("Operations" in $$new_props) $$invalidate(34, Operations = $$new_props.Operations);
-		if ("DataToOffer" in $$new_props) $$invalidate(35, DataToOffer = $$new_props.DataToOffer);
-		if ("TypesToAccept" in $$new_props) $$invalidate(36, TypesToAccept = $$new_props.TypesToAccept);
-		if ("onOuterDropRequest" in $$new_props) $$invalidate(37, onOuterDropRequest = $$new_props.onOuterDropRequest);
-		if ("onDroppedOutside" in $$new_props) $$invalidate(38, onDroppedOutside = $$new_props.onDroppedOutside);
-		if ("onDropFromOutside" in $$new_props) $$invalidate(39, onDropFromOutside = $$new_props.onDropFromOutside);
-		if ("$$scope" in $$new_props) $$invalidate(43, $$scope = $$new_props.$$scope);
+		if ("onSortRequest" in $$new_props) $$invalidate(34, onSortRequest = $$new_props.onSortRequest);
+		if ("onSort" in $$new_props) $$invalidate(35, onSort = $$new_props.onSort);
+		if ("Operations" in $$new_props) $$invalidate(36, Operations = $$new_props.Operations);
+		if ("DataToOffer" in $$new_props) $$invalidate(37, DataToOffer = $$new_props.DataToOffer);
+		if ("TypesToAccept" in $$new_props) $$invalidate(38, TypesToAccept = $$new_props.TypesToAccept);
+		if ("onOuterDropRequest" in $$new_props) $$invalidate(39, onOuterDropRequest = $$new_props.onOuterDropRequest);
+		if ("onDroppedOutside" in $$new_props) $$invalidate(40, onDroppedOutside = $$new_props.onDroppedOutside);
+		if ("onDropFromOutside" in $$new_props) $$invalidate(41, onDropFromOutside = $$new_props.onDropFromOutside);
+		if ("$$scope" in $$new_props) $$invalidate(45, $$scope = $$new_props.$$scope);
 	};
 
 	$$self.$$.update = () => {
-		if ($$self.$$.dirty[0] & /*ClassNames*/ 16) {
+		if ($$self.$$.dirty[0] & /*ClassNames*/ 4) {
 			allowNonEmptyString$1("\"class\" attribute", ClassNames);
 		}
 
-		if ($$self.$$.dirty[0] & /*style*/ 32) {
+		if ($$self.$$.dirty[0] & /*style*/ 8) {
 			allowNonEmptyString$1("\"style\" attribute", style);
 		}
 
@@ -3191,20 +3307,40 @@ function instance($$self, $$props, $$invalidate) {
 			}
 		}
 
-		if ($$self.$$.dirty[0] & /*Instruction*/ 2) {
-			$$invalidate(1, Instruction = allowedNonEmptyString$1("\"Instruction\" attribute", Instruction) || "drop here");
+		if ($$self.$$.dirty[0] & /*SelectionLimit*/ 16777216) {
+			allowOrdinal("selection limit", SelectionLimit);
 		}
 
-		if ($$self.$$.dirty[0] & /*Placeholder*/ 4) {
-			$$invalidate(2, Placeholder = allowedNonEmptyString$1("\"Placeholder\" attribute", Placeholder) || "(empty list)");
+		if ($$self.$$.dirty[0] & /*Instruction*/ 16) {
+			allowNonEmptyString$1("\"Instruction\" attribute", Instruction);
+		}
+
+		if ($$self.$$.dirty[0] & /*Placeholder*/ 32) {
+			allowNonEmptyString$1("\"Placeholder\" attribute", Placeholder);
 		}
 
 		if ($$self.$$.dirty[0] & /*List, Key*/ 8388609) {
 			updateItemSet(List, Key);
 		}
 
-		if ($$self.$$.dirty[0] & /*sortable*/ 8) {
-			$$invalidate(3, sortable = allowedBoolean("\"sortable\" attribute", sortable) || false);
+		if ($$self.$$.dirty[0] & /*SelectionLimit, List*/ 16777217) {
+			if (SelectionLimit != null && SelectionCount() > SelectionLimit) {
+				let Count = 0;
+
+				List.forEach(Item => {
+					if (SelectionSet.has(Item)) {
+						Count++;
+
+						if (Count > SelectionLimit) {
+							deselect(Item);
+						}
+					}
+				});
+			} // decreasing the selection limit with an active selection is very bad style
+		}
+
+		if ($$self.$$.dirty[0] & /*sortable*/ 2) {
+			$$invalidate(1, sortable = allowedBoolean("\"sortable\" attribute", sortable) || false);
 		}
 
 		if ($$self.$$.dirty[0] & /*onlyFrom*/ 128) {
@@ -3215,70 +3351,70 @@ function instance($$self, $$props, $$invalidate) {
 			allowNonEmptyString$1("\"neverFrom\" CSS selector list", neverFrom);
 		}
 
-		if ($$self.$$.dirty[1] & /*onSortRequest*/ 2) {
+		if ($$self.$$.dirty[1] & /*onSortRequest*/ 8) {
 			allowFunction$1("\"onSortRequest\" callback", onSortRequest);
 		}
 
-		if ($$self.$$.dirty[1] & /*onSort*/ 4) {
+		if ($$self.$$.dirty[1] & /*onSort*/ 16) {
 			allowFunction$1("\"onSort\" callback", onSort);
 		}
 
-		if ($$self.$$.dirty[1] & /*Operations*/ 8) {
+		if ($$self.$$.dirty[1] & /*Operations*/ 32) {
 			parsedOperations("list of allowed operations", Operations);
 		}
 
-		if ($$self.$$.dirty[1] & /*DataToOffer*/ 16) {
+		if ($$self.$$.dirty[1] & /*DataToOffer*/ 64) {
 			allowPlainObject$1("\"DataToOffer\" attribute", DataToOffer);
 		}
 
-		if ($$self.$$.dirty[1] & /*TypesToAccept*/ 32) {
+		if ($$self.$$.dirty[1] & /*TypesToAccept*/ 128) {
 			allowPlainObject$1("\"TypesToAccept\" attribute", TypesToAccept);
 		}
 
-		if ($$self.$$.dirty[1] & /*onOuterDropRequest*/ 64) {
+		if ($$self.$$.dirty[1] & /*onOuterDropRequest*/ 256) {
 			allowFunction$1("\"onOuterDropRequest\" callback", onOuterDropRequest);
 		}
 
-		if ($$self.$$.dirty[1] & /*onDroppedOutside*/ 128) {
+		if ($$self.$$.dirty[1] & /*onDroppedOutside*/ 512) {
 			allowFunction$1("\"onDroppedOutside\" callback", onDroppedOutside);
 		}
 
-		if ($$self.$$.dirty[1] & /*onDropFromOutside*/ 256) {
+		if ($$self.$$.dirty[1] & /*onDropFromOutside*/ 1024) {
 			allowFunction$1("\"onDropFromOutside\" callback", onDropFromOutside);
 		}
 
-		if ($$self.$$.dirty[0] & /*sortable*/ 8 | $$self.$$.dirty[1] & /*isDragging, DataToOffer*/ 528) {
+		if ($$self.$$.dirty[0] & /*sortable*/ 2 | $$self.$$.dirty[1] & /*isDragging, DataToOffer*/ 2112) {
 			if (!isDragging) {
 				// do not update while already dragging
-				$$invalidate(41, DataOffered = Object.assign({}, DataToOffer));
+				$$invalidate(43, DataOffered = Object.assign({}, DataToOffer));
 
 				// @ts-ignore "DataOffered" is definitely not undefined
 				if (sortable) {
-					$$invalidate(41, DataOffered[privateKey] = "", DataOffered);
+					$$invalidate(43, DataOffered[privateKey] = "", DataOffered);
 				}
 			}
 		}
 
-		if ($$self.$$.dirty[0] & /*sortable*/ 8 | $$self.$$.dirty[1] & /*isDragging, TypesToAccept*/ 544) {
+		if ($$self.$$.dirty[0] & /*sortable*/ 2 | $$self.$$.dirty[1] & /*isDragging, TypesToAccept*/ 2176) {
 			if (!isDragging) {
 				// do not update while already dragging
-				$$invalidate(42, TypesAccepted = {});
+				$$invalidate(44, TypesAccepted = {});
 
 				for (let Type in TypesToAccept) {
 					if (TypesToAccept.hasOwnProperty(Type)) {
 						// @ts-ignore "TypesAccepted" is definitely not undefined
-						$$invalidate(42, TypesAccepted[Type] = parsedOperations("list of accepted operations for type " + quoted$1(Type), TypesToAccept[Type]), TypesAccepted);
+						$$invalidate(44, TypesAccepted[Type] = parsedOperations("list of accepted operations for type " + quoted$1(Type), TypesToAccept[Type]), TypesAccepted);
 					}
 				}
 
 				// @ts-ignore "TypesAccepted" is definitely not undefined
 				if (sortable) {
-					$$invalidate(42, TypesAccepted[privateKey] = "copy", TypesAccepted);
+					$$invalidate(44, TypesAccepted[privateKey] = "copy", TypesAccepted);
 				}
 			} // 'copy' because of the better visual feedback from native drag-and-drop
 		}
 
-		if ($$self.$$.dirty[1] & /*isDragging, DataOffered, TypesAccepted*/ 3584) {
+		if ($$self.$$.dirty[1] & /*isDragging, DataOffered, TypesAccepted*/ 14336) {
 			if (!isDragging) {
 				// do not update while already dragging
 				$$invalidate(11, shrinkable = hasNonPrivateTypes());
@@ -3290,11 +3426,11 @@ function instance($$self, $$props, $$invalidate) {
 
 	return [
 		List,
-		Instruction,
-		Placeholder,
 		sortable,
 		ClassNames,
 		style,
+		Instruction,
+		Placeholder,
 		isSelected,
 		onlyFrom,
 		neverFrom,
@@ -3313,6 +3449,7 @@ function instance($$self, $$props, $$invalidate) {
 		onDrop,
 		$$restProps,
 		Key,
+		SelectionLimit,
 		select,
 		selectOnly,
 		selectAll,
@@ -3321,6 +3458,7 @@ function instance($$self, $$props, $$invalidate) {
 		deselectAll,
 		toggleSelectionOf,
 		selectedItems,
+		SelectionCount,
 		onSortRequest,
 		onSort,
 		Operations,
@@ -3350,39 +3488,41 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 			create_fragment,
 			safe_not_equal,
 			{
-				class: 4,
-				style: 5,
+				class: 2,
+				style: 3,
 				List: 0,
 				Key: 23,
-				Instruction: 1,
-				Placeholder: 2,
-				select: 24,
-				selectOnly: 25,
-				selectAll: 26,
-				selectRange: 27,
-				deselect: 28,
-				deselectAll: 29,
-				toggleSelectionOf: 30,
-				selectedItems: 31,
+				SelectionLimit: 24,
+				Instruction: 4,
+				Placeholder: 5,
+				select: 25,
+				selectOnly: 26,
+				selectAll: 27,
+				selectRange: 28,
+				deselect: 29,
+				deselectAll: 30,
+				toggleSelectionOf: 31,
+				selectedItems: 32,
+				SelectionCount: 33,
 				isSelected: 6,
-				sortable: 3,
+				sortable: 1,
 				onlyFrom: 7,
 				neverFrom: 8,
-				onSortRequest: 32,
-				onSort: 33,
-				Operations: 34,
-				DataToOffer: 35,
-				TypesToAccept: 36,
-				onOuterDropRequest: 37,
-				onDroppedOutside: 38,
-				onDropFromOutside: 39
+				onSortRequest: 34,
+				onSort: 35,
+				Operations: 36,
+				DataToOffer: 37,
+				TypesToAccept: 38,
+				onOuterDropRequest: 39,
+				onDroppedOutside: 40,
+				onDropFromOutside: 41
 			},
 			[-1, -1, -1]
 		);
 	}
 
 	get class() {
-		return this.$$.ctx[4];
+		return this.$$.ctx[2];
 	}
 
 	set class(ClassNames) {
@@ -3391,7 +3531,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get style() {
-		return this.$$.ctx[5];
+		return this.$$.ctx[3];
 	}
 
 	set style(style) {
@@ -3417,8 +3557,17 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 		flush();
 	}
 
+	get SelectionLimit() {
+		return this.$$.ctx[24];
+	}
+
+	set SelectionLimit(SelectionLimit) {
+		this.$set({ SelectionLimit });
+		flush();
+	}
+
 	get Instruction() {
-		return this.$$.ctx[1];
+		return this.$$.ctx[4];
 	}
 
 	set Instruction(Instruction) {
@@ -3427,7 +3576,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get Placeholder() {
-		return this.$$.ctx[2];
+		return this.$$.ctx[5];
 	}
 
 	set Placeholder(Placeholder) {
@@ -3436,35 +3585,39 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get select() {
-		return this.$$.ctx[24];
-	}
-
-	get selectOnly() {
 		return this.$$.ctx[25];
 	}
 
-	get selectAll() {
+	get selectOnly() {
 		return this.$$.ctx[26];
 	}
 
-	get selectRange() {
+	get selectAll() {
 		return this.$$.ctx[27];
 	}
 
-	get deselect() {
+	get selectRange() {
 		return this.$$.ctx[28];
 	}
 
-	get deselectAll() {
+	get deselect() {
 		return this.$$.ctx[29];
 	}
 
-	get toggleSelectionOf() {
+	get deselectAll() {
 		return this.$$.ctx[30];
 	}
 
-	get selectedItems() {
+	get toggleSelectionOf() {
 		return this.$$.ctx[31];
+	}
+
+	get selectedItems() {
+		return this.$$.ctx[32];
+	}
+
+	get SelectionCount() {
+		return this.$$.ctx[33];
 	}
 
 	get isSelected() {
@@ -3472,7 +3625,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get sortable() {
-		return this.$$.ctx[3];
+		return this.$$.ctx[1];
 	}
 
 	set sortable(sortable) {
@@ -3499,7 +3652,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get onSortRequest() {
-		return this.$$.ctx[32];
+		return this.$$.ctx[34];
 	}
 
 	set onSortRequest(onSortRequest) {
@@ -3508,7 +3661,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get onSort() {
-		return this.$$.ctx[33];
+		return this.$$.ctx[35];
 	}
 
 	set onSort(onSort) {
@@ -3517,7 +3670,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get Operations() {
-		return this.$$.ctx[34];
+		return this.$$.ctx[36];
 	}
 
 	set Operations(Operations) {
@@ -3526,7 +3679,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get DataToOffer() {
-		return this.$$.ctx[35];
+		return this.$$.ctx[37];
 	}
 
 	set DataToOffer(DataToOffer) {
@@ -3535,7 +3688,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get TypesToAccept() {
-		return this.$$.ctx[36];
+		return this.$$.ctx[38];
 	}
 
 	set TypesToAccept(TypesToAccept) {
@@ -3544,7 +3697,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get onOuterDropRequest() {
-		return this.$$.ctx[37];
+		return this.$$.ctx[39];
 	}
 
 	set onOuterDropRequest(onOuterDropRequest) {
@@ -3553,7 +3706,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get onDroppedOutside() {
-		return this.$$.ctx[38];
+		return this.$$.ctx[40];
 	}
 
 	set onDroppedOutside(onDroppedOutside) {
@@ -3562,7 +3715,7 @@ class Svelte_sortable_flat_list_view extends SvelteComponent {
 	}
 
 	get onDropFromOutside() {
-		return this.$$.ctx[39];
+		return this.$$.ctx[41];
 	}
 
 	set onDropFromOutside(onDropFromOutside) {

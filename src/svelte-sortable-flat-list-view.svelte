@@ -5,7 +5,7 @@
 <svelte:options accessors={true}/>
 
 <style>
-  .List {
+  .defaultListView {
     display:inline-block; position:relative;
     margin:0px; padding:0px 0px 4px 0px;
     list-style:none;
@@ -16,34 +16,36 @@
     user-select:none;
   }
 
-  .List > li {
+  .defaultListView > :global(.ListItemView) {
     display:block; position:relative;
-    border:none; margin:0px; padding:0px;
+    height:30px; line-height:30px;
+    border:solid 1px transparent;
+    margin:0px 2px 0px 2px; padding:0px 4px 0px 4px;
     list-style:none;
   }
 
-  .List > li:hover { background:royalblue }
+  .defaultListView > :global(.ListItemView:hover)    { border:solid 1px }
+  .defaultListView > :global(.ListItemView.selected) { background:dodgerblue }
 
-  .selectableItem.selected       { background:dodgerblue }
-  .selectableItem.selected:hover { background:royalblue }
+  .defaultListView > :global(.ListItemView.dragged) { height:5px; opacity:0 }
 
-  .InsertionPoint {
+  .defaultListView > :global(.InsertionRegion) {
     display:block; position:relative;
-    width:100%; height:20px;
+    height:10px;
     background:transparent;
-    border:none; margin:0px; padding:0px;
+    border:solid 1px transparent; margin:0px; padding:0px;
     list-style:none;
   }
 
-  .AttachmentPoint {
+  .defaultListView > :global(.AttachmentRegion) {
     display:block; position:relative;
-    width:100%; height:20px;
+    height:20px;
     background:transparent;
-    border:none; margin:0px; padding:0px;
+    border:solid 1px transparent; margin:0px; padding:0px;
     list-style:none;
   }
 
-  .Placeholder {
+  .defaultListView > :global(.Placeholder) {
     display:flex; position:absolute;
     left:0px; top:0px; right:0px; height:100%; /* bottom:0px seems to fail */
     flex-flow:column nowrap; justify-content:center; align-items:center;
@@ -78,7 +80,8 @@
   export let List:{}[]                            // the (flat) list to be shown
   export let Key:string|Function|undefined   // the value to be used as list key
   export let SelectionLimit:number|undefined    // max. number of selected items
-  export let Instruction:string|undefined        // is shown in insertion points
+  export let InsertionRegion:string|undefined    // is shown in insertion region
+  export let AttachmentRegion:string|undefined  // is shown in attachment region
   export let Placeholder:string|undefined         // is shown when list is empty
 
   $: List = allowedListSatisfying('"List" attribute', List, ValueIsObject) || []
@@ -99,8 +102,9 @@
 
   $: allowOrdinal('selection limit',SelectionLimit)
 
-  $: allowNonEmptyString('"Instruction" attribute',Instruction)
-  $: allowNonEmptyString('"Placeholder" attribute',Placeholder)
+  $: allowNonEmptyString ('"InsertionRegion" attribute',InsertionRegion)
+  $: allowNonEmptyString('"AttachmentRegion" attribute',AttachmentRegion)
+  $: allowNonEmptyString     ('"Placeholder" attribute',Placeholder)
 
 /**** Key Validation and quick Lookup ****/
 
@@ -519,7 +523,7 @@
             'display:block; position:absolute; ' +
             'top:-10px; right:-10px; width:20px; height:20px; ' +
             'background:red; color:white; ' +
-            'border:none; border-radius:10px; margin:0px; padding:0px; ' +
+            'border:none; border-radius:10px; margin:0px; padding:0px 4px 0px 4px; ' +
             'line-height:20px; text-align:center'
           )
           Badge.innerText = '+' + ((draggedItemList as any[]).length-1)
@@ -601,6 +605,7 @@
     let draggedItem = DroppableExtras && DroppableExtras.Item
     if (draggedItem == (DropZoneExtras && DropZoneExtras.Item)) {
       InsertionPoint = undefined
+      triggerRedraw()
       return false
     }
 
@@ -637,6 +642,8 @@
         }
       }
     InsertionPoint = (mayBeInsertedHere ? DropZoneExtras.Item : undefined)
+    triggerRedraw()
+
     return mayBeInsertedHere && (Operation !== 'link')
   }
 
@@ -648,6 +655,7 @@
 
   function onDroppableLeave (DroppableExtras:any, DropZoneExtras:any):void {
     InsertionPoint = undefined
+    triggerRedraw()
   }
 
 /**** onDrop ****/
@@ -680,7 +688,7 @@
 // @ts-ignore argument list of "apply" is known to be correct
           List.splice.apply(List, [InsertionIndex,0].concat(ItemsToBeShifted))
 
-          dispatch('shifted-items',[ItemsToBeShifted,InsertionIndex])
+          dispatch('sorted-items',[ItemsToBeShifted,InsertionIndex])
           triggerRedraw()
         } else {
           try {
@@ -745,58 +753,67 @@
 </script>
 
 <ul
-  class:List={(ClassNames == null) && (style == null)}
+  class:defaultListView={ClassNames == null}
   class:withoutTextSelection={true}
   class={ClassNames} {style}
   {...$$restProps}
 >
   {#if (List.length > 0)}
-    {#each List as Item,Index (KeyOf(Item))}
-      {#if sortable || extendable || shrinkable}
+    {#if sortable || extendable || shrinkable}
+      {#each List as Item,Index (KeyOf(Item))}
         {#if Item === InsertionPoint}
           <li
-            class:InsertionPoint={(ClassNames == null) && (style == null)}
+            class:InsertionRegion={true}
+            class:defaultInsertionRegion={ClassNames == null}
             use:asDropZone={{
-              Extras:{ List, Item },
+              Extras:{ List, Item, ItemList:undefined }, TypesToAccept:TypesAccepted,
               onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave
             }}
-          >{Instruction || 'drop here'}</li>
+          >{@html InsertionRegion || ''}</li>
         {/if}
 
         <li
-          class:selectableItem={(ClassNames == null) && (style == null)}
+          class:ListItemView={true}
           class:selected={isSelected(Item)}
           on:click={(Event) => handleClick(Event,Item)}
           use:asDroppable={{
-            Extras:{ List, Item }, neverFrom, onlyFrom, Dummy:dynamicDummy,
+            neverFrom, onlyFrom, Dummy:dynamicDummy,
+            Extras:{ List, Item }, DataToOffer:DataOffered,
             onDragStart, onDragEnd, onDropped
           }}
           use:asDropZone={{
-            Extras:{ List, Item, ItemList:undefined },
+            Extras:{ List, Item, ItemList:undefined }, TypesToAccept:TypesAccepted,
             onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave
           }}
         >
           <slot {Item} {Index}> {KeyOf(Item)} </slot>
         </li>
-      {:else}
+      {/each}
+
+      {#if sortable || extendable}
         <li
-          class:selectableItem={(ClassNames == null) && (style == null)}
+          class:AttachmentRegion={true}
+          use:asDropZone={{
+            Extras:{ List, Item:undefined, ItemList:undefined }, TypesToAccept:TypesAccepted,
+            onDroppableEnter, onDroppableMove, onDrop
+          }}
+        >{@html AttachmentRegion || ''}</li>
+      {/if}
+    {:else}
+      {#each List as Item,Index (KeyOf(Item))}
+        <li
+          class:ListItemView={true}
           class:selected={isSelected(Item)}
           on:click={(Event) => handleClick(Event,Item)}
         >
           <slot {Item} {Index}> {KeyOf(Item)} </slot>
         </li>
-      {/if}
-    {/each}
-
-    {#if sortable || extendable}
-      <li class="AttachmentPoint" use:asDropZone={{
-        Extras:{ List, Item:undefined, ItemList:undefined },
-        onDroppableEnter, onDroppableMove, onDrop
-      }}>{Instruction}</li>
+      {/each}
     {/if}
   {:else}
-    <li class="Placeholder">{Placeholder || '(empty list)'}</li>
+    <li
+      class:Placeholder={true}
+    >{@html Placeholder || '(empty list)'}</li>
   {/if}
 </ul>
 

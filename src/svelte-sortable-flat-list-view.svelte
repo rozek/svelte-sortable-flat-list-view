@@ -670,12 +670,14 @@
 
   function onDroppableLeave (DroppableExtras:any, DropZoneExtras:any):void {
     LeavingRetarder = setTimeout(() => { // very weird workaround: on some
-      LeavingRetarder = undefined        // platforms, "dragleave" is sent to
+      LeavingRetarder = undefined        // platforms, "dragleave" is sent too
                                          // aggressively. "svelte-dnd-actions"
-      InsertionPoint = undefined         // try to handle this, causing rapid
+      InsertionPoint = undefined         // tries to handle this, causing rapid
 //    triggerRedraw()                    // sequences of "DroppableLeave" and
-    },10)                                // "DroppableEnter". This is to swallow
-  }                                      // unnecessary "DroppableLeave" calls
+    },10)                                // "DroppableEnter". This workaround
+  }                                      // tries to swallowing unnecessary
+                                         // "DroppableLeave" calls and, thus, to
+                                         // reduce flickering
 
 /**** onDrop ****/
 

@@ -620,6 +620,18 @@ class SvelteComponent {
 }
 
 //----------------------------------------------------------------------------//
+// see https://stackoverflow.com/questions/3277182/how-to-get-the-global-object-in-javascript
+//------------------------------------------------------------------------------
+//--                             Object Functions                             --
+//------------------------------------------------------------------------------
+// allow methods from Object.prototype to be applied to "vanilla" objects
+/**** Object_hasOwnProperty ****/
+function Object_hasOwnProperty(Value, PropertyName) {
+    return ((Value == null) || // let this method crash like its original
+        ('hasOwnProperty' in Value) && (typeof Value.hasOwnProperty === 'function')
+        ? Value.hasOwnProperty(PropertyName)
+        : Object.prototype.hasOwnProperty.call(Value, PropertyName));
+}
 /**** throwError - simplifies construction of named errors ****/
 function throwError$1(Message) {
     var Match = /^([$a-zA-Z][$a-zA-Z0-9]*):\s*(\S.+)\s*$/.exec(Message);
@@ -632,17 +644,17 @@ function throwError$1(Message) {
         throw namedError;
     }
 }
-/**** ValueIsBoolean ****/
-function ValueIsBoolean(Value) {
-    return (typeof Value === 'boolean') || (Value instanceof Boolean);
+/**** ValueIsFiniteNumber (pure "isFinite" breaks on objects) ****/
+function ValueIsFiniteNumber(Value) {
+    return ((typeof Value === 'number') || (Value instanceof Number)) && isFinite(Value.valueOf());
 }
-/**** ValueIsOrdinal ****/
-function ValueIsOrdinal(Value) {
+/**** ValueIsInteger ****/
+function ValueIsInteger(Value) {
     if ((typeof Value !== 'number') && !(Value instanceof Number)) {
         return false;
     }
     Value = Value.valueOf();
-    return isFinite(Value) && (Math.round(Value) === Value) && (Value >= 0);
+    return isFinite(Value) && (Math.round(Value) === Value);
 }
 /**** ValueIsString ****/
 function ValueIsString$1(Value) {
@@ -668,28 +680,6 @@ function ValueIsPlainObject$1(Value) {
 }
 /**** ValueIsArray ****/
 var ValueIsArray$1 = Array.isArray;
-/**** ValueIsList ("dense" array) ****/
-function ValueIsList(Value, minLength, maxLength) {
-    if (ValueIsArray$1(Value)) {
-        for (var i = 0, l = Value.length; i < l; i++) {
-            if (Value[i] === undefined) {
-                return false;
-            }
-        }
-        if (minLength != null) {
-            if (Value.length < minLength) {
-                return false;
-            }
-        }
-        if (maxLength != null) {
-            if (Value.length > maxLength) {
-                return false;
-            }
-        }
-        return true;
-    }
-    return false;
-}
 /**** ValueIsListSatisfying ****/
 function ValueIsListSatisfying$1(Value, Validator, minLength, maxLength) {
     if (ValueIsArray$1(Value)) {
@@ -719,6 +709,10 @@ function ValueIsListSatisfying$1(Value, Validator, minLength, maxLength) {
 function ValueIsOneOf$1(Value, ValueList) {
     return (ValueList.indexOf(Value) >= 0);
 } // no automatic unboxing of boxed values and vice-versa!
+//------------------------------------------------------------------------------
+//--                      Argument Validation Functions                       --
+//------------------------------------------------------------------------------
+var rejectNil = false;
 var acceptNil$1 = true;
 /**** validatedArgument ****/
 function validatedArgument$1(Description, Argument, ValueIsValid, NilIsAcceptable, Expectation) {
@@ -790,25 +784,62 @@ function FunctionWithName$1(originalFunction, desiredName) {
         '}');
     return renamed(originalFunction);
 } // also works with older JavaScript engines
-/**** allow/expect[ed]Boolean ****/
-var allowBoolean = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsBoolean, acceptNil$1, 'boolean value'), allowedBoolean = allowBoolean;
-/**** allow/expect[ed]Ordinal ****/
-var allowOrdinal = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsOrdinal, acceptNil$1, 'ordinal number');
+/**** allow/expect[ed]FiniteNumber ****/
+var allowFiniteNumber = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsFiniteNumber, acceptNil$1, 'finite numeric value'), allowedFiniteNumber = allowFiniteNumber;
+var expectInteger = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsInteger, rejectNil, 'integral numeric value');
+/**** allow[ed]IntegerInRange ****/
+function allowIntegerInRange(Description, Argument, minValue, maxValue) {
+    return (Argument == null
+        ? Argument
+        : expectedIntegerInRange(Description, Argument, minValue, maxValue));
+}
+var allowedIntegerInRange = allowIntegerInRange;
+/**** expect[ed]IntegerInRange ****/
+function expectIntegerInRange(Description, Argument, minValue, maxValue) {
+    expectInteger(Description, Argument);
+    if (isNaN(Argument)) {
+        throwError$1("InvalidArgument: the given " + escaped$1(Description) + " is not-a-number");
+    }
+    if ((minValue != null) && isFinite(minValue)) {
+        if ((maxValue != null) && isFinite(maxValue)) {
+            if ((Argument < minValue) || (Argument > maxValue)) {
+                throw new RangeError("the given " + escaped$1(Description) + " (" + Argument + ") is outside " +
+                    ("the allowed range (" + minValue + "..." + maxValue + ")"));
+            }
+        }
+        else {
+            if (Argument < minValue) {
+                throw new RangeError("the given " + escaped$1(Description) + " is below the allowed " +
+                    ("minimum (" + Argument + " < " + minValue + ")"));
+            }
+        }
+    }
+    else {
+        if ((maxValue != null) && isFinite(maxValue)) {
+            if (Argument > maxValue) {
+                throw new RangeError("the given " + escaped$1(Description) + " exceeds the allowed " +
+                    ("maximum (" + Argument + " > " + maxValue + ")"));
+            }
+        }
+    }
+    return Argument.valueOf();
+}
+var expectedIntegerInRange = expectIntegerInRange;
 /**** allow/expect[ed]String ****/
 var allowString$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsString$1, acceptNil$1, 'literal string'), allowedString$1 = allowString$1;
 /**** allow/expect[ed]NonEmptyString ****/
-var allowNonEmptyString$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsNonEmptyString$1, acceptNil$1, 'non-empty literal string');
+var allowNonEmptyString$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsNonEmptyString$1, acceptNil$1, 'non-empty literal string'), allowedNonEmptyString = allowNonEmptyString$1;
 /**** allow/expect[ed]Function ****/
-var allowFunction$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsFunction$1, acceptNil$1, 'JavaScript function');
+var allowFunction$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsFunction$1, acceptNil$1, 'JavaScript function'), allowedFunction = allowFunction$1;
+var expectObject = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsObject$1, rejectNil, 'JavaScript object');
 /**** allow/expect[ed]PlainObject ****/
-var allowPlainObject$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsPlainObject$1, acceptNil$1, '"plain" JavaScript object');
+var allowPlainObject$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsPlainObject$1, acceptNil$1, '"plain" JavaScript object'), allowedPlainObject = allowPlainObject$1;
 /**** allow[ed]ListSatisfying ****/
 function allowListSatisfying$1(Description, Argument, Validator, Expectation, minLength, maxLength) {
     return (Argument == null
         ? Argument
         : expectedListSatisfying$1(Description, Argument, Validator, Expectation, minLength, maxLength));
 }
-var allowedListSatisfying = allowListSatisfying$1;
 /**** expect[ed]ListSatisfying ****/
 function expectListSatisfying$1(Description, Argument, Validator, Expectation, minLength, maxLength) {
     if (Argument == null) {
@@ -884,373 +915,6 @@ function quoted$1(Text, Quote) {
     if (Quote === void 0) { Quote = '"'; }
     return Quote + quotable$1(Text, Quote) + Quote;
 }
-/**** ValuesDiffer ****/
-function ValuesDiffer(thisValue, otherValue) {
-    if (thisValue === otherValue) {
-        return false;
-    }
-    var thisType = typeof thisValue;
-    if (thisType !== typeof otherValue) {
-        return true;
-    }
-    /**** ArraysDiffer ****/
-    function ArraysDiffer(thisArray, otherArray) {
-        if (!Array.isArray(otherArray)) {
-            return true;
-        }
-        if (thisArray.length !== otherArray.length) {
-            return true;
-        }
-        for (var i = 0, l = thisArray.length; i < l; i++) {
-            if (ValuesDiffer(thisArray[i], otherArray[i])) {
-                return true;
-            }
-        }
-        return false;
-    }
-    /**** ObjectsDiffer ****/
-    function ObjectsDiffer(thisObject, otherObject) {
-        if (Object.getPrototypeOf(thisObject) !== Object.getPrototypeOf(otherObject)) {
-            return true;
-        }
-        for (var key in thisObject) {
-            if (!(key in otherObject)) {
-                return true;
-            }
-        }
-        for (var key in otherObject) {
-            if (!(key in thisObject)) {
-                return true;
-            }
-            if (ValuesDiffer(thisObject[key], otherObject[key])) {
-                return true;
-            }
-        }
-        return false;
-    }
-    switch (thisType) {
-        case 'undefined':
-        case 'boolean':
-        case 'string':
-        case 'function': return true; // most primitives are compared using "==="
-        case 'number': return ((isNaN(thisValue) !== isNaN(otherValue)) ||
-            (Math.abs(thisValue - otherValue) > Number.EPSILON));
-        case 'object':
-            if (thisValue == null) {
-                return true;
-            } // since "other_value" != null!
-            if (otherValue == null) {
-                return true;
-            } // since "this_value" != null!
-            if (Array.isArray(thisValue)) {
-                return ArraysDiffer(thisValue, otherValue);
-            }
-            return ObjectsDiffer(thisValue, otherValue);
-        default: return true; // unsupported property type
-    }
-    return true;
-}
-
-var e$1,n=!1;e$1=navigator.userAgent||navigator.vendor||window.opera,(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(e$1)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(e$1.substr(0,4)))&&(n=!0);var i=!1;if(n){var t$1=window.innerWidth,a=window.innerHeight,o=Math.min(t$1,a),r$1=Math.max(t$1,a);i=o<=480&&r$1<=896;}var c=window.matchMedia||window.webkitMatchmedia||window.mozMatchmedia||window.oMatchmedia;function d(e){return null!=c&&c(e).matches}function s(){return "interactive"===document.readyState||"complete"===document.readyState}var l,m=!d("(pointer:fine)")&&!d("(pointer:coarse)")&&!d("-moz-touch-enabled")&&("ontouchstart"in Window||(navigator.maxTouchPoints||0)>0||/touch|android|iphone|ipod|ipad/i.test(navigator.userAgent));function u(){var e="fine";switch(!0){case d("(pointer:none)"):e="none";break;case d("(pointer:coarse)"):case d("-moz-touch-enabled"):case m:e="coarse";}if(l=e,s())switch(document.body.classList.remove("noPointer","finePointer","coarsePointer"),e){case"none":document.body.classList.add("noPointer");break;case"fine":document.body.classList.add("finePointer");break;case"coarse":document.body.classList.add("coarsePointer");}}u(),s()||window.addEventListener("DOMContentLoaded",u);var p=[];function h(e,n){if("function"!=typeof e)throw new Error("handler function expected");for(var i=0,t=p.length;i<t;i++)if(p[i].Handler===e)return void(p[i].onceOnly=n);p.push({Handler:e,onceOnly:n}),1===p.length&&(v=setInterval((function(){var e=l;u(),l!==e&&function(){for(var e=0,n=p.length;e<n;e++){var i=p[e],t=i.Handler,a=i.onceOnly;try{t(l);}catch(e){console.warn("PointingAccuracy observation function failed with",e);}a&&g(t);}}();}),500));}function g(e){for(var n=0,i=p.length;n<i;n++)if(p[n].Handler===e){p.splice(n,1);break}0===p.length&&(clearInterval(v),v=void 0);}var v=void 0;function w(e,n){return "function"==typeof e.item?e.item(n):e[n]}function f(e,n){for(var i=0,t=e.length;i<t;i++)if(n.test(w(e,i)))return !0;return !1}if(m){for(var b=document.styleSheets,y=0,k=b.length;y<k;y++)for(var x=b[y].cssRules||b[y].rules,P=0,z=x.length;P<z;P++){var A=x[P];if(A.type===CSSRule.MEDIA_RULE&&f(A.media,/handheld/i)){var M=A.media;M.mediaText=M.mediaText.replace("handheld","screen");}}var L=document.getElementsByTagName("link");for(y=0,k=L.length;y<k;y++){var T=L[y];/handheld/i.test(T.media)&&(T.media=T.media.replace("handheld","screen"));}}var j={get isMobile(){return n},get isPhone(){return i},get isTablet(){return n&&!i},get isLegacyTouchDevice(){return m},get PointingAccuracy(){return l},onPointingAccuracyChanged:function(e){h(e,!1);},oncePointingAccuracyChanged:function(e){h(e,!0);},offPointingAccuracyChanged:function(e){g(e);},get observesPointingAccuracy(){return null!=v}};
-
-var r=0;function t(){return "uid-"+ ++r}
-
-//----------------------------------------------------------------------------//
-// see https://stackoverflow.com/questions/3277182/how-to-get-the-global-object-in-javascript
-//------------------------------------------------------------------------------
-//--                             Object Functions                             --
-//------------------------------------------------------------------------------
-// allow methods from Object.prototype to be applied to "vanilla" objects
-/**** Object_hasOwnProperty ****/
-function Object_hasOwnProperty(Value, PropertyName) {
-    return ((Value == null) || // let this method crash like its original
-        ('hasOwnProperty' in Value) && (typeof Value.hasOwnProperty === 'function')
-        ? Value.hasOwnProperty(PropertyName)
-        : Object.prototype.hasOwnProperty.call(Value, PropertyName));
-}
-/**** throwError - simplifies construction of named errors ****/
-function throwError(Message) {
-    var Match = /^([$a-zA-Z][$a-zA-Z0-9]*):\s*(\S.+)\s*$/.exec(Message);
-    if (Match == null) {
-        throw new Error(Message);
-    }
-    else {
-        var namedError = new Error(Match[2]);
-        namedError.name = Match[1];
-        throw namedError;
-    }
-}
-/**** ValueIsFiniteNumber (pure "isFinite" breaks on objects) ****/
-function ValueIsFiniteNumber(Value) {
-    return ((typeof Value === 'number') || (Value instanceof Number)) && isFinite(Value.valueOf());
-}
-/**** ValueIsInteger ****/
-function ValueIsInteger(Value) {
-    if ((typeof Value !== 'number') && !(Value instanceof Number)) {
-        return false;
-    }
-    Value = Value.valueOf();
-    return isFinite(Value) && (Math.round(Value) === Value);
-}
-/**** ValueIsString ****/
-function ValueIsString(Value) {
-    return (typeof Value === 'string') || (Value instanceof String);
-}
-/**** ValueIsNonEmptyString ****/
-var emptyStringPattern = /^\s*$/;
-function ValueIsNonEmptyString(Value) {
-    return ((typeof Value === 'string') || (Value instanceof String)) && !emptyStringPattern.test(Value.valueOf());
-}
-/**** ValueIsFunction ****/
-function ValueIsFunction(Value) {
-    return (typeof Value === 'function');
-}
-/**** ValueIsObject ****/
-function ValueIsObject(Value) {
-    return (Value != null) && (typeof Value === 'object');
-}
-/**** ValueIsPlainObject ****/
-function ValueIsPlainObject(Value) {
-    return ((Value != null) && (typeof Value === 'object') &&
-        (Object.getPrototypeOf(Value) === Object.prototype));
-}
-/**** ValueIsArray ****/
-var ValueIsArray = Array.isArray;
-/**** ValueIsListSatisfying ****/
-function ValueIsListSatisfying(Value, Validator, minLength, maxLength) {
-    if (ValueIsArray(Value)) {
-        try {
-            for (var i = 0, l = Value.length; i < l; i++) {
-                if (Validator(Value[i]) == false) {
-                    return false;
-                }
-            }
-            if (minLength != null) {
-                if (Value.length < minLength) {
-                    return false;
-                }
-            }
-            if (maxLength != null) {
-                if (Value.length > maxLength) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        catch (Signal) { /* nop */ }
-    }
-    return false;
-}
-/**** ValueIsOneOf ****/
-function ValueIsOneOf(Value, ValueList) {
-    return (ValueList.indexOf(Value) >= 0);
-} // no automatic unboxing of boxed values and vice-versa!
-//------------------------------------------------------------------------------
-//--                      Argument Validation Functions                       --
-//------------------------------------------------------------------------------
-var rejectNil = false;
-var acceptNil = true;
-/**** validatedArgument ****/
-function validatedArgument(Description, Argument, ValueIsValid, NilIsAcceptable, Expectation) {
-    if (Argument == null) {
-        if (NilIsAcceptable) {
-            return Argument;
-        }
-        else {
-            throwError("MissingArgument: no " + escaped(Description) + " given");
-        }
-    }
-    else {
-        if (ValueIsValid(Argument)) {
-            switch (true) {
-                case Argument instanceof Boolean:
-                case Argument instanceof Number:
-                case Argument instanceof String:
-                    return Argument.valueOf(); // unboxes any primitives
-                default:
-                    return Argument;
-            }
-        }
-        else {
-            throwError("InvalidArgument: the given " + escaped(Description) + " is no valid " + escaped(Expectation));
-        }
-    }
-}
-/**** ValidatorForClassifier ****/
-function ValidatorForClassifier(Classifier, NilIsAcceptable, Expectation) {
-    var Validator = function (Description, Argument) {
-        return validatedArgument(Description, Argument, Classifier, NilIsAcceptable, Expectation);
-    };
-    var ClassifierName = Classifier.name;
-    if ((ClassifierName != null) && /^ValueIs/.test(ClassifierName)) {
-        var ValidatorName = ClassifierName.replace(// derive name from validator
-        /^ValueIs/, NilIsAcceptable ? 'allow' : 'expect');
-        return FunctionWithName(Validator, ValidatorName);
-    }
-    else {
-        return Validator; // without any specific name
-    }
-}
-/**** FunctionWithName (works with older JS engines as well) ****/
-function FunctionWithName(originalFunction, desiredName) {
-    if (originalFunction == null) {
-        throwError('MissingArgument: no function given');
-    }
-    if (typeof originalFunction !== 'function') {
-        throwError('InvalidArgument: the given 1st Argument is not a JavaScript function');
-    }
-    if (desiredName == null) {
-        throwError('MissingArgument: no desired name given');
-    }
-    if ((typeof desiredName !== 'string') && !(desiredName instanceof String)) {
-        throwError('InvalidArgument: the given desired name is not a string');
-    }
-    if (originalFunction.name === desiredName) {
-        return originalFunction;
-    }
-    try {
-        Object.defineProperty(originalFunction, 'name', { value: desiredName });
-        if (originalFunction.name === desiredName) {
-            return originalFunction;
-        }
-    }
-    catch (signal) { /* ok - let's take the hard way */ }
-    var renamed = new Function('originalFunction', 'return function ' + desiredName + ' () {' +
-        'return originalFunction.apply(this,Array.prototype.slice.apply(arguments))' +
-        '}');
-    return renamed(originalFunction);
-} // also works with older JavaScript engines
-/**** allow/expect[ed]FiniteNumber ****/
-var allowFiniteNumber = /*#__PURE__*/ ValidatorForClassifier(ValueIsFiniteNumber, acceptNil, 'finite numeric value'), allowedFiniteNumber = allowFiniteNumber;
-var expectInteger = /*#__PURE__*/ ValidatorForClassifier(ValueIsInteger, rejectNil, 'integral numeric value');
-/**** allow[ed]IntegerInRange ****/
-function allowIntegerInRange(Description, Argument, minValue, maxValue) {
-    return (Argument == null
-        ? Argument
-        : expectedIntegerInRange(Description, Argument, minValue, maxValue));
-}
-var allowedIntegerInRange = allowIntegerInRange;
-/**** expect[ed]IntegerInRange ****/
-function expectIntegerInRange(Description, Argument, minValue, maxValue) {
-    expectInteger(Description, Argument);
-    if (isNaN(Argument)) {
-        throwError("InvalidArgument: the given " + escaped(Description) + " is not-a-number");
-    }
-    if ((minValue != null) && isFinite(minValue)) {
-        if ((maxValue != null) && isFinite(maxValue)) {
-            if ((Argument < minValue) || (Argument > maxValue)) {
-                throw new RangeError("the given " + escaped(Description) + " (" + Argument + ") is outside " +
-                    ("the allowed range (" + minValue + "..." + maxValue + ")"));
-            }
-        }
-        else {
-            if (Argument < minValue) {
-                throw new RangeError("the given " + escaped(Description) + " is below the allowed " +
-                    ("minimum (" + Argument + " < " + minValue + ")"));
-            }
-        }
-    }
-    else {
-        if ((maxValue != null) && isFinite(maxValue)) {
-            if (Argument > maxValue) {
-                throw new RangeError("the given " + escaped(Description) + " exceeds the allowed " +
-                    ("maximum (" + Argument + " > " + maxValue + ")"));
-            }
-        }
-    }
-    return Argument.valueOf();
-}
-var expectedIntegerInRange = expectIntegerInRange;
-/**** allow/expect[ed]String ****/
-var allowString = /*#__PURE__*/ ValidatorForClassifier(ValueIsString, acceptNil, 'literal string'), allowedString = allowString;
-/**** allow/expect[ed]NonEmptyString ****/
-var allowNonEmptyString = /*#__PURE__*/ ValidatorForClassifier(ValueIsNonEmptyString, acceptNil, 'non-empty literal string'), allowedNonEmptyString = allowNonEmptyString;
-/**** allow/expect[ed]Function ****/
-var allowFunction = /*#__PURE__*/ ValidatorForClassifier(ValueIsFunction, acceptNil, 'JavaScript function'), allowedFunction = allowFunction;
-var expectObject = /*#__PURE__*/ ValidatorForClassifier(ValueIsObject, rejectNil, 'JavaScript object');
-/**** allow/expect[ed]PlainObject ****/
-var allowPlainObject = /*#__PURE__*/ ValidatorForClassifier(ValueIsPlainObject, acceptNil, '"plain" JavaScript object'), allowedPlainObject = allowPlainObject;
-/**** allow[ed]ListSatisfying ****/
-function allowListSatisfying(Description, Argument, Validator, Expectation, minLength, maxLength) {
-    return (Argument == null
-        ? Argument
-        : expectedListSatisfying(Description, Argument, Validator, Expectation, minLength, maxLength));
-}
-/**** expect[ed]ListSatisfying ****/
-function expectListSatisfying(Description, Argument, Validator, Expectation, minLength, maxLength) {
-    if (Argument == null) {
-        throwError("MissingArgument: no " + escaped(Description) + " given");
-    }
-    if (ValueIsListSatisfying(Argument, Validator, minLength, maxLength)) {
-        return Argument;
-    }
-    else {
-        throwError("InvalidArgument: the given " + escaped(Description) + " is " + (Expectation == null
-            ? 'either not a list or contains invalid elements'
-            : 'no ' + escaped(Expectation)));
-    }
-}
-var expectedListSatisfying = expectListSatisfying;
-/**** escaped - escapes all control characters in a given string ****/
-function escaped(Text) {
-    var EscapeSequencePattern = /\\x[0-9a-zA-Z]{2}|\\u[0-9a-zA-Z]{4}|\\[0bfnrtv'"\\\/]?/g;
-    var CtrlCharCodePattern = /[\x00-\x1f\x7f-\x9f]/g;
-    return Text
-        .replace(EscapeSequencePattern, function (Match) {
-        return (Match === '\\' ? '\\\\' : Match);
-    })
-        .replace(CtrlCharCodePattern, function (Match) {
-        switch (Match) {
-            case '\0': return '\\0';
-            case '\b': return '\\b';
-            case '\f': return '\\f';
-            case '\n': return '\\n';
-            case '\r': return '\\r';
-            case '\t': return '\\t';
-            case '\v': return '\\v';
-            default: {
-                var HexCode = Match.charCodeAt(0).toString(16);
-                return '\\x' + '00'.slice(HexCode.length) + HexCode;
-            }
-        }
-    });
-}
-/**** quotable - makes a given string ready to be put in single/double quotes ****/
-function quotable(Text, Quote) {
-    if (Quote === void 0) { Quote = '"'; }
-    var EscSeqOrSglQuotePattern = /\\x[0-9a-zA-Z]{2}|\\u[0-9a-zA-Z]{4}|\\[0bfnrtv'"\\\/]?|'/g;
-    var EscSeqOrDblQuotePattern = /\\x[0-9a-zA-Z]{2}|\\u[0-9a-zA-Z]{4}|\\[0bfnrtv'"\\\/]?|"/g;
-    var CtrlCharCodePattern = /[\x00-\x1f\x7f-\x9f]/g;
-    return Text
-        .replace(Quote === "'" ? EscSeqOrSglQuotePattern : EscSeqOrDblQuotePattern, function (Match) {
-        switch (Match) {
-            case "'": return "\\'";
-            case '"': return '\\"';
-            case '\\': return '\\\\';
-            default: return Match;
-        }
-    })
-        .replace(CtrlCharCodePattern, function (Match) {
-        switch (Match) {
-            case '\0': return '\\0';
-            case '\b': return '\\b';
-            case '\f': return '\\f';
-            case '\n': return '\\n';
-            case '\r': return '\\r';
-            case '\t': return '\\t';
-            case '\v': return '\\v';
-            default: {
-                var HexCode = Match.charCodeAt(0).toString(16);
-                return '\\x' + '00'.slice(HexCode.length) + HexCode;
-            }
-        }
-    });
-}
-/**** quoted ****/
-function quoted(Text, Quote) {
-    if (Quote === void 0) { Quote = '"'; }
-    return Quote + quotable(Text, Quote) + Quote;
-}
 /**** ObjectIsEmpty ****/
 function ObjectIsEmpty(Candidate) {
     expectObject('candidate', Candidate);
@@ -1272,9 +936,10 @@ function constrained(Value, Minimum, Maximum) {
     return Math.max(Minimum, Math.min(Value, Maximum));
 }
 
-var e={fromViewportTo:function(e,t,o){switch(!0){case null==t:throw new Error('no "Position" given');case"number"!=typeof t.left&&!(t.left instanceof Number):case"number"!=typeof t.top&&!(t.top instanceof Number):throw new Error('invalid "Position" given')}switch(e){case null:case void 0:throw new Error("no coordinate system given");case"viewport":return {left:t.left,top:t.top};case"document":return {left:t.left+window.scrollX,top:t.top+window.scrollY};case"local":switch(!0){case null==o:throw new Error("no target element given");case o instanceof Element:var r=window.getComputedStyle(o),n=parseFloat(r.borderLeftWidth),i=parseFloat(r.borderTopWidth),l=o.getBoundingClientRect();return {left:t.left-l.left-n,top:t.top-l.top-i};default:throw new Error("invalid target element given")}default:throw new Error("invalid coordinate system given")}},fromDocumentTo:function(e,t,o){switch(!0){case null==t:throw new Error('no "Position" given');case"number"!=typeof t.left&&!(t.left instanceof Number):case"number"!=typeof t.top&&!(t.top instanceof Number):throw new Error('invalid "Position" given')}switch(e){case null:case void 0:throw new Error("no coordinate system given");case"viewport":return {left:t.left-window.scrollX,top:t.top-window.scrollY};case"document":return {left:t.left,top:t.top};case"local":switch(!0){case null==o:throw new Error("no target element given");case o instanceof Element:var r=window.getComputedStyle(o),n=parseFloat(r.borderLeftWidth),i=parseFloat(r.borderTopWidth),l=o.getBoundingClientRect();return {left:t.left+window.scrollX-l.left-n,top:t.top+window.scrollY-l.top-i};default:throw new Error("invalid target element given")}default:throw new Error("invalid coordinate system given")}},fromLocalTo:function(e,t,o){switch(!0){case null==t:throw new Error('no "Position" given');case"number"!=typeof t.left&&!(t.left instanceof Number):case"number"!=typeof t.top&&!(t.top instanceof Number):throw new Error('invalid "Position" given')}var r,n,i;switch(!0){case null==o:throw new Error("no source element given");case o instanceof Element:var l=window.getComputedStyle(o),a=parseFloat(l.borderLeftWidth),s=parseFloat(l.borderTopWidth);n=(r=o.getBoundingClientRect()).left+a,i=r.top+s;break;default:throw new Error("invalid source element given")}switch(e){case null:case void 0:throw new Error("no coordinate system given");case"viewport":return {left:t.left+n,top:t.top+i};case"document":return {left:t.left+n+window.scrollX,top:t.top+i+window.scrollY};case"local":return {left:t.left,top:t.top};default:throw new Error("invalid coordinate system given")}}};
+var e$1={fromViewportTo:function(e,t,o){switch(!0){case null==t:throw new Error('no "Position" given');case"number"!=typeof t.left&&!(t.left instanceof Number):case"number"!=typeof t.top&&!(t.top instanceof Number):throw new Error('invalid "Position" given')}switch(e){case null:case void 0:throw new Error("no coordinate system given");case"viewport":return {left:t.left,top:t.top};case"document":return {left:t.left+window.scrollX,top:t.top+window.scrollY};case"local":switch(!0){case null==o:throw new Error("no target element given");case o instanceof Element:var r=window.getComputedStyle(o),n=parseFloat(r.borderLeftWidth),i=parseFloat(r.borderTopWidth),l=o.getBoundingClientRect();return {left:t.left-l.left-n,top:t.top-l.top-i};default:throw new Error("invalid target element given")}default:throw new Error("invalid coordinate system given")}},fromDocumentTo:function(e,t,o){switch(!0){case null==t:throw new Error('no "Position" given');case"number"!=typeof t.left&&!(t.left instanceof Number):case"number"!=typeof t.top&&!(t.top instanceof Number):throw new Error('invalid "Position" given')}switch(e){case null:case void 0:throw new Error("no coordinate system given");case"viewport":return {left:t.left-window.scrollX,top:t.top-window.scrollY};case"document":return {left:t.left,top:t.top};case"local":switch(!0){case null==o:throw new Error("no target element given");case o instanceof Element:var r=window.getComputedStyle(o),n=parseFloat(r.borderLeftWidth),i=parseFloat(r.borderTopWidth),l=o.getBoundingClientRect();return {left:t.left+window.scrollX-l.left-n,top:t.top+window.scrollY-l.top-i};default:throw new Error("invalid target element given")}default:throw new Error("invalid coordinate system given")}},fromLocalTo:function(e,t,o){switch(!0){case null==t:throw new Error('no "Position" given');case"number"!=typeof t.left&&!(t.left instanceof Number):case"number"!=typeof t.top&&!(t.top instanceof Number):throw new Error('invalid "Position" given')}var r,n,i;switch(!0){case null==o:throw new Error("no source element given");case o instanceof Element:var l=window.getComputedStyle(o),a=parseFloat(l.borderLeftWidth),s=parseFloat(l.borderTopWidth);n=(r=o.getBoundingClientRect()).left+a,i=r.top+s;break;default:throw new Error("invalid source element given")}switch(e){case null:case void 0:throw new Error("no coordinate system given");case"viewport":return {left:t.left+n,top:t.top+i};case"document":return {left:t.left+n+window.scrollX,top:t.top+i+window.scrollY};case"local":return {left:t.left,top:t.top};default:throw new Error("invalid coordinate system given")}}};
 
 //----------------------------------------------------------------------------//
+console.log('>>>> svelte-drag-and-drop-actions');
 /**** parsedDraggableOptions ****/
 function parsedDraggableOptions(Options) {
     Options = allowedPlainObject('drag options', Options) || {};
@@ -1290,13 +955,13 @@ function parsedDraggableOptions(Options) {
             break;
         case (Options.relativeTo === 'parent'):
         case (Options.relativeTo === 'body'):
-        case ValueIsNonEmptyString(Options.relativeTo):
+        case ValueIsNonEmptyString$1(Options.relativeTo):
         case (Options.relativeTo instanceof HTMLElement):
         case (Options.relativeTo instanceof SVGElement):
             //    case (Options.relativeTo instanceof MathMLElement):
             relativeTo = Options.relativeTo;
             break;
-        default: throwError('InvalidArgument: invalid position reference given');
+        default: throwError$1('InvalidArgument: invalid position reference given');
     }
     onlyFrom = allowedNonEmptyString('"onlyFrom" CSS selector', Options.onlyFrom);
     neverFrom = allowedNonEmptyString('"neverFrom" CSS selector', Options.neverFrom);
@@ -1306,14 +971,14 @@ function parsedDraggableOptions(Options) {
             break;
         case (Options.Dummy === 'standard'):
         case (Options.Dummy === 'none'):
-        case ValueIsNonEmptyString(Options.Dummy):
+        case ValueIsNonEmptyString$1(Options.Dummy):
         case (Options.Dummy instanceof HTMLElement):
         case (Options.Dummy instanceof SVGElement):
         //    case (Options.Dummy instanceof MathMLElement):
-        case ValueIsFunction(Options.Dummy):
+        case ValueIsFunction$1(Options.Dummy):
             Dummy = Options.Dummy;
             break;
-        default: throwError('InvalidArgument: invalid drag dummy specification given');
+        default: throwError$1('InvalidArgument: invalid drag dummy specification given');
     }
     DummyOffsetX = allowedFiniteNumber('dummy x offset', Options.DummyOffsetX);
     DummyOffsetY = allowedFiniteNumber('dummy y offset', Options.DummyOffsetY);
@@ -1438,7 +1103,7 @@ function asDroppable(Element, Options) {
             return false;
         }
         PositionReference = PositionReferenceFor(Element, Options);
-        var relativePosition = e.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, PositionReference); // relative to reference element
+        var relativePosition = e$1.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, PositionReference); // relative to reference element
         ReferenceDeltaX = ReferenceDeltaY = 0;
         initialPosition = { x: 0, y: 0 };
         if (Options.onDragStart == null) {
@@ -1447,7 +1112,7 @@ function asDroppable(Element, Options) {
         else {
             try {
                 var StartPosition = Options.onDragStart(Options.Extras);
-                if (ValueIsPlainObject(StartPosition)) {
+                if (ValueIsPlainObject$1(StartPosition)) {
                     var x = allowedFiniteNumber('x start position', StartPosition.x);
                     var y = allowedFiniteNumber('y start position', StartPosition.y);
                     ReferenceDeltaX = x - relativePosition.left;
@@ -1473,7 +1138,7 @@ function asDroppable(Element, Options) {
             var OffsetX = Options.DummyOffsetX;
             var OffsetY = Options.DummyOffsetY;
             if ((OffsetX == null) || (OffsetY == null)) {
-                var PositionInDraggable = e.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, Element);
+                var PositionInDraggable = e$1.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, Element);
                 if (OffsetX == null) {
                     OffsetX = PositionInDraggable.left;
                 }
@@ -1488,7 +1153,7 @@ function asDroppable(Element, Options) {
                         document.body.removeChild(DragImage);
                     }, 0);
                     break;
-                case ValueIsString(Options.Dummy):
+                case ValueIsString$1(Options.Dummy):
                     originalEvent.dataTransfer.setDragImage(DragImage, OffsetX, OffsetY);
                     setTimeout(function () {
                         document.body.removeChild(DragImage.parentElement);
@@ -1510,6 +1175,7 @@ function asDroppable(Element, Options) {
             }
         }
         currentDroppableExtras = Options.Extras;
+        console.log('startDragging', currentDroppableExtras);
         currentDropZoneExtras = undefined;
         currentDropZonePosition = undefined;
         DroppableWasDropped = false;
@@ -1532,7 +1198,7 @@ function asDroppable(Element, Options) {
         }
         else {
             PositioningWasDelayed = false;
-            var relativePosition = e.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, PositionReference); // relative to reference element
+            var relativePosition = e$1.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, PositionReference); // relative to reference element
             var x = relativePosition.left + ReferenceDeltaX; // in user coordinates
             var y = relativePosition.top + ReferenceDeltaY;
             x = constrained(x, Options.minX, Options.maxX);
@@ -1584,6 +1250,7 @@ function asDroppable(Element, Options) {
             var dy = y - lastPosition.y;
             invokeHandler('onDragEnd', Options, x, y, dx, dy, Options.Extras);
         }
+        console.log('finishDragging', currentDroppableExtras);
         currentDroppableExtras = undefined;
         isDragged = false;
         Element.classList.remove('dragged', 'droppable');
@@ -1627,11 +1294,11 @@ function parsedDropZoneOptions(Options) {
     var onDroppableEnter, onDroppableMove, onDroppableLeave;
     var onDroppableHold, onDroppableRelease, onDrop;
     Extras = Options.Extras;
-    allowPlainObject('data types to be accepted', Options.TypesToAccept);
+    allowPlainObject$1('data types to be accepted', Options.TypesToAccept);
     TypesToAccept = Object.create(null);
     for (var Type in Options.TypesToAccept) {
         if (Options.TypesToAccept.hasOwnProperty(Type)) {
-            TypesToAccept[Type] = parsedOperations('list of accepted operations for type ' + quoted(Type), Options.TypesToAccept[Type]);
+            TypesToAccept[Type] = parsedOperations('list of accepted operations for type ' + quoted$1(Type), Options.TypesToAccept[Type]);
         }
     }
     HoldDelay = allowedIntegerInRange('min. time to hold', Options.HoldDelay, 0);
@@ -1661,6 +1328,7 @@ function asDropZone(Element, Options) {
     currentDropZoneOptions = parsedDropZoneOptions(Options);
     /**** enteredByDroppable ****/
     function enteredByDroppable(originalEvent) {
+        console.log('enteredByDroppable', currentDroppableExtras);
         if ((originalEvent.dataTransfer == null) ||
             (originalEvent.dataTransfer.effectAllowed === 'none')) {
             return;
@@ -1687,7 +1355,7 @@ function asDropZone(Element, Options) {
         if (offeredTypeList.length === 0) {
             return;
         }
-        var DropZonePosition = asPosition(e.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, Element)); // relative to DropZone element
+        var DropZonePosition = asPosition(e$1.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, Element)); // relative to DropZone element
         var accepted = ResultOfHandler('onDroppableEnter', Options, DropZonePosition.x, DropZonePosition.y, wantedOperation, offeredTypeList, currentDroppableExtras, Options.Extras);
         if (accepted === false) { // i.e. explicit "false" result required
             return;
@@ -1703,6 +1371,7 @@ function asDropZone(Element, Options) {
     }
     /**** hoveredByDroppable ****/
     function hoveredByDroppable(originalEvent) {
+        console.log('hoveredByDroppable', currentDroppableExtras);
         if ((originalEvent.dataTransfer == null) ||
             (originalEvent.dataTransfer.effectAllowed === 'none') ||
             (currentDropZoneElement != null) && (currentDropZoneElement !== Element)) {
@@ -1738,7 +1407,7 @@ function asDropZone(Element, Options) {
             Element.classList.remove('hovered');
             return;
         }
-        currentDropZonePosition = asPosition(e.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, Element)); // relative to DropZone element
+        currentDropZonePosition = asPosition(e$1.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, Element)); // relative to DropZone element
         var accepted = ResultOfHandler('onDroppableMove', Options, currentDropZonePosition.x, currentDropZonePosition.y, wantedOperation, offeredTypeList, currentDroppableExtras, Options.Extras);
         if (accepted === false) { // i.e. explicit "false" result required
             currentDropZoneExtras = undefined;
@@ -1758,6 +1427,7 @@ function asDropZone(Element, Options) {
     }
     /**** leftByDroppable ****/
     function leftByDroppable(originalEvent) {
+        console.log('leftByDroppable', currentDroppableExtras);
         Element.classList.remove('hovered');
         var Options = currentDropZoneOptions;
         if (currentDropZoneElement === Element) {
@@ -1776,6 +1446,7 @@ function asDropZone(Element, Options) {
     }
     /**** droppedByDroppable ****/
     function droppedByDroppable(originalEvent) {
+        console.log('droppedByDroppable', currentDroppableExtras);
         Element.classList.remove('hovered');
         if ((originalEvent.dataTransfer == null) ||
             (originalEvent.dataTransfer.effectAllowed === 'none') ||
@@ -1812,7 +1483,7 @@ function asDropZone(Element, Options) {
             invokeHandler('onDroppableLeave', Options, currentDroppableExtras, Options.Extras);
             return;
         }
-        currentDropZonePosition = asPosition(e.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, Element)); // relative to DropZone element
+        currentDropZonePosition = asPosition(e$1.fromDocumentTo('local', { left: originalEvent.pageX, top: originalEvent.pageY }, Element)); // relative to DropZone element
         var offeredData = {};
         offeredTypeList.forEach(
         // @ts-ignore originalEvent.dataTransfer definitely exists
@@ -1825,7 +1496,7 @@ function asDropZone(Element, Options) {
                 currentTypeTransferred = undefined;
                 currentDataTransferred = undefined;
                 break;
-            case ValueIsOneOf(acceptedType, offeredTypeList):
+            case ValueIsOneOf$1(acceptedType, offeredTypeList):
                 DroppableWasDropped = true;
                 currentDropOperation = wantedOperation;
                 currentTypeTransferred = acceptedType;
@@ -1868,7 +1539,7 @@ function asDropZone(Element, Options) {
 }
 /**** ValueIsPosition ****/
 function ValueIsPosition(Candidate) {
-    return (ValueIsPlainObject(Candidate) &&
+    return (ValueIsPlainObject$1(Candidate) &&
         ValueIsFiniteNumber(Candidate.x) && ValueIsFiniteNumber(Candidate.y));
 }
 /**** asPosition ****/
@@ -1891,7 +1562,7 @@ function PositionReferenceFor(Element, Options) {
             PositionReference = Options.relativeTo;
             if ((PositionReference != document.body) &&
                 !document.body.contains(PositionReference))
-                throwError('InvalidArgument: the HTML element given as "relativeTo" option ' +
+                throwError$1('InvalidArgument: the HTML element given as "relativeTo" option ' +
                     'is not part of this HTML document');
             break;
         default: // CSS selector
@@ -1911,7 +1582,7 @@ function DragImageFor(Element, Options) {
                 'cursor:auto');
             document.body.appendChild(invisibleDragImage);
             return invisibleDragImage;
-        case ValueIsNonEmptyString(Options.Dummy): // may flicker shortly
+        case ValueIsNonEmptyString$1(Options.Dummy): // may flicker shortly
             var auxiliaryElement = document.createElement('div');
             auxiliaryElement.style.display = 'block';
             auxiliaryElement.style.position = 'absolute';
@@ -1923,7 +1594,7 @@ function DragImageFor(Element, Options) {
         case (Options.Dummy instanceof SVGElement):
             //    case (Options.Dummy instanceof MathMLElement):
             return Options.Dummy;
-        case ValueIsFunction(Options.Dummy):
+        case ValueIsFunction$1(Options.Dummy):
             var Candidate = undefined;
             try {
                 Candidate = Options.Dummy(Options.Extras, Element);
@@ -1945,13 +1616,13 @@ function DragImageFor(Element, Options) {
 /**** parsedOperations ****/
 function parsedOperations(Description, Argument, Default) {
     if (Default === void 0) { Default = 'copy move link'; }
-    var Operations = allowedString(Description, Argument) || Default;
+    var Operations = allowedString$1(Description, Argument) || Default;
     switch (Operations.trim()) {
         case 'all': return 'copy move link';
         case 'none': return '';
     }
     var OperationList = Operations.trim().replace(/\s+/g, ' ').split(' ');
-    allowListSatisfying(Description, OperationList, function (Operation) { return ValueIsOneOf(Operation, DropOperations); });
+    allowListSatisfying$1(Description, OperationList, function (Operation) { return ValueIsOneOf$1(Operation, DropOperations); });
     return OperationList.reduce(function (Result, Operation) { return (Result.indexOf(Operation) < 0 ? Result + Operation + ' ' : Result); }, ' ');
 }
 function allowedEffectsFrom(Operations) {
@@ -1974,11 +1645,347 @@ function invokeHandler(Name, Options) {
             return Options[Name].apply(null, Arguments);
         }
         catch (Signal) {
-            console.error(quoted(Name) + ' handler failed', Signal);
+            console.error(quoted$1(Name) + ' handler failed', Signal);
         }
     }
 }
 var ResultOfHandler = invokeHandler;
+
+var e,n=!1;e=navigator.userAgent||navigator.vendor||window.opera,(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(e)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(e.substr(0,4)))&&(n=!0);var i=!1;if(n){var t$1=window.innerWidth,a=window.innerHeight,o=Math.min(t$1,a),r$1=Math.max(t$1,a);i=o<=480&&r$1<=896;}var c=window.matchMedia||window.webkitMatchmedia||window.mozMatchmedia||window.oMatchmedia;function d(e){return null!=c&&c(e).matches}function s(){return "interactive"===document.readyState||"complete"===document.readyState}var l,m=!d("(pointer:fine)")&&!d("(pointer:coarse)")&&!d("-moz-touch-enabled")&&("ontouchstart"in Window||(navigator.maxTouchPoints||0)>0||/touch|android|iphone|ipod|ipad/i.test(navigator.userAgent));function u(){var e="fine";switch(!0){case d("(pointer:none)"):e="none";break;case d("(pointer:coarse)"):case d("-moz-touch-enabled"):case m:e="coarse";}if(l=e,s())switch(document.body.classList.remove("noPointer","finePointer","coarsePointer"),e){case"none":document.body.classList.add("noPointer");break;case"fine":document.body.classList.add("finePointer");break;case"coarse":document.body.classList.add("coarsePointer");}}u(),s()||window.addEventListener("DOMContentLoaded",u);var p=[];function h(e,n){if("function"!=typeof e)throw new Error("handler function expected");for(var i=0,t=p.length;i<t;i++)if(p[i].Handler===e)return void(p[i].onceOnly=n);p.push({Handler:e,onceOnly:n}),1===p.length&&(v=setInterval((function(){var e=l;u(),l!==e&&function(){for(var e=0,n=p.length;e<n;e++){var i=p[e],t=i.Handler,a=i.onceOnly;try{t(l);}catch(e){console.warn("PointingAccuracy observation function failed with",e);}a&&g(t);}}();}),500));}function g(e){for(var n=0,i=p.length;n<i;n++)if(p[n].Handler===e){p.splice(n,1);break}0===p.length&&(clearInterval(v),v=void 0);}var v=void 0;function w(e,n){return "function"==typeof e.item?e.item(n):e[n]}function f(e,n){for(var i=0,t=e.length;i<t;i++)if(n.test(w(e,i)))return !0;return !1}if(m){for(var b=document.styleSheets,y=0,k=b.length;y<k;y++)for(var x=b[y].cssRules||b[y].rules,P=0,z=x.length;P<z;P++){var A=x[P];if(A.type===CSSRule.MEDIA_RULE&&f(A.media,/handheld/i)){var M=A.media;M.mediaText=M.mediaText.replace("handheld","screen");}}var L=document.getElementsByTagName("link");for(y=0,k=L.length;y<k;y++){var T=L[y];/handheld/i.test(T.media)&&(T.media=T.media.replace("handheld","screen"));}}var j={get isMobile(){return n},get isPhone(){return i},get isTablet(){return n&&!i},get isLegacyTouchDevice(){return m},get PointingAccuracy(){return l},onPointingAccuracyChanged:function(e){h(e,!1);},oncePointingAccuracyChanged:function(e){h(e,!0);},offPointingAccuracyChanged:function(e){g(e);},get observesPointingAccuracy(){return null!=v}};
+
+var r=0;function t(){return "uid-"+ ++r}
+
+//----------------------------------------------------------------------------//
+/**** throwError - simplifies construction of named errors ****/
+function throwError(Message) {
+    var Match = /^([$a-zA-Z][$a-zA-Z0-9]*):\s*(\S.+)\s*$/.exec(Message);
+    if (Match == null) {
+        throw new Error(Message);
+    }
+    else {
+        var namedError = new Error(Match[2]);
+        namedError.name = Match[1];
+        throw namedError;
+    }
+}
+/**** ValueIsBoolean ****/
+function ValueIsBoolean(Value) {
+    return (typeof Value === 'boolean') || (Value instanceof Boolean);
+}
+/**** ValueIsOrdinal ****/
+function ValueIsOrdinal(Value) {
+    if ((typeof Value !== 'number') && !(Value instanceof Number)) {
+        return false;
+    }
+    Value = Value.valueOf();
+    return isFinite(Value) && (Math.round(Value) === Value) && (Value >= 0);
+}
+/**** ValueIsString ****/
+function ValueIsString(Value) {
+    return (typeof Value === 'string') || (Value instanceof String);
+}
+/**** ValueIsNonEmptyString ****/
+var emptyStringPattern = /^\s*$/;
+function ValueIsNonEmptyString(Value) {
+    return ((typeof Value === 'string') || (Value instanceof String)) && !emptyStringPattern.test(Value.valueOf());
+}
+/**** ValueIsFunction ****/
+function ValueIsFunction(Value) {
+    return (typeof Value === 'function');
+}
+/**** ValueIsObject ****/
+function ValueIsObject(Value) {
+    return (Value != null) && (typeof Value === 'object');
+}
+/**** ValueIsPlainObject ****/
+function ValueIsPlainObject(Value) {
+    return ((Value != null) && (typeof Value === 'object') &&
+        (Object.getPrototypeOf(Value) === Object.prototype));
+}
+/**** ValueIsArray ****/
+var ValueIsArray = Array.isArray;
+/**** ValueIsList ("dense" array) ****/
+function ValueIsList(Value, minLength, maxLength) {
+    if (ValueIsArray(Value)) {
+        for (var i = 0, l = Value.length; i < l; i++) {
+            if (Value[i] === undefined) {
+                return false;
+            }
+        }
+        if (minLength != null) {
+            if (Value.length < minLength) {
+                return false;
+            }
+        }
+        if (maxLength != null) {
+            if (Value.length > maxLength) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+/**** ValueIsListSatisfying ****/
+function ValueIsListSatisfying(Value, Validator, minLength, maxLength) {
+    if (ValueIsArray(Value)) {
+        try {
+            for (var i = 0, l = Value.length; i < l; i++) {
+                if (Validator(Value[i]) == false) {
+                    return false;
+                }
+            }
+            if (minLength != null) {
+                if (Value.length < minLength) {
+                    return false;
+                }
+            }
+            if (maxLength != null) {
+                if (Value.length > maxLength) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        catch (Signal) { /* nop */ }
+    }
+    return false;
+}
+/**** ValueIsOneOf ****/
+function ValueIsOneOf(Value, ValueList) {
+    return (ValueList.indexOf(Value) >= 0);
+} // no automatic unboxing of boxed values and vice-versa!
+var acceptNil = true;
+/**** validatedArgument ****/
+function validatedArgument(Description, Argument, ValueIsValid, NilIsAcceptable, Expectation) {
+    if (Argument == null) {
+        if (NilIsAcceptable) {
+            return Argument;
+        }
+        else {
+            throwError("MissingArgument: no " + escaped(Description) + " given");
+        }
+    }
+    else {
+        if (ValueIsValid(Argument)) {
+            switch (true) {
+                case Argument instanceof Boolean:
+                case Argument instanceof Number:
+                case Argument instanceof String:
+                    return Argument.valueOf(); // unboxes any primitives
+                default:
+                    return Argument;
+            }
+        }
+        else {
+            throwError("InvalidArgument: the given " + escaped(Description) + " is no valid " + escaped(Expectation));
+        }
+    }
+}
+/**** ValidatorForClassifier ****/
+function ValidatorForClassifier(Classifier, NilIsAcceptable, Expectation) {
+    var Validator = function (Description, Argument) {
+        return validatedArgument(Description, Argument, Classifier, NilIsAcceptable, Expectation);
+    };
+    var ClassifierName = Classifier.name;
+    if ((ClassifierName != null) && /^ValueIs/.test(ClassifierName)) {
+        var ValidatorName = ClassifierName.replace(// derive name from validator
+        /^ValueIs/, NilIsAcceptable ? 'allow' : 'expect');
+        return FunctionWithName(Validator, ValidatorName);
+    }
+    else {
+        return Validator; // without any specific name
+    }
+}
+/**** FunctionWithName (works with older JS engines as well) ****/
+function FunctionWithName(originalFunction, desiredName) {
+    if (originalFunction == null) {
+        throwError('MissingArgument: no function given');
+    }
+    if (typeof originalFunction !== 'function') {
+        throwError('InvalidArgument: the given 1st Argument is not a JavaScript function');
+    }
+    if (desiredName == null) {
+        throwError('MissingArgument: no desired name given');
+    }
+    if ((typeof desiredName !== 'string') && !(desiredName instanceof String)) {
+        throwError('InvalidArgument: the given desired name is not a string');
+    }
+    if (originalFunction.name === desiredName) {
+        return originalFunction;
+    }
+    try {
+        Object.defineProperty(originalFunction, 'name', { value: desiredName });
+        if (originalFunction.name === desiredName) {
+            return originalFunction;
+        }
+    }
+    catch (signal) { /* ok - let's take the hard way */ }
+    var renamed = new Function('originalFunction', 'return function ' + desiredName + ' () {' +
+        'return originalFunction.apply(this,Array.prototype.slice.apply(arguments))' +
+        '}');
+    return renamed(originalFunction);
+} // also works with older JavaScript engines
+/**** allow/expect[ed]Boolean ****/
+var allowBoolean = /*#__PURE__*/ ValidatorForClassifier(ValueIsBoolean, acceptNil, 'boolean value'), allowedBoolean = allowBoolean;
+/**** allow/expect[ed]Ordinal ****/
+var allowOrdinal = /*#__PURE__*/ ValidatorForClassifier(ValueIsOrdinal, acceptNil, 'ordinal number');
+/**** allow/expect[ed]String ****/
+var allowString = /*#__PURE__*/ ValidatorForClassifier(ValueIsString, acceptNil, 'literal string'), allowedString = allowString;
+/**** allow/expect[ed]NonEmptyString ****/
+var allowNonEmptyString = /*#__PURE__*/ ValidatorForClassifier(ValueIsNonEmptyString, acceptNil, 'non-empty literal string');
+/**** allow/expect[ed]Function ****/
+var allowFunction = /*#__PURE__*/ ValidatorForClassifier(ValueIsFunction, acceptNil, 'JavaScript function');
+/**** allow/expect[ed]PlainObject ****/
+var allowPlainObject = /*#__PURE__*/ ValidatorForClassifier(ValueIsPlainObject, acceptNil, '"plain" JavaScript object');
+/**** allow[ed]ListSatisfying ****/
+function allowListSatisfying(Description, Argument, Validator, Expectation, minLength, maxLength) {
+    return (Argument == null
+        ? Argument
+        : expectedListSatisfying(Description, Argument, Validator, Expectation, minLength, maxLength));
+}
+var allowedListSatisfying = allowListSatisfying;
+/**** expect[ed]ListSatisfying ****/
+function expectListSatisfying(Description, Argument, Validator, Expectation, minLength, maxLength) {
+    if (Argument == null) {
+        throwError("MissingArgument: no " + escaped(Description) + " given");
+    }
+    if (ValueIsListSatisfying(Argument, Validator, minLength, maxLength)) {
+        return Argument;
+    }
+    else {
+        throwError("InvalidArgument: the given " + escaped(Description) + " is " + (Expectation == null
+            ? 'either not a list or contains invalid elements'
+            : 'no ' + escaped(Expectation)));
+    }
+}
+var expectedListSatisfying = expectListSatisfying;
+/**** escaped - escapes all control characters in a given string ****/
+function escaped(Text) {
+    var EscapeSequencePattern = /\\x[0-9a-zA-Z]{2}|\\u[0-9a-zA-Z]{4}|\\[0bfnrtv'"\\\/]?/g;
+    var CtrlCharCodePattern = /[\x00-\x1f\x7f-\x9f]/g;
+    return Text
+        .replace(EscapeSequencePattern, function (Match) {
+        return (Match === '\\' ? '\\\\' : Match);
+    })
+        .replace(CtrlCharCodePattern, function (Match) {
+        switch (Match) {
+            case '\0': return '\\0';
+            case '\b': return '\\b';
+            case '\f': return '\\f';
+            case '\n': return '\\n';
+            case '\r': return '\\r';
+            case '\t': return '\\t';
+            case '\v': return '\\v';
+            default: {
+                var HexCode = Match.charCodeAt(0).toString(16);
+                return '\\x' + '00'.slice(HexCode.length) + HexCode;
+            }
+        }
+    });
+}
+/**** quotable - makes a given string ready to be put in single/double quotes ****/
+function quotable(Text, Quote) {
+    if (Quote === void 0) { Quote = '"'; }
+    var EscSeqOrSglQuotePattern = /\\x[0-9a-zA-Z]{2}|\\u[0-9a-zA-Z]{4}|\\[0bfnrtv'"\\\/]?|'/g;
+    var EscSeqOrDblQuotePattern = /\\x[0-9a-zA-Z]{2}|\\u[0-9a-zA-Z]{4}|\\[0bfnrtv'"\\\/]?|"/g;
+    var CtrlCharCodePattern = /[\x00-\x1f\x7f-\x9f]/g;
+    return Text
+        .replace(Quote === "'" ? EscSeqOrSglQuotePattern : EscSeqOrDblQuotePattern, function (Match) {
+        switch (Match) {
+            case "'": return "\\'";
+            case '"': return '\\"';
+            case '\\': return '\\\\';
+            default: return Match;
+        }
+    })
+        .replace(CtrlCharCodePattern, function (Match) {
+        switch (Match) {
+            case '\0': return '\\0';
+            case '\b': return '\\b';
+            case '\f': return '\\f';
+            case '\n': return '\\n';
+            case '\r': return '\\r';
+            case '\t': return '\\t';
+            case '\v': return '\\v';
+            default: {
+                var HexCode = Match.charCodeAt(0).toString(16);
+                return '\\x' + '00'.slice(HexCode.length) + HexCode;
+            }
+        }
+    });
+}
+/**** quoted ****/
+function quoted(Text, Quote) {
+    if (Quote === void 0) { Quote = '"'; }
+    return Quote + quotable(Text, Quote) + Quote;
+}
+/**** ValuesDiffer ****/
+function ValuesDiffer(thisValue, otherValue) {
+    if (thisValue === otherValue) {
+        return false;
+    }
+    var thisType = typeof thisValue;
+    if (thisType !== typeof otherValue) {
+        return true;
+    }
+    /**** ArraysDiffer ****/
+    function ArraysDiffer(thisArray, otherArray) {
+        if (!Array.isArray(otherArray)) {
+            return true;
+        }
+        if (thisArray.length !== otherArray.length) {
+            return true;
+        }
+        for (var i = 0, l = thisArray.length; i < l; i++) {
+            if (ValuesDiffer(thisArray[i], otherArray[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**** ObjectsDiffer ****/
+    function ObjectsDiffer(thisObject, otherObject) {
+        if (Object.getPrototypeOf(thisObject) !== Object.getPrototypeOf(otherObject)) {
+            return true;
+        }
+        for (var key in thisObject) {
+            if (!(key in otherObject)) {
+                return true;
+            }
+        }
+        for (var key in otherObject) {
+            if (!(key in thisObject)) {
+                return true;
+            }
+            if (ValuesDiffer(thisObject[key], otherObject[key])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    switch (thisType) {
+        case 'undefined':
+        case 'boolean':
+        case 'string':
+        case 'function': return true; // most primitives are compared using "==="
+        case 'number': return ((isNaN(thisValue) !== isNaN(otherValue)) ||
+            (Math.abs(thisValue - otherValue) > Number.EPSILON));
+        case 'object':
+            if (thisValue == null) {
+                return true;
+            } // since "other_value" != null!
+            if (otherValue == null) {
+                return true;
+            } // since "this_value" != null!
+            if (Array.isArray(thisValue)) {
+                return ArraysDiffer(thisValue, otherValue);
+            }
+            return ObjectsDiffer(thisValue, otherValue);
+        default: return true; // unsupported property type
+    }
+    return true;
+}
 
 function styleInject(css, ref) {
   if ( ref === void 0 ) ref = {};
@@ -2046,7 +2053,7 @@ const get_default_slot_context = ctx => ({
 	Index: /*Index*/ ctx[66]
 });
 
-// (636:2) {:else}
+// (650:4) {:else}
 function create_else_block_1(ctx) {
 	let li;
 	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -2070,7 +2077,64 @@ function create_else_block_1(ctx) {
 	};
 }
 
-// (594:2) {#if (List.length > 0)}
+// (642:4) {#if extendable}
+function create_if_block_3(ctx) {
+	let li;
+	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
+	let asDropZone_action;
+	let mounted;
+	let dispose;
+
+	return {
+		c() {
+			li = element("li");
+			toggle_class(li, "Placeholder", true);
+		},
+		m(target, anchor) {
+			insert(target, li, anchor);
+			li.innerHTML = raw_value;
+
+			if (!mounted) {
+				dispose = action_destroyer(asDropZone_action = asDropZone.call(null, li, {
+					Extras: {
+						List: /*List*/ ctx[0],
+						Item: undefined,
+						ItemList: undefined
+					},
+					TypesToAccept: /*TypesAccepted*/ ctx[10],
+					onDroppableEnter: /*onDroppableEnter*/ ctx[20],
+					onDroppableMove: /*onDroppableMove*/ ctx[21],
+					onDrop: /*onDrop*/ ctx[23]
+				}));
+
+				mounted = true;
+			}
+		},
+		p(ctx, dirty) {
+			if (dirty[0] & /*Placeholder*/ 32 && raw_value !== (raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "")) li.innerHTML = raw_value;
+			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List, TypesAccepted*/ 1025) asDropZone_action.update.call(null, {
+				Extras: {
+					List: /*List*/ ctx[0],
+					Item: undefined,
+					ItemList: undefined
+				},
+				TypesToAccept: /*TypesAccepted*/ ctx[10],
+				onDroppableEnter: /*onDroppableEnter*/ ctx[20],
+				onDroppableMove: /*onDroppableMove*/ ctx[21],
+				onDrop: /*onDrop*/ ctx[23]
+			});
+		},
+		i: noop,
+		o: noop,
+		d(detaching) {
+			if (detaching) detach(li);
+			mounted = false;
+			dispose();
+		}
+	};
+}
+
+// (599:2) {#if (List.length > 0)}
 function create_if_block(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2140,7 +2204,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (625:4) {:else}
+// (630:4) {:else}
 function create_else_block(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -2205,7 +2269,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (595:4) {#if sortable || extendable || shrinkable}
+// (600:4) {#if sortable || extendable || shrinkable}
 function create_if_block_1(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -2292,7 +2356,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (632:31)  
+// (637:31)  
 function fallback_block_1(ctx) {
 	let t_value = /*KeyOf*/ ctx[11](/*Item*/ ctx[64]) + "";
 	let t;
@@ -2313,7 +2377,7 @@ function fallback_block_1(ctx) {
 	};
 }
 
-// (626:6) {#each List as Item,Index (KeyOf(Item))}
+// (631:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block_1(key_1, ctx) {
 	let li;
 	let t;
@@ -2389,7 +2453,7 @@ function create_each_block_1(key_1, ctx) {
 	};
 }
 
-// (612:31)  
+// (617:31)  
 function fallback_block(ctx) {
 	let t_value = /*KeyOf*/ ctx[11](/*Item*/ ctx[64]) + "";
 	let t;
@@ -2410,7 +2474,7 @@ function fallback_block(ctx) {
 	};
 }
 
-// (596:6) {#each List as Item,Index (KeyOf(Item))}
+// (601:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block(key_1, ctx) {
 	let li;
 	let asDroppable_action;
@@ -2545,7 +2609,7 @@ function create_each_block(key_1, ctx) {
 	};
 }
 
-// (616:6) {#if sortable || extendable}
+// (621:6) {#if sortable || extendable}
 function create_if_block_2(ctx) {
 	let li;
 	let raw_value = (/*AttachmentRegion*/ ctx[4] || "") + "";
@@ -2605,12 +2669,13 @@ function create_fragment(ctx) {
 	let current_block_type_index;
 	let if_block;
 	let current;
-	const if_block_creators = [create_if_block, create_else_block_1];
+	const if_block_creators = [create_if_block, create_if_block_3, create_else_block_1];
 	const if_blocks = [];
 
 	function select_block_type(ctx, dirty) {
 		if (/*List*/ ctx[0].length > 0) return 0;
-		return 1;
+		if (/*extendable*/ ctx[14]) return 1;
+		return 2;
 	}
 
 	current_block_type_index = select_block_type(ctx);
@@ -2695,6 +2760,8 @@ function create_fragment(ctx) {
 	};
 }
 
+
+
 function instance($$self, $$props, $$invalidate) {
 	const omit_props_names = [
 		"class","style","List","Key","SelectionLimit","InsertionRegion","AttachmentRegion","Placeholder","select","selectOnly","selectAll","selectRange","deselect","deselectAll","toggleSelectionOf","selectedItems","SelectionCount","isSelected","sortable","onlyFrom","neverFrom","onSortRequest","onSort","Operations","DataToOffer","TypesToAccept","onOuterDropRequest","onDroppedOutside","onDropFromOutside"
@@ -2702,8 +2769,8 @@ function instance($$self, $$props, $$invalidate) {
 
 	let $$restProps = compute_rest_props($$props, omit_props_names);
 	let { $$slots: slots = {}, $$scope } = $$props;
-	const dispatch = createEventDispatcher();
 	let privateKey = t();
+	const dispatch = createEventDispatcher();
 
 	/**** common Attributes ****/
 	let { class: ClassNames } = $$props;
@@ -2728,9 +2795,9 @@ function instance($$self, $$props, $$invalidate) {
 
 			if (Key in ItemSet) {
 				if (ItemSet[Key] === Item) {
-					throwError$1("InvalidArgument: the given \"List\" contains the same item " + "multiple times");
+					throwError("InvalidArgument: the given \"List\" contains the same item " + "multiple times");
 				} else {
-					throwError$1("InvalidArgument: the given \"Key\" does not produce unique keys " + "for every \"List\" item");
+					throwError("InvalidArgument: the given \"Key\" does not produce unique keys " + "for every \"List\" item");
 				}
 			} else {
 				ItemSet[Key] = Item;
@@ -2758,7 +2825,7 @@ function instance($$self, $$props, $$invalidate) {
 					}
 				}
 			} else {
-				throwError$1("InvalidArgument: one or multiple of the given items to select " + "are not part of the given \"List\"");
+				throwError("InvalidArgument: one or multiple of the given items to select " + "are not part of the given \"List\"");
 			}
 		});
 
@@ -2854,7 +2921,7 @@ function instance($$self, $$props, $$invalidate) {
 					dispatch("deselected-item", Item);
 				}
 			} else {
-				throwError$1("InvalidArgument: one or multiple of the given items to deselect " + "are not part of the given \"List\"");
+				throwError("InvalidArgument: one or multiple of the given items to deselect " + "are not part of the given \"List\"");
 			}
 		});
 
@@ -2889,7 +2956,7 @@ function instance($$self, $$props, $$invalidate) {
 					ItemsToBeSelected.push(Item);
 				}
 			} else {
-				throwError$1("InvalidArgument: one or multiple of the given items to select " + "or deselect are not part of the given \"List\"");
+				throwError("InvalidArgument: one or multiple of the given items to select " + "or deselect are not part of the given \"List\"");
 			}
 		});
 
@@ -2954,8 +3021,11 @@ function instance($$self, $$props, $$invalidate) {
 		Event.stopPropagation();
 	}
 
-	
+	//----------------------------------------------------------------------------//
+	//                           Drag-and-Drop Handling                           //
+	//----------------------------------------------------------------------------//
 	let isDragging = false;
+
 	let draggedItemList = [];
 	let { sortable = false } = $$props; // does this list view support "sorting"?
 	let { onlyFrom } = $$props;
@@ -2973,7 +3043,7 @@ function instance($$self, $$props, $$invalidate) {
 
 	/**** parsedOperations ****/
 	function parsedOperations(Description, Argument, Default = "copy move link") {
-		let Operations = allowedString$1(Description, Argument) || Default;
+		let Operations = allowedString(Description, Argument) || Default;
 
 		switch (Operations.trim()) {
 			case "all":
@@ -2983,7 +3053,7 @@ function instance($$self, $$props, $$invalidate) {
 		}
 
 		let OperationList = Operations.trim().replace(/\s+/g, " ").split(" ");
-		allowListSatisfying$1(Description, OperationList, Operation => ValueIsOneOf$1(Operation, DropOperations));
+		allowListSatisfying(Description, OperationList, Operation => ValueIsOneOf(Operation, DropOperations));
 
 		return OperationList.reduce(
 			(Result, Operation) => Result.indexOf(Operation) < 0
@@ -2995,8 +3065,8 @@ function instance($$self, $$props, $$invalidate) {
 
 	/**** prepare for drag-and-drop ****/
 	function hasNonPrivateTypes(TypeSet) {
-		for (let Type in Set) {
-			if (Set.hasOwnProperty(Type) && Type !== privateKey) {
+		for (let Type in TypeSet) {
+			if (TypeSet.hasOwnProperty(Type) && Type !== privateKey) {
 				return true;
 			}
 		}
@@ -3279,15 +3349,15 @@ function instance($$self, $$props, $$invalidate) {
 
 	$$self.$$.update = () => {
 		if ($$self.$$.dirty[0] & /*ClassNames*/ 4) {
-			allowNonEmptyString$1("\"class\" attribute", ClassNames);
+			allowNonEmptyString("\"class\" attribute", ClassNames);
 		}
 
 		if ($$self.$$.dirty[0] & /*style*/ 8) {
-			allowNonEmptyString$1("\"style\" attribute", style);
+			allowNonEmptyString("\"style\" attribute", style);
 		}
 
 		if ($$self.$$.dirty[0] & /*List*/ 1) {
-			$$invalidate(0, List = allowedListSatisfying("\"List\" attribute", List, ValueIsObject$1) || []);
+			$$invalidate(0, List = allowedListSatisfying("\"List\" attribute", List, ValueIsObject) || []);
 		}
 
 		if ($$self.$$.dirty[0] & /*Key*/ 33554432) {
@@ -3295,14 +3365,14 @@ function instance($$self, $$props, $$invalidate) {
 				case Key == null:
 					$$invalidate(11, KeyOf = Item => String(Item));
 					break;
-				case ValueIsNonEmptyString$1(Key):
+				case ValueIsNonEmptyString(Key):
 					$$invalidate(11, KeyOf = Item => String(Item[Key]));
 					break;
-				case ValueIsFunction$1(Key):
+				case ValueIsFunction(Key):
 					$$invalidate(11, KeyOf = Item => String(Key(Item)));
 					break;
 				default:
-					throwError$1("InvalidArgument: the given \"Key\" attribute is neither " + "a non-empty string nor a function returning such a string");
+					throwError("InvalidArgument: the given \"Key\" attribute is neither " + "a non-empty string nor a function returning such a string");
 			}
 		}
 
@@ -3311,15 +3381,15 @@ function instance($$self, $$props, $$invalidate) {
 		}
 
 		if ($$self.$$.dirty[0] & /*InsertionRegion*/ 134217728) {
-			allowNonEmptyString$1("\"InsertionRegion\" attribute", InsertionRegion);
+			allowNonEmptyString("\"InsertionRegion\" attribute", InsertionRegion);
 		}
 
 		if ($$self.$$.dirty[0] & /*AttachmentRegion*/ 16) {
-			allowNonEmptyString$1("\"AttachmentRegion\" attribute", AttachmentRegion);
+			allowNonEmptyString("\"AttachmentRegion\" attribute", AttachmentRegion);
 		}
 
 		if ($$self.$$.dirty[0] & /*Placeholder*/ 32) {
-			allowNonEmptyString$1("\"Placeholder\" attribute", Placeholder);
+			allowNonEmptyString("\"Placeholder\" attribute", Placeholder);
 		}
 
 		if ($$self.$$.dirty[0] & /*List, Key*/ 33554433) {
@@ -3347,19 +3417,19 @@ function instance($$self, $$props, $$invalidate) {
 		}
 
 		if ($$self.$$.dirty[0] & /*onlyFrom*/ 128) {
-			allowNonEmptyString$1("\"onlyFrom\" CSS selector list", onlyFrom);
+			allowNonEmptyString("\"onlyFrom\" CSS selector list", onlyFrom);
 		}
 
 		if ($$self.$$.dirty[0] & /*neverFrom*/ 256) {
-			allowNonEmptyString$1("\"neverFrom\" CSS selector list", neverFrom);
+			allowNonEmptyString("\"neverFrom\" CSS selector list", neverFrom);
 		}
 
 		if ($$self.$$.dirty[1] & /*onSortRequest*/ 64) {
-			allowFunction$1("\"onSortRequest\" callback", onSortRequest);
+			allowFunction("\"onSortRequest\" callback", onSortRequest);
 		}
 
 		if ($$self.$$.dirty[1] & /*onSort*/ 128) {
-			allowFunction$1("\"onSort\" callback", onSort);
+			allowFunction("\"onSort\" callback", onSort);
 		}
 
 		if ($$self.$$.dirty[1] & /*Operations*/ 256) {
@@ -3367,23 +3437,23 @@ function instance($$self, $$props, $$invalidate) {
 		}
 
 		if ($$self.$$.dirty[1] & /*DataToOffer*/ 512) {
-			allowPlainObject$1("\"DataToOffer\" attribute", DataToOffer);
+			allowPlainObject("\"DataToOffer\" attribute", DataToOffer);
 		}
 
 		if ($$self.$$.dirty[1] & /*TypesToAccept*/ 1024) {
-			allowPlainObject$1("\"TypesToAccept\" attribute", TypesToAccept);
+			allowPlainObject("\"TypesToAccept\" attribute", TypesToAccept);
 		}
 
 		if ($$self.$$.dirty[1] & /*onOuterDropRequest*/ 2048) {
-			allowFunction$1("\"onOuterDropRequest\" callback", onOuterDropRequest);
+			allowFunction("\"onOuterDropRequest\" callback", onOuterDropRequest);
 		}
 
 		if ($$self.$$.dirty[1] & /*onDroppedOutside*/ 4096) {
-			allowFunction$1("\"onDroppedOutside\" callback", onDroppedOutside);
+			allowFunction("\"onDroppedOutside\" callback", onDroppedOutside);
 		}
 
 		if ($$self.$$.dirty[1] & /*onDropFromOutside*/ 8192) {
-			allowFunction$1("\"onDropFromOutside\" callback", onDropFromOutside);
+			allowFunction("\"onDropFromOutside\" callback", onDropFromOutside);
 		}
 
 		if ($$self.$$.dirty[0] & /*sortable*/ 2 | $$self.$$.dirty[1] & /*isDragging, DataToOffer*/ 16896) {
@@ -3406,7 +3476,7 @@ function instance($$self, $$props, $$invalidate) {
 				for (let Type in TypesToAccept) {
 					if (TypesToAccept.hasOwnProperty(Type)) {
 						// @ts-ignore "TypesAccepted" is definitely not undefined
-						$$invalidate(10, TypesAccepted[Type] = parsedOperations("list of accepted operations for type " + quoted$1(Type), TypesToAccept[Type]), TypesAccepted);
+						$$invalidate(10, TypesAccepted[Type] = parsedOperations("list of accepted operations for type " + quoted(Type), TypesToAccept[Type]), TypesAccepted);
 					}
 				}
 
@@ -3420,9 +3490,9 @@ function instance($$self, $$props, $$invalidate) {
 		if ($$self.$$.dirty[0] & /*DataOffered, TypesAccepted*/ 1536 | $$self.$$.dirty[1] & /*isDragging*/ 16384) {
 			if (!isDragging) {
 				// do not update while already dragging
-				$$invalidate(13, shrinkable = hasNonPrivateTypes());
+				$$invalidate(13, shrinkable = hasNonPrivateTypes(DataOffered));
 
-				$$invalidate(14, extendable = hasNonPrivateTypes());
+				$$invalidate(14, extendable = hasNonPrivateTypes(TypesAccepted));
 			}
 		}
 	};

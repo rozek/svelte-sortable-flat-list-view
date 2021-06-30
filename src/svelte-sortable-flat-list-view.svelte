@@ -487,8 +487,8 @@
 /**** prepare for drag-and-drop ****/
 
   function hasNonPrivateTypes (TypeSet:any):boolean {
-    for (let Type in Set) {
-      if (Set.hasOwnProperty(Type) && (Type !== privateKey)) {
+    for (let Type in TypeSet) {
+      if (TypeSet.hasOwnProperty(Type) && (Type !== privateKey)) {
         return true
       }
     }
@@ -497,6 +497,7 @@
 
   let shrinkable:boolean = false
   let extendable:boolean = false
+
   $: if (! isDragging) {                 // do not update while already dragging
     shrinkable = hasNonPrivateTypes(DataOffered)
     extendable = hasNonPrivateTypes(TypesAccepted)
@@ -805,9 +806,17 @@
       {/each}
     {/if}
   {:else}
-    <li
-      class:Placeholder={true}
-    >{@html Placeholder || '(empty list)'}</li>
+    {#if extendable}
+      <li
+        class:Placeholder={true}
+        use:asDropZone={{
+          Extras:{ List, Item:undefined, ItemList:undefined }, TypesToAccept:TypesAccepted,
+          onDroppableEnter, onDroppableMove, onDrop
+        }}
+      >{@html Placeholder || '(empty list)'}</li>
+    {:else}
+      <li class:Placeholder={true}>{@html Placeholder || '(empty list)'}</li>
+    {/if}
   {/if}
 </ul>
 

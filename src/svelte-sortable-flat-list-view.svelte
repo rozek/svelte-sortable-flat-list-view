@@ -394,7 +394,7 @@
     x:number,y:number, DroppableExtras:any, DropZoneExtras:any
   ) => boolean)
   export let onSort:undefined|          // opt. callback performing act. sorting
-    ((beforeItem:any|undefined, ...ItemList:{}[]) => void)
+    ((beforeItem:any|undefined, ItemList:{}[]) => void)
 
   $: sortable = allowedBoolean('"sortable" attribute',sortable) || false
 
@@ -616,7 +616,7 @@
           if (onSortRequest != null) {
             try {
               mayBeInsertedHere = onSortRequest(
-                x,y, DropZoneExtras,DroppableExtras
+                x,y, DroppableExtras,DropZoneExtras
               )
             } catch (Signal) {
               mayBeInsertedHere = false

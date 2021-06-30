@@ -28,15 +28,8 @@
   .defaultListView > :global(.ListItemView:hover:not(.dragged))    { border:solid 1px }
   .defaultListView > :global(.ListItemView.selected:not(.dragged)) { background:dodgerblue }
 
-  .defaultListView > :global(.ListItemView.dragged) { opacity:0.3 }
-
-  .defaultListView > :global(.InsertionRegion) {
-    display:block; position:relative; flex:0 0 auto;
-    height:5px;
-    background:transparent;
-    border:solid 1px transparent; margin:0px; padding:0px;
-    list-style:none;
-  }
+  .defaultListView > :global(.ListItemView.dragged)               { opacity:0.3 }
+  .defaultListView > :global(.ListItemView.hovered:not(.dragged)) { border-top:solid 10px transparent }
 
   .defaultListView > :global(.AttachmentRegion) {
     display:block; position:relative; flex:1 1 auto;
@@ -391,8 +384,6 @@
 
   let InsertionPoint:any = undefined
 
-  let LeavingRetarder:any                       // for a really weird workaround
-
 /**** Attributes for Sorting ****/
 
   export let sortable:boolean = false  // does this list view support "sorting"?
@@ -609,11 +600,6 @@
     x:number,y:number, Operation:DropOperation,
     offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:any
   ):boolean {
-    if (LeavingRetarder != null) {       // abort any pending "onDroppableLeave"
-      clearTimeout(LeavingRetarder)
-      LeavingRetarder = undefined
-    }
-
     let draggedItem = DroppableExtras && DroppableExtras.Item
     if (
       (draggedItemList.indexOf(draggedItem) >= 0) &&       // not a foreign item
@@ -669,15 +655,9 @@
 /**** onDroppableLeave ****/
 
   function onDroppableLeave (DroppableExtras:any, DropZoneExtras:any):void {
-    LeavingRetarder = setTimeout(() => { // very weird workaround: on some
-      LeavingRetarder = undefined        // platforms, "dragleave" is sent too
-                                         // aggressively. "svelte-dnd-actions"
-      InsertionPoint = undefined         // tries to handle this, causing rapid
-//    triggerRedraw()                    // sequences of "DroppableLeave" and
-    },10)                                // "DroppableEnter". This workaround
-  }                                      // tries to swallowing unnecessary
-                                         // "DroppableLeave" calls and, thus, to
-                                         // reduce flickering
+    InsertionPoint = undefined
+//  triggerRedraw()
+  }
 
 /**** onDrop ****/
 
@@ -785,24 +765,13 @@
   {#if (List.length > 0)}
     {#if sortable || extendable || shrinkable}
       {#each List as Item,Index (KeyOf(Item))}
-        {#if Item === InsertionPoint}
-          <li
-            class:InsertionRegion={true}
-            class:defaultInsertionRegion={ClassNames == null}
-            use:asDropZone={{
-              Extras:{ List, Item, ItemList:undefined }, TypesToAccept:TypesAccepted,
-              onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave
-            }}
-          >{@html InsertionRegion || ''}</li>
-        {/if}
-
         <li
           class:ListItemView={true}
           class:dragged={draggedItemList.indexOf(Item) >= 0}
           class:selected={isSelected(Item)}
           on:click={(Event) => handleClick(Event,Item)}
           use:asDroppable={{
-            neverFrom, onlyFrom, Dummy:dynamicDummy,
+            onlyFrom, neverFrom, Dummy:dynamicDummy,
             Extras:{ List, Item }, DataToOffer:DataOffered,
             onDragStart, onDragEnd, onDropped
           }}

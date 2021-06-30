@@ -2,15 +2,8 @@
   "name": "svelte-sortable-flat-list-view",
   "version": "0.1.0",
   "description": "a sortable view for flat lists",
-  "type": "module",
-  "main": "./dist/svelte-sortable-flat-list-view.js",
-  "module": "svelte-sortable-flat-list-view.esm.js",
-  "exports": {
-    "require": "./dist/svelte-sortable-flat-list-view.js",
-    "import": "./dist/svelte-sortable-flat-list-view.esm.js"
-  },
-  "types": "./dist/svelte-sortable-flat-list-view.d.ts",
   "svelte": "./src/svelte-sortable-flat-list-view.svelte",
+  "types": "./dist/svelte-sortable-flat-list-view.d.ts",
   "scripts": {
     "build": "rimraf dist && rollup -c rollup.config.js",
     "test": "echo \"Error: no test specified\" && exit 1"

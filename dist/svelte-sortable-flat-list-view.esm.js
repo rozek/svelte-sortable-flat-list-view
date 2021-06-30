@@ -3112,7 +3112,7 @@ function instance($$self, $$props, $$invalidate) {
 			if (sortable) {
 				if (onSortRequest != null) {
 					try {
-						mayBeInsertedHere = onSortRequest(x, y, DropZoneExtras, DroppableExtras);
+						mayBeInsertedHere = onSortRequest(x, y, DroppableExtras, DropZoneExtras);
 					} catch(Signal) {
 						mayBeInsertedHere = false;
 						console.error("RuntimeError: callback \"onSortRequest\" failed", Signal);

@@ -47,6 +47,16 @@
   }
 </style>
 
+<script context="module" lang="ts">
+  import newUniqueId from 'locally-unique-id-generator'
+  import Device      from 'svelte-device-info'
+
+  import type { Position, DropOperation, DataOfferSet, TypeAcceptanceSet } from 'svelte-drag-and-drop-actions'
+  import      { DropOperations, asDroppable, asDropZone } from 'svelte-drag-and-drop-actions'
+
+  import { createEventDispatcher } from 'svelte'
+</script>
+
 <script lang="ts">
   import {
     throwError,
@@ -56,13 +66,10 @@
     allowFunction, allowPlainObject, allowListSatisfying, allowedListSatisfying,
     ValuesDiffer, quoted
   } from 'javascript-interface-library'
-  import Device from 'svelte-device-info'
 
-  import { createEventDispatcher } from 'svelte'
-  const dispatch = createEventDispatcher()
-
-  import newUniqueId from 'locally-unique-id-generator'
   let privateKey:string = newUniqueId()
+
+  const dispatch = createEventDispatcher()
 
 /**** common Attributes ****/
 
@@ -375,9 +382,6 @@
 //----------------------------------------------------------------------------//
 //                           Drag-and-Drop Handling                           //
 //----------------------------------------------------------------------------//
-
-  import type { Position, DropOperation, DataOfferSet, TypeAcceptanceSet } from 'svelte-drag-and-drop-actions'
-  import      { DropOperations, asDroppable, asDropZone } from 'svelte-drag-and-drop-actions'
 
   let isDragging:boolean    = false
   let draggedItemList:any[] = []

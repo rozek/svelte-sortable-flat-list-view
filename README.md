@@ -16,6 +16,8 @@ npm install svelte-sortable-flat-list-view
 
 ## Examples ##
 
+**Warning**: the Svelte REPL does not seem to parse TypeScript sources properly...
+
 ### Visual Appearance ###
 
 * [empty List](https://svelte.dev/repl/bf8eeeffc1be47be976eeb7ceb58a140) - empty lists display a placeholder rather than just an empty area

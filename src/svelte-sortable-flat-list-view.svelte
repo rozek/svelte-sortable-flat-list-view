@@ -24,7 +24,7 @@
     margin:0px 2px 0px 2px; padding:0px 4px 0px 4px;
     list-style:none;
   }
-  .defaultListView > :global(.ListItemView > *) {
+  .defaultListView > :global(.ListItemView > *) { /* disables wobbling */
     pointer-events:none;
   }
 
@@ -58,6 +58,9 @@
   import      { DropOperations, asDroppable, asDropZone } from 'svelte-drag-and-drop-actions'
 
   import { createEventDispatcher } from 'svelte'
+
+  export type ListDroppableExtras = { List:any[], Item:any, ItemList?:any[] }
+  export type ListDropZoneExtras  = { List:any[], Item:any }
 </script>
 
 <script lang="ts">
@@ -387,7 +390,7 @@
 //----------------------------------------------------------------------------//
 
   let isDragging:boolean    = false
-  let draggedItemList:any[] = []
+  let draggedItemList:any[] = []                     // needed for rendering ony
 
   let InsertionPoint:any = undefined
 
@@ -398,7 +401,8 @@
   export let neverFrom:string|undefined
 
   export let onSortRequest:undefined|((          // opt. callback before sorting
-    x:number,y:number, DroppableExtras:any, DropZoneExtras:any
+    x:number,y:number,
+    DroppableExtras:ListDroppableExtras, DropZoneExtras:ListDropZoneExtras
   ) => boolean)
   export let onSort:undefined|          // opt. callback performing act. sorting
     ((beforeItem:any|undefined, ItemList:{}[]) => void)
@@ -420,17 +424,17 @@
   export let onOuterDropRequest:undefined|((// opt. callback before outside drop
     x:number,y:number,
     Operation:DropOperation, offeredTypeList:string[],
-    DroppableExtras:any, DropZoneExtras:any
+    DroppableExtras:any, DropZoneExtras:ListDropZoneExtras
   ) => boolean)
   export let onDroppedOutside:undefined|((   // opt. callback after outside drop
     x:number,y:number,
     Operation:DropOperation, TypeTransferred:string, DataTransferred:any,
-    DropZoneExtras:any, DroppableExtras:any
+    DropZoneExtras:any, DroppableExtras:ListDroppableExtras
   ) => void)
   export let onDropFromOutside:undefined|((//opt. callback for drop from outside
     x:number,y:number,
     Operation:DropOperation, DataOffered:DataOfferSet,
-    DroppableExtras:any, DropZoneExtras:any
+    DroppableExtras:any, DropZoneExtras:ListDropZoneExtras
   ) => string | undefined)      // returns the actually accepted type (if known)
 
   let wantedOperations:string|undefined
@@ -513,7 +517,7 @@
 /**** ad-hoc Dummy Creation ****/
 
   function dynamicDummy (
-    DroppableExtras:any, Element:HTMLElement|SVGElement
+    DroppableExtras:ListDroppableExtras, Element:HTMLElement|SVGElement
   ):HTMLElement|SVGElement {
     let auxiliaryElement = Element.cloneNode(true) as HTMLElement
       auxiliaryElement.style.display  = 'block'
@@ -545,13 +549,13 @@
 
 /**** onDragStart ****/
 
-  function onDragStart (DroppableExtras:any):Position {
+  function onDragStart (DroppableExtras:ListDroppableExtras):Position {
     isDragging = true
 
     if (! isSelected(DroppableExtras.Item)) {
       selectOnly(DroppableExtras.Item)
     }
-    draggedItemList = selectedItems()
+    draggedItemList = DroppableExtras.ItemList = selectedItems()
 
     return { x:0,y:0 }
   }
@@ -559,9 +563,11 @@
 /**** onDragEnd ****/
 
   function onDragEnd (
-    x:number,y:number, dx:number,dy:number, DroppableExtras:any
+    x:number,y:number, dx:number,dy:number, DroppableExtras:ListDroppableExtras
   ):void {
     isDragging = false
+    delete DroppableExtras.ItemList
+
     draggedItemList.length = 0
   }
 
@@ -570,25 +576,26 @@
   function onDropped (
     x:number,y:number, Operation:DropOperation,
     TypeTransferred:string, DataTransferred:any,
-    DropZoneExtras:any, DroppableExtras:any
+    DropZoneExtras:any, DroppableExtras:ListDroppableExtras
   ):void {
-    let droppedHere = (DropZoneExtras != null) && (DropZoneExtras.List === List)
+    let droppedHere = (List === (DropZoneExtras && DropZoneExtras.List))
     if (! droppedHere) {
       if (onDroppedOutside == null) {
-        let DroppableSet = SetOfItemsIn(draggedItemList)
+        let droppedItems = DroppableExtras.ItemList as any[]
+
+        let DroppableSet = SetOfItemsIn(droppedItems)
         for (let i = List.length-1; i >= 0; i--) {
           let Key = KeyOf(List[i])
           if (Key in DroppableSet) { List.splice(i,1) }
         }
 
-        dispatch('removed-items',draggedItemList.slice())
+        dispatch('removed-items',droppedItems.slice())
         triggerRedraw()
       } else {
         try {
           onDroppedOutside(
             x,y, Operation, TypeTransferred,DataTransferred,
-            DropZoneExtras,
-            Object.assign({ ItemList:draggedItemList.slice() },DroppableExtras)
+            DropZoneExtras,DroppableExtras
           )
         } catch (Signal) {
           console.error(
@@ -604,14 +611,14 @@
 /**** onDroppableEnter ****/
 
   function onDroppableEnter (
-    x:number,y:number, Operation:DropOperation,
-    offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:any
+    x:number,y:number, Operation:DropOperation, offeredTypeList:string[],
+    DroppableExtras:any, DropZoneExtras:ListDropZoneExtras
   ):boolean {
-    let draggedItem = DroppableExtras && DroppableExtras.Item
     if (
-      (draggedItemList.indexOf(draggedItem) >= 0) &&       // not a foreign item
-      (draggedItemList.indexOf(DropZoneExtras && DropZoneExtras.Item) >= 0)
-    ) {               // don't allow dragged items to be dropped onto themselves
+      (List === (DroppableExtras && DroppableExtras.List)) &&
+      (List.indexOf(DroppableExtras.Item) >= 0) &&         // not a foreign item
+      (DroppableExtras.ItemList.indexOf(DropZoneExtras.Item) >= 0)
+    ) {            // don't allow own dragged items to be dropped onto themselves
       InsertionPoint = undefined
       triggerRedraw()
       return false
@@ -623,9 +630,7 @@
           if (onSortRequest != null) {
             try {
               mayBeInsertedHere = onSortRequest(
-                x,y,
-                Object.assign({ ItemList:draggedItemList.slice() },DroppableExtras),
-                DropZoneExtras
+                x,y, DroppableExtras,DropZoneExtras
               )
             } catch (Signal) {
               mayBeInsertedHere = false
@@ -641,9 +646,7 @@
         if (onOuterDropRequest != null) {
           try {
             mayBeInsertedHere = onOuterDropRequest(
-              x,y, Operation,offeredTypeList,
-              Object.assign({ ItemList:draggedItemList.slice() },DroppableExtras),
-              DroppableExtras
+              x,y, Operation,offeredTypeList, DroppableExtras,DroppableExtras
             )
           } catch (Signal) {
             mayBeInsertedHere = false
@@ -665,7 +668,9 @@
 
 /**** onDroppableLeave ****/
 
-  function onDroppableLeave (DroppableExtras:any, DropZoneExtras:any):void {
+  function onDroppableLeave (
+    DroppableExtras:any, DropZoneExtras:ListDropZoneExtras
+  ):void {
     InsertionPoint = undefined
 //  triggerRedraw()
   }
@@ -674,38 +679,42 @@
 
   function onDrop (
     x:number,y:number, Operation:DropOperation,
-    DataOffered:any, DroppableExtras:any, DropZoneExtras:any
+    DataOffered:any, DroppableExtras:any, DropZoneExtras:ListDropZoneExtras
   ):string | undefined {
     InsertionPoint = undefined
 
-    let draggedItem = DroppableExtras && DroppableExtras.Item
     if (
-      (draggedItemList.indexOf(draggedItem) >= 0) &&       // not a foreign item
-      (draggedItemList.indexOf(DropZoneExtras && DropZoneExtras.Item) >= 0)
-    ) {               // don't allow dragged items to be dropped onto themselves
+      (List === (DroppableExtras && DroppableExtras.List)) &&
+      (List.indexOf(DroppableExtras.Item) >= 0) &&         // not a foreign item
+      (DroppableExtras.ItemList.indexOf(DropZoneExtras.Item) >= 0)
+    ) {           // don't allow own dragged items to be dropped onto themselves
+      InsertionPoint = undefined
+      triggerRedraw()
       return 'none'
     }
 
     if (List === (DroppableExtras && DroppableExtras.List)) {    // own elements
       if (sortable) {
+        let droppedItems = DroppableExtras.ItemList
+
         if (onSort == null) {
-          let DroppableSet = SetOfItemsIn(draggedItemList)
+          let DroppableSet = SetOfItemsIn(droppedItems)
           for (let i = List.length-1; i >= 0; i--) {
             let Key = KeyOf(List[i])
             if (Key in DroppableSet) { List.splice(i,1) }
           }
 
-          let InsertionIndex = List.indexOf(DropZoneExtras && DropZoneExtras.Item)
+          let InsertionIndex = List.indexOf(DropZoneExtras.Item)
           if (InsertionIndex < 0) { InsertionIndex = List.length } // for append
 
 // @ts-ignore argument list of "apply" is known to be correct
-          List.splice.apply(List, [InsertionIndex,0].concat(draggedItemList))
+          List.splice.apply(List, [InsertionIndex,0].concat(droppedItems))
 
-          dispatch('sorted-items',[draggedItemList.slice(),InsertionIndex])
+          dispatch('sorted-items',[droppedItems.slice(),InsertionIndex])
           triggerRedraw()
         } else {
           try {
-            onSort(DropZoneExtras.Item, draggedItemList.slice())
+            onSort(DropZoneExtras.Item, droppedItems.slice())
           } catch (Signal) {
             console.error('RuntimeError: callback "onSort" failed', Signal)
           }         // no event to be dispatched (there is already the callback)
@@ -721,7 +730,7 @@
         let ItemsToBeInserted = (DroppableExtras && DroppableExtras.ItemList)
         if (! ValueIsList(ItemsToBeInserted)) { return 'none' }
 
-        let InsertionIndex = List.indexOf(DropZoneExtras && DropZoneExtras.Item)
+        let InsertionIndex = List.indexOf(DropZoneExtras.Item)
         if (InsertionIndex < 0) { InsertionIndex = List.length } // for "append"
 
 // @ts-ignore argument list of "apply" is known to be correct
@@ -735,9 +744,7 @@
         let acceptedType:string|undefined = undefined
           try {
             acceptedType = onDropFromOutside(
-              x,y, Operation,DataOffered,
-              Object.assign({ ItemList:draggedItemList.slice() },DroppableExtras),
-              DropZoneExtras
+              x,y, Operation,DataOffered, DroppableExtras,DropZoneExtras
             )
           } catch (Signal) {
             console.error('RuntimeError: callback "onSort" failed', Signal)
@@ -787,7 +794,7 @@
             onDragStart, onDragEnd, onDropped
           }}
           use:asDropZone={{
-            Extras:{ List, Item, ItemList:undefined }, TypesToAccept:TypesAccepted,
+            Extras:{ List, Item }, TypesToAccept:TypesAccepted,
             onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave
           }}
         >
@@ -799,7 +806,7 @@
         <li
           class:AttachmentRegion={true}
           use:asDropZone={{
-            Extras:{ List, Item:undefined, ItemList:undefined }, TypesToAccept:TypesAccepted,
+            Extras:{ List, Item:undefined }, TypesToAccept:TypesAccepted,
             onDroppableEnter, onDroppableMove, onDrop
           }}
         >{@html AttachmentRegion || ''}</li>
@@ -820,7 +827,7 @@
       <li
         class:Placeholder={true}
         use:asDropZone={{
-          Extras:{ List, Item:undefined, ItemList:undefined }, TypesToAccept:TypesAccepted,
+          Extras:{ List, Item:undefined }, TypesToAccept:TypesAccepted,
           onDroppableEnter, onDroppableMove, onDrop
         }}
       >{@html Placeholder || '(empty list)'}</li>

@@ -1084,10 +1084,9 @@ var DropOperations = ['copy', 'move', 'link'];
 /**** parsedDroppableOptions ****/
 function parsedDroppableOptions(Options) {
     Options = allowedPlainObject('drop options', Options) || {};
-    var Extras, Operations, DataToOffer;
+    var Operations, DataToOffer;
     var onDropZoneEnter, onDropZoneHover, onDropZoneLeave;
     var onDropped;
-    Extras = Options.Extras;
     Operations = parsedOperations('list of allowed operations', Options.Operations, 'copy');
     DataToOffer = Object.assign({}, allowedPlainObject('data to be offered', Options.DataToOffer));
     onDropZoneEnter = allowedFunction('"onDropZoneEnter" handler', Options.onDropZoneEnter);
@@ -1095,7 +1094,6 @@ function parsedDroppableOptions(Options) {
     onDropZoneLeave = allowedFunction('"onDropZoneLeave" handler', Options.onDropZoneLeave);
     onDropped = allowedFunction('"onDropped" handler', Options.onDropped);
     return {
-        Extras: Extras,
         Operations: Operations,
         DataToOffer: DataToOffer,
         // @ts-ignore we cannot validate given functions any further
@@ -1294,9 +1292,8 @@ function asDroppable(Element, Options) {
     /**** updateDroppableOptions ****/
     function updateDroppableOptions(Options) {
         Options = parsedDroppableOptions(Options);
-        if (Options.Extras != null) {
-            currentDroppableOptions.Extras = Options.Extras;
-        }
+        currentDroppableOptions.Operations = Options.Operations;
+        currentDroppableOptions.DataToOffer = Options.DataToOffer;
     }
     Element.setAttribute('draggable', 'true');
     // @ts-ignore we know that the passed event is a DragEvent
@@ -2074,7 +2071,7 @@ const get_default_slot_context = ctx => ({
 	Index: /*Index*/ ctx[66]
 });
 
-// (657:4) {:else}
+// (656:4) {:else}
 function create_else_block_1(ctx) {
 	let li;
 	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -2098,7 +2095,7 @@ function create_else_block_1(ctx) {
 	};
 }
 
-// (649:4) {#if extendable}
+// (648:4) {#if extendable}
 function create_if_block_3(ctx) {
 	let li;
 	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -2147,7 +2144,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (606:2) {#if (List.length > 0)}
+// (605:2) {#if (List.length > 0)}
 function create_if_block(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2217,7 +2214,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (637:4) {:else}
+// (636:4) {:else}
 function create_else_block(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -2282,7 +2279,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (607:4) {#if sortable || extendable || shrinkable}
+// (606:4) {#if sortable || extendable || shrinkable}
 function create_if_block_1(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -2369,7 +2366,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (644:31)  
+// (643:31)  
 function fallback_block_1(ctx) {
 	let t_value = /*KeyOf*/ ctx[11](/*Item*/ ctx[64]) + "";
 	let t;
@@ -2390,7 +2387,7 @@ function fallback_block_1(ctx) {
 	};
 }
 
-// (638:6) {#each List as Item,Index (KeyOf(Item))}
+// (637:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block_1(key_1, ctx) {
 	let li;
 	let t;
@@ -2466,7 +2463,7 @@ function create_each_block_1(key_1, ctx) {
 	};
 }
 
-// (624:31)  
+// (623:31)  
 function fallback_block(ctx) {
 	let t_value = /*KeyOf*/ ctx[11](/*Item*/ ctx[64]) + "";
 	let t;
@@ -2487,7 +2484,7 @@ function fallback_block(ctx) {
 	};
 }
 
-// (608:6) {#each List as Item,Index (KeyOf(Item))}
+// (607:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block(key_1, ctx) {
 	let li;
 	let asDroppable_action;
@@ -2620,7 +2617,7 @@ function create_each_block(key_1, ctx) {
 	};
 }
 
-// (628:6) {#if sortable || extendable}
+// (627:6) {#if sortable || extendable}
 function create_if_block_2(ctx) {
 	let li;
 	let raw_value = (/*AttachmentRegion*/ ctx[4] || "") + "";
@@ -3124,7 +3121,6 @@ function instance($$self, $$props, $$invalidate) {
 
 	/**** onDragEnd ****/
 	function onDragEnd(x, y, dx, dy, DroppableExtras) {
-		console.log("onDragEnd");
 		$$invalidate(45, isDragging = false);
 		delete DroppableExtras.ItemList;
 		$$invalidate(12, draggedItemList.length = 0, draggedItemList);

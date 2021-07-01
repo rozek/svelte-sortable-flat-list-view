@@ -939,7 +939,6 @@ function constrained(Value, Minimum, Maximum) {
 var e$1={fromViewportTo:function(e,t,o){switch(!0){case null==t:throw new Error('no "Position" given');case"number"!=typeof t.left&&!(t.left instanceof Number):case"number"!=typeof t.top&&!(t.top instanceof Number):throw new Error('invalid "Position" given')}switch(e){case null:case void 0:throw new Error("no coordinate system given");case"viewport":return {left:t.left,top:t.top};case"document":return {left:t.left+window.scrollX,top:t.top+window.scrollY};case"local":switch(!0){case null==o:throw new Error("no target element given");case o instanceof Element:var r=window.getComputedStyle(o),n=parseFloat(r.borderLeftWidth),i=parseFloat(r.borderTopWidth),l=o.getBoundingClientRect();return {left:t.left-l.left-n,top:t.top-l.top-i};default:throw new Error("invalid target element given")}default:throw new Error("invalid coordinate system given")}},fromDocumentTo:function(e,t,o){switch(!0){case null==t:throw new Error('no "Position" given');case"number"!=typeof t.left&&!(t.left instanceof Number):case"number"!=typeof t.top&&!(t.top instanceof Number):throw new Error('invalid "Position" given')}switch(e){case null:case void 0:throw new Error("no coordinate system given");case"viewport":return {left:t.left-window.scrollX,top:t.top-window.scrollY};case"document":return {left:t.left,top:t.top};case"local":switch(!0){case null==o:throw new Error("no target element given");case o instanceof Element:var r=window.getComputedStyle(o),n=parseFloat(r.borderLeftWidth),i=parseFloat(r.borderTopWidth),l=o.getBoundingClientRect();return {left:t.left+window.scrollX-l.left-n,top:t.top+window.scrollY-l.top-i};default:throw new Error("invalid target element given")}default:throw new Error("invalid coordinate system given")}},fromLocalTo:function(e,t,o){switch(!0){case null==t:throw new Error('no "Position" given');case"number"!=typeof t.left&&!(t.left instanceof Number):case"number"!=typeof t.top&&!(t.top instanceof Number):throw new Error('invalid "Position" given')}var r,n,i;switch(!0){case null==o:throw new Error("no source element given");case o instanceof Element:var l=window.getComputedStyle(o),a=parseFloat(l.borderLeftWidth),s=parseFloat(l.borderTopWidth);n=(r=o.getBoundingClientRect()).left+a,i=r.top+s;break;default:throw new Error("invalid source element given")}switch(e){case null:case void 0:throw new Error("no coordinate system given");case"viewport":return {left:t.left+n,top:t.top+i};case"document":return {left:t.left+n+window.scrollX,top:t.top+i+window.scrollY};case"local":return {left:t.left,top:t.top};default:throw new Error("invalid coordinate system given")}}};
 
 //----------------------------------------------------------------------------//
-console.log('>>>> svelte-drag-and-drop-actions');
 /**** parsedDraggableOptions ****/
 function parsedDraggableOptions(Options) {
     Options = allowedPlainObject('drag options', Options) || {};
@@ -1029,17 +1028,45 @@ function parsedDraggableOptions(Options) {
 /**** fromForbiddenElement ****/
 function fromForbiddenElement(Element, Options, originalEvent) {
     if ((Options.onlyFrom != null) || (Options.neverFrom != null)) {
-        var touchedElement = document.elementFromPoint(originalEvent.clientX, originalEvent.clientY);
-        var fromElement = touchedElement.closest(Options.onlyFrom);
-        if ((Element !== fromElement) && !Element.contains(fromElement)) {
-            return true;
+        var x = originalEvent.clientX;
+        var y = originalEvent.clientY;
+        var touchedElement = document.elementFromPoint(x, y);
+        //    elementFromPoint considers elements with "pointer-events" <> "none" only
+        //    but sometimes, "pointer-events:none" is needed for proper operation
+        touchedElement = innerElementOf(touchedElement, x, y);
+        if (Options.onlyFrom != null) {
+            var fromElement = touchedElement.closest(Options.onlyFrom);
+            if ((Element !== fromElement) && !Element.contains(fromElement)) {
+                return true;
+            }
         }
-        fromElement = touchedElement.closest(Options.neverFrom);
-        if ((Element === fromElement) || Element.contains(fromElement)) {
-            return true;
+        if (Options.neverFrom != null) {
+            var fromElement = touchedElement.closest(Options.neverFrom);
+            if ((Element === fromElement) || Element.contains(fromElement)) {
+                return true;
+            }
         }
     }
     return false;
+}
+/**** innerElementOf ****/
+function innerElementOf(Candidate, x, y) {
+    var innerElements = Candidate.children;
+    for (var i = 0, l = innerElements.length; i < l; i++) {
+        var innerElement = innerElements[i];
+        var Position = e$1.fromLocalTo('viewport', { left: 0, top: 0 }, innerElement);
+        if ((x < Position.left) || (y < Position.top)) {
+            continue;
+        }
+        if (x > Position.left + innerElement.offsetWidth - 1) {
+            continue;
+        }
+        if (y > Position.top + innerElement.offsetHeight - 1) {
+            continue;
+        }
+        return innerElementOf(innerElement, x, y);
+    }
+    return Candidate; // this is the innermost element at (x,y)
 }
 /**** extended Drag-and-Drop Support ****/
 var currentDroppableExtras; // extras for currently dragged droppable
@@ -1175,7 +1202,6 @@ function asDroppable(Element, Options) {
             }
         }
         currentDroppableExtras = Options.Extras;
-        console.log('startDragging', currentDroppableExtras);
         currentDropZoneExtras = undefined;
         currentDropZonePosition = undefined;
         DroppableWasDropped = false;
@@ -1250,7 +1276,6 @@ function asDroppable(Element, Options) {
             var dy = y - lastPosition.y;
             invokeHandler('onDragEnd', Options, x, y, dx, dy, Options.Extras);
         }
-        console.log('finishDragging', currentDroppableExtras);
         currentDroppableExtras = undefined;
         isDragged = false;
         Element.classList.remove('dragged', 'droppable');
@@ -1328,7 +1353,6 @@ function asDropZone(Element, Options) {
     currentDropZoneOptions = parsedDropZoneOptions(Options);
     /**** enteredByDroppable ****/
     function enteredByDroppable(originalEvent) {
-        console.log('enteredByDroppable', currentDroppableExtras);
         if ((originalEvent.dataTransfer == null) ||
             (originalEvent.dataTransfer.effectAllowed === 'none')) {
             return;
@@ -1371,7 +1395,6 @@ function asDropZone(Element, Options) {
     }
     /**** hoveredByDroppable ****/
     function hoveredByDroppable(originalEvent) {
-        console.log('hoveredByDroppable', currentDroppableExtras);
         if ((originalEvent.dataTransfer == null) ||
             (originalEvent.dataTransfer.effectAllowed === 'none') ||
             (currentDropZoneElement != null) && (currentDropZoneElement !== Element)) {
@@ -1427,7 +1450,6 @@ function asDropZone(Element, Options) {
     }
     /**** leftByDroppable ****/
     function leftByDroppable(originalEvent) {
-        console.log('leftByDroppable', currentDroppableExtras);
         Element.classList.remove('hovered');
         var Options = currentDropZoneOptions;
         if (currentDropZoneElement === Element) {
@@ -1446,7 +1468,6 @@ function asDropZone(Element, Options) {
     }
     /**** droppedByDroppable ****/
     function droppedByDroppable(originalEvent) {
-        console.log('droppedByDroppable', currentDroppableExtras);
         Element.classList.remove('hovered');
         if ((originalEvent.dataTransfer == null) ||
             (originalEvent.dataTransfer.effectAllowed === 'none') ||
@@ -2014,7 +2035,7 @@ function styleInject(css, ref) {
   }
 }
 
-var css_248z = ".defaultListView.svelte-1xui1ak{display:inline-flex;flex-flow:column nowrap;position:relative;justify-content:flex-start;align-items:stretch;margin:0px;padding:0px;list-style:none}.withoutTextSelection.svelte-1xui1ak{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.defaultListView.svelte-1xui1ak>.ListItemView{display:block;position:relative;flex:0 0 auto;height:30px;line-height:30px;border:solid 1px transparent;margin:0px 2px 0px 2px;padding:0px 4px 0px 4px;list-style:none}.defaultListView.svelte-1xui1ak>.ListItemView:hover:not(.dragged){border:solid 1px }.defaultListView.svelte-1xui1ak>.ListItemView.selected:not(.dragged){background:dodgerblue }.defaultListView.svelte-1xui1ak>.ListItemView.dragged{opacity:0.3 }.defaultListView.svelte-1xui1ak>.ListItemView.hovered:not(.dragged){border-top:solid 10px transparent }.defaultListView.svelte-1xui1ak>.AttachmentRegion{display:block;position:relative;flex:1 1 auto;min-height:20px;background:transparent;border:solid 1px transparent;margin:0px 2px 2px 2px;padding:0px;list-style:none}.defaultListView.svelte-1xui1ak>.AttachmentRegion.hovered{border:solid 1px }.defaultListView.svelte-1xui1ak>.Placeholder{display:flex;position:absolute;left:0px;top:0px;right:0px;height:100%;flex-flow:column nowrap;justify-content:center;align-items:center}";
+var css_248z = ".defaultListView.svelte-7xultg{display:inline-flex;flex-flow:column nowrap;position:relative;justify-content:flex-start;align-items:stretch;margin:0px;padding:0px;list-style:none}.withoutTextSelection.svelte-7xultg{-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.defaultListView.svelte-7xultg>.ListItemView{display:block;position:relative;flex:0 0 auto;height:30px;line-height:30px;border:solid 1px transparent;margin:0px 2px 0px 2px;padding:0px 4px 0px 4px;list-style:none}.defaultListView.svelte-7xultg>.ListItemView > *{pointer-events:none}.defaultListView.svelte-7xultg>.ListItemView:hover:not(.dragged){border:solid 1px }.defaultListView.svelte-7xultg>.ListItemView.selected:not(.dragged){background:dodgerblue }.defaultListView.svelte-7xultg>.ListItemView.dragged{opacity:0.3 }.defaultListView.svelte-7xultg>.ListItemView.hovered:not(.dragged){border-top:solid 10px transparent }.defaultListView.svelte-7xultg>.AttachmentRegion{display:block;position:relative;flex:1 1 auto;min-height:20px;background:transparent;border:solid 1px transparent;margin:0px 2px 2px 2px;padding:0px;list-style:none}.defaultListView.svelte-7xultg>.AttachmentRegion.hovered{border:solid 1px }.defaultListView.svelte-7xultg>.Placeholder{display:flex;position:absolute;left:0px;top:0px;right:0px;height:100%;flex-flow:column nowrap;justify-content:center;align-items:center}";
 styleInject(css_248z,{"insertAt":"top"});
 
 /* src/svelte-sortable-flat-list-view.svelte generated by Svelte v3.38.3 */
@@ -2053,7 +2074,7 @@ const get_default_slot_context = ctx => ({
 	Index: /*Index*/ ctx[66]
 });
 
-// (650:4) {:else}
+// (651:4) {:else}
 function create_else_block_1(ctx) {
 	let li;
 	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -2077,7 +2098,7 @@ function create_else_block_1(ctx) {
 	};
 }
 
-// (642:4) {#if extendable}
+// (643:4) {#if extendable}
 function create_if_block_3(ctx) {
 	let li;
 	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -2134,7 +2155,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (599:2) {#if (List.length > 0)}
+// (600:2) {#if (List.length > 0)}
 function create_if_block(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -2204,7 +2225,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (630:4) {:else}
+// (631:4) {:else}
 function create_else_block(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -2269,7 +2290,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (600:4) {#if sortable || extendable || shrinkable}
+// (601:4) {#if sortable || extendable || shrinkable}
 function create_if_block_1(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -2356,7 +2377,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (637:31)  
+// (638:31)  
 function fallback_block_1(ctx) {
 	let t_value = /*KeyOf*/ ctx[11](/*Item*/ ctx[64]) + "";
 	let t;
@@ -2377,7 +2398,7 @@ function fallback_block_1(ctx) {
 	};
 }
 
-// (631:6) {#each List as Item,Index (KeyOf(Item))}
+// (632:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block_1(key_1, ctx) {
 	let li;
 	let t;
@@ -2453,7 +2474,7 @@ function create_each_block_1(key_1, ctx) {
 	};
 }
 
-// (617:31)  
+// (618:31)  
 function fallback_block(ctx) {
 	let t_value = /*KeyOf*/ ctx[11](/*Item*/ ctx[64]) + "";
 	let t;
@@ -2474,7 +2495,7 @@ function fallback_block(ctx) {
 	};
 }
 
-// (601:6) {#each List as Item,Index (KeyOf(Item))}
+// (602:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block(key_1, ctx) {
 	let li;
 	let asDroppable_action;
@@ -2609,7 +2630,7 @@ function create_each_block(key_1, ctx) {
 	};
 }
 
-// (621:6) {#if sortable || extendable}
+// (622:6) {#if sortable || extendable}
 function create_if_block_2(ctx) {
 	let li;
 	let raw_value = (/*AttachmentRegion*/ ctx[4] || "") + "";
@@ -2700,7 +2721,7 @@ function create_fragment(ctx) {
 			set_attributes(ul, ul_data);
 			toggle_class(ul, "defaultListView", /*ClassNames*/ ctx[2] == null);
 			toggle_class(ul, "withoutTextSelection", true);
-			toggle_class(ul, "svelte-1xui1ak", true);
+			toggle_class(ul, "svelte-7xultg", true);
 		},
 		m(target, anchor) {
 			insert(target, ul, anchor);
@@ -2742,7 +2763,7 @@ function create_fragment(ctx) {
 
 			toggle_class(ul, "defaultListView", /*ClassNames*/ ctx[2] == null);
 			toggle_class(ul, "withoutTextSelection", true);
-			toggle_class(ul, "svelte-1xui1ak", true);
+			toggle_class(ul, "svelte-7xultg", true);
 		},
 		i(local) {
 			if (current) return;
@@ -3037,7 +3058,7 @@ function instance($$self, $$props, $$invalidate) {
 	let { TypesToAccept } = $$props;
 	let { onOuterDropRequest } = $$props;
 	let { onDroppedOutside } = $$props;
-	let { onDropFromOutside } = $$props;
+	let { onDropFromOutside } = $$props; // returns the actually accepted type (if known)
 	let DataOffered;
 	let TypesAccepted;
 
@@ -3116,12 +3137,11 @@ function instance($$self, $$props, $$invalidate) {
 		}
 
 		$$invalidate(12, draggedItemList = selectedItems());
-		DroppableExtras.ItemList = draggedItemList;
 		return { x: 0, y: 0 };
 	}
 
 	/**** onDragEnd ****/
-	function onDragEnd(x, y, dx, dy, DraggableExtras) {
+	function onDragEnd(x, y, dx, dy, DroppableExtras) {
 		$$invalidate(45, isDragging = false);
 		$$invalidate(12, draggedItemList.length = 0, draggedItemList);
 	}
@@ -3139,16 +3159,8 @@ function instance($$self, $$props, $$invalidate) {
 		let droppedHere = DropZoneExtras != null && DropZoneExtras.List === List;
 
 		if (!droppedHere) {
-			if (onDroppedOutside != null) {
-				try {
-					onDroppedOutside(x, y, Operation, TypeTransferred, DataTransferred, DropZoneExtras, DroppableExtras);
-				} catch(Signal) {
-					console.error("RuntimeError: callback \"onDroppedOutside\" failed", Signal);
-				} // no event to be dispatched (there is already the callback)
-
-				triggerRedraw(); // just to be on the safe side
-			} else {
-				let DroppableSet = SetOfItemsIn(DroppableExtras.ItemList);
+			if (onDroppedOutside == null) {
+				let DroppableSet = SetOfItemsIn(draggedItemList);
 
 				for (let i = List.length - 1; i >= 0; i--) {
 					let Key = KeyOf(List[i]);
@@ -3158,8 +3170,16 @@ function instance($$self, $$props, $$invalidate) {
 					}
 				}
 
-				dispatch("removed-items", DroppableExtras.ItemList.slice());
+				dispatch("removed-items", draggedItemList.slice());
 				triggerRedraw();
+			} else {
+				try {
+					onDroppedOutside(x, y, Operation, TypeTransferred, DataTransferred, DropZoneExtras, Object.assign({ ItemList: draggedItemList.slice() }, DroppableExtras));
+				} catch(Signal) {
+					console.error("RuntimeError: callback \"onDroppedOutside\" failed", Signal);
+				} // no event to be dispatched (there is already the callback)
+
+				triggerRedraw(); // just to be on the safe side
 			}
 		}
 	}
@@ -3182,7 +3202,7 @@ function instance($$self, $$props, $$invalidate) {
 			if (sortable) {
 				if (onSortRequest != null) {
 					try {
-						mayBeInsertedHere = onSortRequest(x, y, DroppableExtras, DropZoneExtras);
+						mayBeInsertedHere = onSortRequest(x, y, Object.assign({ ItemList: draggedItemList.slice() }, DroppableExtras), DropZoneExtras);
 					} catch(Signal) {
 						mayBeInsertedHere = false;
 						console.error("RuntimeError: callback \"onSortRequest\" failed", Signal);
@@ -3196,7 +3216,7 @@ function instance($$self, $$props, $$invalidate) {
 			// foreign elements want to be dropped here
 			if (onOuterDropRequest != null) {
 				try {
-					mayBeInsertedHere = onOuterDropRequest(x, y, Operation, offeredTypeList, DropZoneExtras, DroppableExtras);
+					mayBeInsertedHere = onOuterDropRequest(x, y, Operation, offeredTypeList, Object.assign({ ItemList: draggedItemList.slice() }, DroppableExtras), DroppableExtras);
 				} catch(Signal) {
 					mayBeInsertedHere = false;
 					console.error("RuntimeError: callback \"onOuterDropRequest\" failed", Signal);
@@ -3230,8 +3250,7 @@ function instance($$self, $$props, $$invalidate) {
 			// own elements
 			if (sortable) {
 				if (onSort == null) {
-					let ItemsToBeShifted = DroppableExtras.ItemList;
-					let DroppableSet = SetOfItemsIn(ItemsToBeShifted);
+					let DroppableSet = SetOfItemsIn(draggedItemList);
 
 					for (let i = List.length - 1; i >= 0; i--) {
 						let Key = KeyOf(List[i]);
@@ -3248,13 +3267,13 @@ function instance($$self, $$props, $$invalidate) {
 					} // for append
 
 					// @ts-ignore argument list of "apply" is known to be correct
-					List.splice.apply(List, [InsertionIndex, 0].concat(ItemsToBeShifted));
+					List.splice.apply(List, [InsertionIndex, 0].concat(draggedItemList));
 
-					dispatch("sorted-items", [ItemsToBeShifted, InsertionIndex]);
+					dispatch("sorted-items", [draggedItemList.slice(), InsertionIndex]);
 					triggerRedraw();
 				} else {
 					try {
-						onSort(DropZoneExtras.Item, DroppableExtras.ItemList);
+						onSort(DropZoneExtras.Item, draggedItemList.slice());
 					} catch(Signal) {
 						console.error("RuntimeError: callback \"onSort\" failed", Signal);
 					} // no event to be dispatched (there is already the callback)
@@ -3284,20 +3303,20 @@ function instance($$self, $$props, $$invalidate) {
 				// @ts-ignore argument list of "apply" is known to be correct
 				List.splice.apply(List, [InsertionIndex, 0].concat(ItemsToBeInserted));
 
-				dispatch("inserted-items", [ItemsToBeInserted, InsertionIndex]);
+				dispatch("inserted-items", [ItemsToBeInserted.slice(), InsertionIndex]);
 				triggerRedraw();
-				return Operation;
+				return undefined; // accepted type is unknown
 			} else {
-				let actualOperation = "none";
+				let acceptedType = undefined;
 
 				try {
-					actualOperation = onDropFromOutside(x, y, Operation, DataOffered, DroppableExtras, DropZoneExtras);
+					acceptedType = onDropFromOutside(x, y, Operation, DataOffered, Object.assign({ ItemList: draggedItemList.slice() }, DroppableExtras), DropZoneExtras);
 				} catch(Signal) {
 					console.error("RuntimeError: callback \"onSort\" failed", Signal);
 				} // no event to be dispatched (there is already the callback)
 
 				triggerRedraw(); // just to be on the safe side
-				return actualOperation || "none";
+				return acceptedType; // accepted type is unknown
 			}
 		}
 	}

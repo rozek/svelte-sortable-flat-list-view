@@ -2,7 +2,8 @@
   "name": "svelte-sortable-flat-list-view",
   "version": "0.1.0",
   "description": "a sortable view for flat lists",
-  "svelte": "./src/svelte-sortable-flat-list-view.svelte",
+  "module": "./dist/svelte-sortable-flat-list-view.esm.js",
+  "svelte": "./src/index.js",
   "types": "./dist/svelte-sortable-flat-list-view.d.ts",
   "scripts": {
     "build": "rimraf dist && rollup -c rollup.config.js",

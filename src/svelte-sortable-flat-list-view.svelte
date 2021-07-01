@@ -24,6 +24,9 @@
     margin:0px 2px 0px 2px; padding:0px 4px 0px 4px;
     list-style:none;
   }
+  .defaultListView > :global(.ListItemView > *) {
+    pointer-events:none;
+  }
 
   .defaultListView > :global(.ListItemView:hover:not(.dragged))    { border:solid 1px }
   .defaultListView > :global(.ListItemView.selected:not(.dragged)) { background:dodgerblue }
@@ -428,7 +431,7 @@
     x:number,y:number,
     Operation:DropOperation, DataOffered:DataOfferSet,
     DroppableExtras:any, DropZoneExtras:any
-  ) => string)
+  ) => string | undefined)      // returns the actually accepted type (if known)
 
   let wantedOperations:string|undefined
   let DataOffered:DataOfferSet|undefined
@@ -548,9 +551,7 @@
     if (! isSelected(DroppableExtras.Item)) {
       selectOnly(DroppableExtras.Item)
     }
-
     draggedItemList = selectedItems()
-    DroppableExtras.ItemList = draggedItemList
 
     return { x:0,y:0 }
   }
@@ -558,7 +559,7 @@
 /**** onDragEnd ****/
 
   function onDragEnd (
-    x:number,y:number, dx:number,dy:number, DraggableExtras:any
+    x:number,y:number, dx:number,dy:number, DroppableExtras:any
   ):void {
     isDragging = false
     draggedItemList.length = 0
@@ -573,11 +574,21 @@
   ):void {
     let droppedHere = (DropZoneExtras != null) && (DropZoneExtras.List === List)
     if (! droppedHere) {
-      if (onDroppedOutside != null) {
+      if (onDroppedOutside == null) {
+        let DroppableSet = SetOfItemsIn(draggedItemList)
+        for (let i = List.length-1; i >= 0; i--) {
+          let Key = KeyOf(List[i])
+          if (Key in DroppableSet) { List.splice(i,1) }
+        }
+
+        dispatch('removed-items',draggedItemList.slice())
+        triggerRedraw()
+      } else {
         try {
           onDroppedOutside(
             x,y, Operation, TypeTransferred,DataTransferred,
-            DropZoneExtras,DroppableExtras
+            DropZoneExtras,
+            Object.assign({ ItemList:draggedItemList.slice() },DroppableExtras)
           )
         } catch (Signal) {
           console.error(
@@ -586,15 +597,6 @@
         }           // no event to be dispatched (there is already the callback)
 
         triggerRedraw()                           // just to be on the safe side
-      } else {
-        let DroppableSet = SetOfItemsIn(DroppableExtras.ItemList)
-        for (let i = List.length-1; i >= 0; i--) {
-          let Key = KeyOf(List[i])
-          if (Key in DroppableSet) { List.splice(i,1) }
-        }
-
-        dispatch('removed-items',DroppableExtras.ItemList.slice())
-        triggerRedraw()
       }
     }
   }
@@ -621,7 +623,9 @@
           if (onSortRequest != null) {
             try {
               mayBeInsertedHere = onSortRequest(
-                x,y, DroppableExtras,DropZoneExtras
+                x,y,
+                Object.assign({ ItemList:draggedItemList.slice() },DroppableExtras),
+                DropZoneExtras
               )
             } catch (Signal) {
               mayBeInsertedHere = false
@@ -637,7 +641,9 @@
         if (onOuterDropRequest != null) {
           try {
             mayBeInsertedHere = onOuterDropRequest(
-              x,y, Operation,offeredTypeList, DropZoneExtras,DroppableExtras
+              x,y, Operation,offeredTypeList,
+              Object.assign({ ItemList:draggedItemList.slice() },DroppableExtras),
+              DroppableExtras
             )
           } catch (Signal) {
             mayBeInsertedHere = false
@@ -669,7 +675,7 @@
   function onDrop (
     x:number,y:number, Operation:DropOperation,
     DataOffered:any, DroppableExtras:any, DropZoneExtras:any
-  ):string {
+  ):string | undefined {
     InsertionPoint = undefined
 
     let draggedItem = DroppableExtras && DroppableExtras.Item
@@ -683,9 +689,7 @@
     if (List === (DroppableExtras && DroppableExtras.List)) {    // own elements
       if (sortable) {
         if (onSort == null) {
-          let ItemsToBeShifted = DroppableExtras.ItemList
-
-          let DroppableSet = SetOfItemsIn(ItemsToBeShifted)
+          let DroppableSet = SetOfItemsIn(draggedItemList)
           for (let i = List.length-1; i >= 0; i--) {
             let Key = KeyOf(List[i])
             if (Key in DroppableSet) { List.splice(i,1) }
@@ -695,13 +699,13 @@
           if (InsertionIndex < 0) { InsertionIndex = List.length } // for append
 
 // @ts-ignore argument list of "apply" is known to be correct
-          List.splice.apply(List, [InsertionIndex,0].concat(ItemsToBeShifted))
+          List.splice.apply(List, [InsertionIndex,0].concat(draggedItemList))
 
-          dispatch('sorted-items',[ItemsToBeShifted,InsertionIndex])
+          dispatch('sorted-items',[draggedItemList.slice(),InsertionIndex])
           triggerRedraw()
         } else {
           try {
-            onSort(DropZoneExtras.Item, DroppableExtras.ItemList)
+            onSort(DropZoneExtras.Item, draggedItemList.slice())
           } catch (Signal) {
             console.error('RuntimeError: callback "onSort" failed', Signal)
           }         // no event to be dispatched (there is already the callback)
@@ -723,22 +727,24 @@
 // @ts-ignore argument list of "apply" is known to be correct
         List.splice.apply(List, [InsertionIndex,0].concat(ItemsToBeInserted))
 
-        dispatch('inserted-items',[ItemsToBeInserted,InsertionIndex])
+        dispatch('inserted-items',[ItemsToBeInserted.slice(),InsertionIndex])
         triggerRedraw()
 
-        return Operation
+        return undefined                             // accepted type is unknown
       } else {
-        let actualOperation:string = 'none'
+        let acceptedType:string|undefined = undefined
           try {
-            actualOperation = onDropFromOutside(
-              x,y, Operation,DataOffered, DroppableExtras,DropZoneExtras
+            acceptedType = onDropFromOutside(
+              x,y, Operation,DataOffered,
+              Object.assign({ ItemList:draggedItemList.slice() },DroppableExtras),
+              DropZoneExtras
             )
           } catch (Signal) {
             console.error('RuntimeError: callback "onSort" failed', Signal)
           }         // no event to be dispatched (there is already the callback)
 
           triggerRedraw()                         // just to be on the safe side
-        return actualOperation || 'none'
+        return acceptedType                          // accepted type is unknown
       }
     }
   }

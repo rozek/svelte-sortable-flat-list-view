@@ -16,7 +16,7 @@ npm install svelte-sortable-flat-list-view
 
 ## Examples ##
 
-**Warning**: the Svelte REPL does not seem to parse TypeScript sources properly...
+A few examples may help understanding how `svelte-sortable-flat-list-view` may be used.
 
 ### Visual Appearance ###
 
@@ -40,6 +40,10 @@ npm install svelte-sortable-flat-list-view
 * [sorting with callbacks](https://svelte.dev/repl/82d3d414e81d4680b3210c08f23a16fa) - optional callbacks give full control over sorting "semantics"
 
 ### Dragging beyond List Bounds ###
+
+* [dragging items from a source into a list](https://svelte.dev/repl/ee96b00b21914807ba72eefaa5b618e1) - add new list items by dragging them onto the list view
+* [dragging list items into a trashcan](https://svelte.dev/repl/3290cdf6cd61453f9b5a4c867c38ae7a) - delete list items by dragging them into a trashcan
+* [dragging items between lists](https://svelte.dev/repl/26e9bb4cebd0431e931d66c521061bfb) - of course, you may also drag items from one list into another
 
 ## Build Instructions ##
 

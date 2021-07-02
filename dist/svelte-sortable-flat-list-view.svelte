@@ -79,17 +79,17 @@ import { throwError, ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, Valu
 let privateKey = newUniqueId();
 const dispatch = createEventDispatcher();
 /**** common Attributes ****/
-let ClassNames;
-export { ClassNames as class }; // used to ctrl. styling
-export let style; // dto.
+let ClassNames = undefined;
+export { ClassNames as class }; // used to...
+export let style = undefined; // ...control styling
 $: allowNonEmptyString('"class" attribute', ClassNames);
 $: allowNonEmptyString('"style" attribute', style);
-export let List; // the (flat) list to be shown
-export let Key; // the value to be used as list key
-export let SelectionLimit; // max. number of selected items
-export let InsertionRegion; // is shown in insertion region
-export let AttachmentRegion; // is shown in attachment region
-export let Placeholder; // is shown when list is empty
+export let List;
+export let Key = undefined;
+export let SelectionLimit = undefined;
+export let InsertionRegion = undefined;
+export let AttachmentRegion = undefined;
+export let Placeholder = undefined;
 $: List = allowedListSatisfying('"List" attribute', List, ValueIsObject) || [];
 let KeyOf;
 $: switch (true) {
@@ -342,22 +342,22 @@ let draggedItemList = []; // needed for rendering ony
 let InsertionPoint = undefined;
 /**** Attributes for Sorting ****/
 export let sortable = false; // does this list view support "sorting"?
-export let onlyFrom;
-export let neverFrom;
-export let onSortRequest;
-export let onSort;
+export let onlyFrom = undefined;
+export let neverFrom = undefined;
+export let onSortRequest = undefined;
+export let onSort = undefined;
 $: sortable = allowedBoolean('"sortable" attribute', sortable) || false;
 $: allowNonEmptyString('"onlyFrom" CSS selector list', onlyFrom);
 $: allowNonEmptyString('"neverFrom" CSS selector list', neverFrom);
 $: allowFunction('"onSortRequest" callback', onSortRequest);
 $: allowFunction('"onSort" callback', onSort);
 /**** Attributes for Drag-and-Drop ****/
-export let Operations;
-export let DataToOffer;
-export let TypesToAccept;
-export let onOuterDropRequest;
-export let onDroppedOutside;
-export let onDropFromOutside; // returns the actually accepted type (if known)
+export let Operations = undefined;
+export let DataToOffer = undefined;
+export let TypesToAccept = undefined;
+export let onOuterDropRequest = undefined;
+export let onDroppedOutside = undefined;
+export let onDropFromOutside = undefined; // returns act. accepted type (if known)
 let wantedOperations;
 let DataOffered;
 let TypesAccepted;

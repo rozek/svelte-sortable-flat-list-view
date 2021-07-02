@@ -2773,15 +2773,15 @@ function instance($$self, $$props, $$invalidate) {
 	const dispatch = createEventDispatcher();
 
 	/**** common Attributes ****/
-	let { class: ClassNames } = $$props;
+	let { class: ClassNames = undefined } = $$props;
 
-	let { style } = $$props; // dto.
-	let { List } = $$props; // the (flat) list to be shown
-	let { Key } = $$props; // the value to be used as list key
-	let { SelectionLimit } = $$props; // max. number of selected items
-	let { InsertionRegion } = $$props; // is shown in insertion region
-	let { AttachmentRegion } = $$props; // is shown in attachment region
-	let { Placeholder } = $$props; // is shown when list is empty
+	let { style = undefined } = $$props; // ...control styling
+	let { List } = $$props;
+	let { Key = undefined } = $$props;
+	let { SelectionLimit = undefined } = $$props;
+	let { InsertionRegion = undefined } = $$props;
+	let { AttachmentRegion = undefined } = $$props;
+	let { Placeholder = undefined } = $$props;
 	let KeyOf;
 
 	/**** Key Validation and quick Lookup ****/
@@ -3028,16 +3028,16 @@ function instance($$self, $$props, $$invalidate) {
 
 	let draggedItemList = []; // needed for rendering ony
 	let { sortable = false } = $$props; // does this list view support "sorting"?
-	let { onlyFrom } = $$props;
-	let { neverFrom } = $$props;
-	let { onSortRequest } = $$props;
-	let { onSort } = $$props;
-	let { Operations } = $$props;
-	let { DataToOffer } = $$props;
-	let { TypesToAccept } = $$props;
-	let { onOuterDropRequest } = $$props;
-	let { onDroppedOutside } = $$props;
-	let { onDropFromOutside } = $$props; // returns the actually accepted type (if known)
+	let { onlyFrom = undefined } = $$props;
+	let { neverFrom = undefined } = $$props;
+	let { onSortRequest = undefined } = $$props;
+	let { onSort = undefined } = $$props;
+	let { Operations = undefined } = $$props;
+	let { DataToOffer = undefined } = $$props;
+	let { TypesToAccept = undefined } = $$props;
+	let { onOuterDropRequest = undefined } = $$props;
+	let { onDroppedOutside = undefined } = $$props;
+	let { onDropFromOutside = undefined } = $$props; // returns act. accepted type (if known)
 	let DataOffered;
 	let TypesAccepted;
 

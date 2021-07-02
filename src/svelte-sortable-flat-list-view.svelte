@@ -81,18 +81,18 @@
 
 /**** common Attributes ****/
 
-  let ClassNames:string; export { ClassNames as class } // used to ctrl. styling
-  export let style:string                                                // dto.
+  let ClassNames:string = undefined; export { ClassNames as class } // used to...
+  export let style:string = undefined                       // ...control styling
 
   $: allowNonEmptyString('"class" attribute',ClassNames)
   $: allowNonEmptyString('"style" attribute',style)
 
-  export let List:{}[]                            // the (flat) list to be shown
-  export let Key:string|Function|undefined   // the value to be used as list key
-  export let SelectionLimit:number|undefined    // max. number of selected items
-  export let InsertionRegion:string|undefined    // is shown in insertion region
-  export let AttachmentRegion:string|undefined  // is shown in attachment region
-  export let Placeholder:string|undefined         // is shown when list is empty
+  export let List:{}[]
+  export let Key:string|Function|undefined     = undefined
+  export let SelectionLimit:number|undefined   = undefined
+  export let InsertionRegion:string|undefined  = undefined
+  export let AttachmentRegion:string|undefined = undefined
+  export let Placeholder:string|undefined      = undefined
 
   $: List = allowedListSatisfying('"List" attribute', List, ValueIsObject) || []
 
@@ -399,15 +399,15 @@
 /**** Attributes for Sorting ****/
 
   export let sortable:boolean = false  // does this list view support "sorting"?
-  export let onlyFrom:string|undefined
-  export let neverFrom:string|undefined
+  export let onlyFrom:string|undefined  = undefined
+  export let neverFrom:string|undefined = undefined
 
   export let onSortRequest:undefined|((          // opt. callback before sorting
     x:number,y:number,
     DroppableExtras:ListDroppableExtras, DropZoneExtras:ListDropZoneExtras
-  ) => boolean)
+  ) => boolean) = undefined
   export let onSort:undefined|          // opt. callback performing act. sorting
-    ((beforeItem:any|undefined, ItemList:{}[]) => void)
+    ((beforeItem:any|undefined, ItemList:{}[]) => void) = undefined
 
   $: sortable = allowedBoolean('"sortable" attribute',sortable) || false
 
@@ -419,25 +419,25 @@
 
 /**** Attributes for Drag-and-Drop ****/
 
-  export let Operations:string|undefined
-  export let DataToOffer:DataOfferSet|undefined
-  export let TypesToAccept:TypeAcceptanceSet|undefined
+  export let Operations:string|undefined               = undefined
+  export let DataToOffer:DataOfferSet|undefined        = undefined
+  export let TypesToAccept:TypeAcceptanceSet|undefined = undefined
 
   export let onOuterDropRequest:undefined|((// opt. callback before outside drop
     x:number,y:number,
     Operation:DropOperation, offeredTypeList:string[],
     DroppableExtras:any, DropZoneExtras:ListDropZoneExtras
-  ) => boolean)
+  ) => boolean) = undefined
   export let onDroppedOutside:undefined|((   // opt. callback after outside drop
     x:number,y:number,
     Operation:DropOperation, TypeTransferred:string, DataTransferred:any,
     DropZoneExtras:any, DroppableExtras:ListDroppableExtras
-  ) => void)
+  ) => void) = undefined
   export let onDropFromOutside:undefined|((//opt. callback for drop from outside
     x:number,y:number,
     Operation:DropOperation, DataOffered:DataOfferSet,
     DroppableExtras:any, DropZoneExtras:ListDropZoneExtras
-  ) => string | undefined)      // returns the actually accepted type (if known)
+  ) => string | undefined) = undefined  // returns act. accepted type (if known)
 
   let wantedOperations:string|undefined
   let DataOffered:DataOfferSet|undefined

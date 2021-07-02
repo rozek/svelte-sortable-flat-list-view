@@ -28,6 +28,7 @@ npm install svelte-sortable-flat-list-view
 ### Selection ###
 
 * [single selection](https://svelte.dev/repl/d881dba9a6b54286aa4159366adde9a5) - this example shows a ListView which supports the selection of single items only
+* [multiple selection](https://svelte.dev/repl/d12c72cd0bc84d01b716ab9394965115) - multiple selections (with optionally predefined limits) are supported as well
 
 ### Sorting ###
 

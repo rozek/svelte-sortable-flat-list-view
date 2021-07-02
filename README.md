@@ -16,7 +16,7 @@ npm install svelte-sortable-flat-list-view
 
 ## Examples ##
 
-**Warning**: the Svelte REPL does not seem to parse TypeScript sources properly...
+A few examples may help understanding how `svelte-sortable-flat-list-view` may be used.
 
 ### Visual Appearance ###
 

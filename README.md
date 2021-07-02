@@ -33,6 +33,7 @@ npm install svelte-sortable-flat-list-view
 ### Sorting ###
 
 * [sorting with single selection](https://svelte.dev/repl/7de55ceb5ae841499d8752addf33fbce) - in the simplest case, individual list items may be rearranged with mouse or finger
+* [sorting with multiple selections](https://svelte.dev/repl/6ae6b28514c742f6a911c7b72188570c) - rearranging multiple list items at once is supported as well
 
 ### Dragging beyond List Bounds ###
 

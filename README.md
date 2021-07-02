@@ -14,6 +14,75 @@ It is based on [svelte-drag-and-drop-actions](https://github.com/rozek/svelte-dr
 npm install svelte-sortable-flat-list-view
 ```
 
+## Usage ##
+
+`svelte-sortable-flat-list-view` should be imported within a module script (perhaps together with `svelte-drag-drop-touch`) and may then be used in your markup:
+
+```
+<script context="module">
+  import DragDropTouch from 'svelte-drag-drop-touch'
+  import ListView      from 'svelte-sortable-flat-list-view'
+</script>
+
+<script lang="ts">
+  let List = []
+</script>
+
+<ListView {List}/>
+```
+
+More detailled examples for a variety of use cases can be found below.
+
+## API ##
+
+**a description will follow by tomorrow, for now just have a look into the examples**
+
+### exported Types ###
+
+For TypeScript users, `svelte-sortable-flat-list-view` exports the following types
+
+* `type ListDroppableExtras = { List:any[], Item:any, ItemList?:any[] }` -
+* `type ListDropZoneExtras  = { List:any[], Item:any }` -
+
+### exported Svelte Props ###
+
+`svelte-sortable-flat-list-view` exports the following Svelte "props" (shown with TypeScript type annotations - JavaScript users may simply ignore them):
+
+* `class:string` -
+* `style:string` - <br>&nbsp;<br>
+* `List:{}[]` -
+* `Key:string|Function` -
+* `SelectionLimit:number` -
+* `InsertionRegion:string` -
+* `AttachmentRegion:string` -
+* `Placeholder:string` -
+* `sortable:boolean` - <br>&nbsp;<br>
+* `onlyFrom:string` -
+* `neverFrom:string` -
+* `onSortRequest:(x:number,y:number, DroppableExtras:ListDroppableExtras, DropZoneExtras:ListDropZoneExtras) => boolean` -
+* `onSort:(beforeItem:any|undefined, ItemList:{}[]) => void` - <br>&nbsp;<br>
+* `Operations:string` -
+* `DataToOffer:DataOfferSet` -
+* `TypesToAccept:TypeAcceptanceSet` -
+* `onOuterDropRequest:(x:number,y:number, Operation:DropOperation, offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:ListDropZoneExtras) => boolean` -
+* `onDroppedOutside:(x:number,y:number, Operation:DropOperation, TypeTransferred:string, DataTransferred:any, DropZoneExtras:any, DroppableExtras:ListDroppableExtras) => void` -
+* `onDropFromOutside:(x:number,y:number, Operation:DropOperation, DataOffered:DataOfferSet, DroppableExtras:any, DropZoneExtras:ListDropZoneExtras) => string | undefined` -
+
+## CSS Classes ##
+
+Without explicitly specifying a CSS class for a list view, standard styling is applied. Otherwise, the following selectors may be used to define custom list view styling:
+
+* `ListView` - 
+* `ListView > .ListItemView` - 
+* `ListView > .ListItemView > *` - 
+* `ListView > .ListItemView:hover:not(.dragged)` - 
+* `ListView > .ListItemView.selected:not(.dragged)` - 
+* `ListView > .ListItemView.dragged` - 
+* `ListView > .ListItemView.hovered:not(.dragged)` - 
+* `ListView > .AttachmentRegion` - 
+* `ListView > .AttachmentRegion.hovered` - 
+* `ListView > .Placeholder` - 
+
 ## Examples ##
 
 A few examples may help understanding how `svelte-sortable-flat-list-view` may be used.

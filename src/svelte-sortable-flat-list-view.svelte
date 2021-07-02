@@ -59,6 +59,8 @@
 
   import { createEventDispatcher } from 'svelte'
 
+/**** types must always be exported form a "module" script ****/
+
   export type ListDroppableExtras = { List:any[], Item:any, ItemList?:any[] }
   export type ListDropZoneExtras  = { List:any[], Item:any }
 </script>

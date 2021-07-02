@@ -41,7 +41,7 @@ A few examples may help understanding how `svelte-sortable-flat-list-view` may b
 
 ### Dragging beyond List Bounds ###
 
-* dragging items from a source into a list
+* [dragging items from a source into a list](https://svelte.dev/repl/ee96b00b21914807ba72eefaa5b618e1) - add new list items by dragging them onto the list view
 * [dragging list items into a trashcan](https://svelte.dev/repl/3290cdf6cd61453f9b5a4c867c38ae7a) - delete list items by dragging them into a trashcan
 * [dragging items between lists](https://svelte.dev/repl/26e9bb4cebd0431e931d66c521061bfb) - of course, you may also drag items from one list into another
 

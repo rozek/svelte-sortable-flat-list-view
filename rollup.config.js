@@ -6,6 +6,7 @@ import resolve        from '@rollup/plugin-node-resolve'
 import autoPreprocess from 'svelte-preprocess'
 import typescript     from '@rollup/plugin-typescript'
 import postcss        from 'rollup-plugin-postcss'
+import saveToFile     from 'save-to-file'
 
 export default {
   input: './src/index.ts',
@@ -17,7 +18,10 @@ export default {
     }
   ],
   plugins: [
-    svelte({ preprocess:autoPreprocess({ aliases:[['ts','typescript']] }) }),
+    svelte({ preprocess:[
+      autoPreprocess({ aliases:[['ts','typescript']] }),
+      saveToFile('./dist/svelte-sortable-flat-list-view.svelte')
+    ]}),
     resolve({ browser:true, dedupe:['svelte'] }), commonjs(), typescript(),
     postcss({ extract:false, inject:{insertAt:'top'} }),
   ],

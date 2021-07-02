@@ -41,6 +41,9 @@ npm install svelte-sortable-flat-list-view
 
 ### Dragging beyond List Bounds ###
 
+* dragging items from a source into a list
+* [dragging list items into a trashcan](https://svelte.dev/repl/3290cdf6cd61453f9b5a4c867c38ae7a) - delete list items by dragging them into a trashcan
+
 ## Build Instructions ##
 
 You may easily build this package yourself.

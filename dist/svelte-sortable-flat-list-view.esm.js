@@ -660,7 +660,7 @@ function ValueIsInteger(Value) {
 function ValueIsString$1(Value) {
     return (typeof Value === 'string') || (Value instanceof String);
 }
-/**** ValueIsNonEmptyString ****/
+/**** ValueIs[Non]EmptyString ****/
 var emptyStringPattern$1 = /^\s*$/;
 function ValueIsNonEmptyString$1(Value) {
     return ((typeof Value === 'string') || (Value instanceof String)) && !emptyStringPattern$1.test(Value.valueOf());
@@ -1282,6 +1282,7 @@ function asDroppable(Element, Options) {
     /**** updateDraggableOptions ****/
     function updateDraggableOptions(Options) {
         Options = parsedDraggableOptions(Options);
+        //    currentDraggableOptions.Extras = Options.Extras // Extras are kept constant
         currentDraggableOptions.Dummy = (Options.Dummy || currentDraggableOptions.Dummy);
         currentDraggableOptions.minX = Options.minX;
         currentDraggableOptions.minY = Options.minY;

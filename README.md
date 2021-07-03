@@ -24,7 +24,7 @@ npm install svelte-sortable-flat-list-view
   import ListView      from 'svelte-sortable-flat-list-view'
 </script>
 
-<script lang="ts">
+<script>
   let List = []
 </script>
 

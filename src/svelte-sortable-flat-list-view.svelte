@@ -59,14 +59,14 @@
 
   import { createEventDispatcher } from 'svelte'
 
-/**** types must always be exported form a "module" script ****/
+/**** types must always be exported from a "module" script ****/
 
   export type ListDroppableExtras = { List:any[], Item:any, ItemList?:any[] }
   export type ListDropZoneExtras  = { List:any[], Item:any }
 </script>
 
 <script lang="ts">
-  import {
+  import {                 // see https://github.com/sveltejs/svelte/issues/5954
     throwError,
     ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList,
     ValueIsOneOf,

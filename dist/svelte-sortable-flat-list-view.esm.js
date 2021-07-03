@@ -633,7 +633,7 @@ function Object_hasOwnProperty(Value, PropertyName) {
         : Object.prototype.hasOwnProperty.call(Value, PropertyName));
 }
 /**** throwError - simplifies construction of named errors ****/
-function throwError(Message) {
+function throwError$1(Message) {
     var Match = /^([$a-zA-Z][$a-zA-Z0-9]*):\s*(\S.+)\s*$/.exec(Message);
     if (Match == null) {
         throw new Error(Message);
@@ -643,10 +643,6 @@ function throwError(Message) {
         namedError.name = Match[1];
         throw namedError;
     }
-}
-/**** ValueIsBoolean ****/
-function ValueIsBoolean(Value) {
-    return (typeof Value === 'boolean') || (Value instanceof Boolean);
 }
 /**** ValueIsFiniteNumber (pure "isFinite" breaks on objects) ****/
 function ValueIsFiniteNumber(Value) {
@@ -660,63 +656,33 @@ function ValueIsInteger(Value) {
     Value = Value.valueOf();
     return isFinite(Value) && (Math.round(Value) === Value);
 }
-/**** ValueIsOrdinal ****/
-function ValueIsOrdinal(Value) {
-    if ((typeof Value !== 'number') && !(Value instanceof Number)) {
-        return false;
-    }
-    Value = Value.valueOf();
-    return isFinite(Value) && (Math.round(Value) === Value) && (Value >= 0);
-}
 /**** ValueIsString ****/
-function ValueIsString(Value) {
+function ValueIsString$1(Value) {
     return (typeof Value === 'string') || (Value instanceof String);
 }
 /**** ValueIs[Non]EmptyString ****/
-var emptyStringPattern = /^\s*$/;
-function ValueIsNonEmptyString(Value) {
-    return ((typeof Value === 'string') || (Value instanceof String)) && !emptyStringPattern.test(Value.valueOf());
+var emptyStringPattern$1 = /^\s*$/;
+function ValueIsNonEmptyString$1(Value) {
+    return ((typeof Value === 'string') || (Value instanceof String)) && !emptyStringPattern$1.test(Value.valueOf());
 }
 /**** ValueIsFunction ****/
-function ValueIsFunction(Value) {
+function ValueIsFunction$1(Value) {
     return (typeof Value === 'function');
 }
 /**** ValueIsObject ****/
-function ValueIsObject(Value) {
+function ValueIsObject$1(Value) {
     return (Value != null) && (typeof Value === 'object');
 }
 /**** ValueIsPlainObject ****/
-function ValueIsPlainObject(Value) {
+function ValueIsPlainObject$1(Value) {
     return ((Value != null) && (typeof Value === 'object') &&
         (Object.getPrototypeOf(Value) === Object.prototype));
 }
 /**** ValueIsArray ****/
-var ValueIsArray = Array.isArray;
-/**** ValueIsList ("dense" array) ****/
-function ValueIsList(Value, minLength, maxLength) {
-    if (ValueIsArray(Value)) {
-        for (var i = 0, l = Value.length; i < l; i++) {
-            if (Value[i] === undefined) {
-                return false;
-            }
-        }
-        if (minLength != null) {
-            if (Value.length < minLength) {
-                return false;
-            }
-        }
-        if (maxLength != null) {
-            if (Value.length > maxLength) {
-                return false;
-            }
-        }
-        return true;
-    }
-    return false;
-}
+var ValueIsArray$1 = Array.isArray;
 /**** ValueIsListSatisfying ****/
-function ValueIsListSatisfying(Value, Validator, minLength, maxLength) {
-    if (ValueIsArray(Value)) {
+function ValueIsListSatisfying$1(Value, Validator, minLength, maxLength) {
+    if (ValueIsArray$1(Value)) {
         try {
             for (var i = 0, l = Value.length; i < l; i++) {
                 if (Validator(Value[i]) == false) {
@@ -740,22 +706,22 @@ function ValueIsListSatisfying(Value, Validator, minLength, maxLength) {
     return false;
 }
 /**** ValueIsOneOf ****/
-function ValueIsOneOf(Value, ValueList) {
+function ValueIsOneOf$1(Value, ValueList) {
     return (ValueList.indexOf(Value) >= 0);
 } // no automatic unboxing of boxed values and vice-versa!
 //------------------------------------------------------------------------------
 //--                      Argument Validation Functions                       --
 //------------------------------------------------------------------------------
 var rejectNil = false;
-var acceptNil = true;
+var acceptNil$1 = true;
 /**** validatedArgument ****/
-function validatedArgument(Description, Argument, ValueIsValid, NilIsAcceptable, Expectation) {
+function validatedArgument$1(Description, Argument, ValueIsValid, NilIsAcceptable, Expectation) {
     if (Argument == null) {
         if (NilIsAcceptable) {
             return Argument;
         }
         else {
-            throwError("MissingArgument: no " + escaped(Description) + " given");
+            throwError$1("MissingArgument: no " + escaped$1(Description) + " given");
         }
     }
     else {
@@ -770,38 +736,38 @@ function validatedArgument(Description, Argument, ValueIsValid, NilIsAcceptable,
             }
         }
         else {
-            throwError("InvalidArgument: the given " + escaped(Description) + " is no valid " + escaped(Expectation));
+            throwError$1("InvalidArgument: the given " + escaped$1(Description) + " is no valid " + escaped$1(Expectation));
         }
     }
 }
 /**** ValidatorForClassifier ****/
-function ValidatorForClassifier(Classifier, NilIsAcceptable, Expectation) {
+function ValidatorForClassifier$1(Classifier, NilIsAcceptable, Expectation) {
     var Validator = function (Description, Argument) {
-        return validatedArgument(Description, Argument, Classifier, NilIsAcceptable, Expectation);
+        return validatedArgument$1(Description, Argument, Classifier, NilIsAcceptable, Expectation);
     };
     var ClassifierName = Classifier.name;
     if ((ClassifierName != null) && /^ValueIs/.test(ClassifierName)) {
         var ValidatorName = ClassifierName.replace(// derive name from validator
         /^ValueIs/, NilIsAcceptable ? 'allow' : 'expect');
-        return FunctionWithName(Validator, ValidatorName);
+        return FunctionWithName$1(Validator, ValidatorName);
     }
     else {
         return Validator; // without any specific name
     }
 }
 /**** FunctionWithName (works with older JS engines as well) ****/
-function FunctionWithName(originalFunction, desiredName) {
+function FunctionWithName$1(originalFunction, desiredName) {
     if (originalFunction == null) {
-        throwError('MissingArgument: no function given');
+        throwError$1('MissingArgument: no function given');
     }
     if (typeof originalFunction !== 'function') {
-        throwError('InvalidArgument: the given 1st Argument is not a JavaScript function');
+        throwError$1('InvalidArgument: the given 1st Argument is not a JavaScript function');
     }
     if (desiredName == null) {
-        throwError('MissingArgument: no desired name given');
+        throwError$1('MissingArgument: no desired name given');
     }
     if ((typeof desiredName !== 'string') && !(desiredName instanceof String)) {
-        throwError('InvalidArgument: the given desired name is not a string');
+        throwError$1('InvalidArgument: the given desired name is not a string');
     }
     if (originalFunction.name === desiredName) {
         return originalFunction;
@@ -818,11 +784,9 @@ function FunctionWithName(originalFunction, desiredName) {
         '}');
     return renamed(originalFunction);
 } // also works with older JavaScript engines
-/**** allow/expect[ed]Boolean ****/
-var allowBoolean = /*#__PURE__*/ ValidatorForClassifier(ValueIsBoolean, acceptNil, 'boolean value'), allowedBoolean = allowBoolean;
 /**** allow/expect[ed]FiniteNumber ****/
-var allowFiniteNumber = /*#__PURE__*/ ValidatorForClassifier(ValueIsFiniteNumber, acceptNil, 'finite numeric value'), allowedFiniteNumber = allowFiniteNumber;
-var expectInteger = /*#__PURE__*/ ValidatorForClassifier(ValueIsInteger, rejectNil, 'integral numeric value');
+var allowFiniteNumber = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsFiniteNumber, acceptNil$1, 'finite numeric value'), allowedFiniteNumber = allowFiniteNumber;
+var expectInteger = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsInteger, rejectNil, 'integral numeric value');
 /**** allow[ed]IntegerInRange ****/
 function allowIntegerInRange(Description, Argument, minValue, maxValue) {
     return (Argument == null
@@ -834,18 +798,18 @@ var allowedIntegerInRange = allowIntegerInRange;
 function expectIntegerInRange(Description, Argument, minValue, maxValue) {
     expectInteger(Description, Argument);
     if (isNaN(Argument)) {
-        throwError("InvalidArgument: the given " + escaped(Description) + " is not-a-number");
+        throwError$1("InvalidArgument: the given " + escaped$1(Description) + " is not-a-number");
     }
     if ((minValue != null) && isFinite(minValue)) {
         if ((maxValue != null) && isFinite(maxValue)) {
             if ((Argument < minValue) || (Argument > maxValue)) {
-                throw new RangeError("the given " + escaped(Description) + " (" + Argument + ") is outside " +
+                throw new RangeError("the given " + escaped$1(Description) + " (" + Argument + ") is outside " +
                     ("the allowed range (" + minValue + "..." + maxValue + ")"));
             }
         }
         else {
             if (Argument < minValue) {
-                throw new RangeError("the given " + escaped(Description) + " is below the allowed " +
+                throw new RangeError("the given " + escaped$1(Description) + " is below the allowed " +
                     ("minimum (" + Argument + " < " + minValue + ")"));
             }
         }
@@ -853,7 +817,7 @@ function expectIntegerInRange(Description, Argument, minValue, maxValue) {
     else {
         if ((maxValue != null) && isFinite(maxValue)) {
             if (Argument > maxValue) {
-                throw new RangeError("the given " + escaped(Description) + " exceeds the allowed " +
+                throw new RangeError("the given " + escaped$1(Description) + " exceeds the allowed " +
                     ("maximum (" + Argument + " > " + maxValue + ")"));
             }
         }
@@ -861,41 +825,38 @@ function expectIntegerInRange(Description, Argument, minValue, maxValue) {
     return Argument.valueOf();
 }
 var expectedIntegerInRange = expectIntegerInRange;
-/**** allow/expect[ed]Ordinal ****/
-var allowOrdinal = /*#__PURE__*/ ValidatorForClassifier(ValueIsOrdinal, acceptNil, 'ordinal number');
 /**** allow/expect[ed]String ****/
-var allowString = /*#__PURE__*/ ValidatorForClassifier(ValueIsString, acceptNil, 'literal string'), allowedString = allowString;
+var allowString$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsString$1, acceptNil$1, 'literal string'), allowedString$1 = allowString$1;
 /**** allow/expect[ed]NonEmptyString ****/
-var allowNonEmptyString = /*#__PURE__*/ ValidatorForClassifier(ValueIsNonEmptyString, acceptNil, 'non-empty literal string'), allowedNonEmptyString = allowNonEmptyString;
+var allowNonEmptyString$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsNonEmptyString$1, acceptNil$1, 'non-empty literal string'), allowedNonEmptyString = allowNonEmptyString$1;
 /**** allow/expect[ed]Function ****/
-var allowFunction = /*#__PURE__*/ ValidatorForClassifier(ValueIsFunction, acceptNil, 'JavaScript function'), allowedFunction = allowFunction;
-var expectObject = /*#__PURE__*/ ValidatorForClassifier(ValueIsObject, rejectNil, 'JavaScript object');
+var allowFunction$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsFunction$1, acceptNil$1, 'JavaScript function'), allowedFunction = allowFunction$1;
+var expectObject = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsObject$1, rejectNil, 'JavaScript object');
 /**** allow/expect[ed]PlainObject ****/
-var allowPlainObject = /*#__PURE__*/ ValidatorForClassifier(ValueIsPlainObject, acceptNil, '"plain" JavaScript object'), allowedPlainObject = allowPlainObject;
+var allowPlainObject$1 = /*#__PURE__*/ ValidatorForClassifier$1(ValueIsPlainObject$1, acceptNil$1, '"plain" JavaScript object'), allowedPlainObject = allowPlainObject$1;
 /**** allow[ed]ListSatisfying ****/
-function allowListSatisfying(Description, Argument, Validator, Expectation, minLength, maxLength) {
+function allowListSatisfying$1(Description, Argument, Validator, Expectation, minLength, maxLength) {
     return (Argument == null
         ? Argument
-        : expectedListSatisfying(Description, Argument, Validator, Expectation, minLength, maxLength));
+        : expectedListSatisfying$1(Description, Argument, Validator, Expectation, minLength, maxLength));
 }
-var allowedListSatisfying = allowListSatisfying;
 /**** expect[ed]ListSatisfying ****/
-function expectListSatisfying(Description, Argument, Validator, Expectation, minLength, maxLength) {
+function expectListSatisfying$1(Description, Argument, Validator, Expectation, minLength, maxLength) {
     if (Argument == null) {
-        throwError("MissingArgument: no " + escaped(Description) + " given");
+        throwError$1("MissingArgument: no " + escaped$1(Description) + " given");
     }
-    if (ValueIsListSatisfying(Argument, Validator, minLength, maxLength)) {
+    if (ValueIsListSatisfying$1(Argument, Validator, minLength, maxLength)) {
         return Argument;
     }
     else {
-        throwError("InvalidArgument: the given " + escaped(Description) + " is " + (Expectation == null
+        throwError$1("InvalidArgument: the given " + escaped$1(Description) + " is " + (Expectation == null
             ? 'either not a list or contains invalid elements'
-            : 'no ' + escaped(Expectation)));
+            : 'no ' + escaped$1(Expectation)));
     }
 }
-var expectedListSatisfying = expectListSatisfying;
+var expectedListSatisfying$1 = expectListSatisfying$1;
 /**** escaped - escapes all control characters in a given string ****/
-function escaped(Text) {
+function escaped$1(Text) {
     var EscapeSequencePattern = /\\x[0-9a-zA-Z]{2}|\\u[0-9a-zA-Z]{4}|\\[0bfnrtv'"\\\/]?/g;
     var CtrlCharCodePattern = /[\x00-\x1f\x7f-\x9f]/g;
     return Text
@@ -919,7 +880,7 @@ function escaped(Text) {
     });
 }
 /**** quotable - makes a given string ready to be put in single/double quotes ****/
-function quotable(Text, Quote) {
+function quotable$1(Text, Quote) {
     if (Quote === void 0) { Quote = '"'; }
     var EscSeqOrSglQuotePattern = /\\x[0-9a-zA-Z]{2}|\\u[0-9a-zA-Z]{4}|\\[0bfnrtv'"\\\/]?|'/g;
     var EscSeqOrDblQuotePattern = /\\x[0-9a-zA-Z]{2}|\\u[0-9a-zA-Z]{4}|\\[0bfnrtv'"\\\/]?|"/g;
@@ -950,75 +911,9 @@ function quotable(Text, Quote) {
     });
 }
 /**** quoted ****/
-function quoted(Text, Quote) {
+function quoted$1(Text, Quote) {
     if (Quote === void 0) { Quote = '"'; }
-    return Quote + quotable(Text, Quote) + Quote;
-}
-/**** ValuesDiffer ****/
-function ValuesDiffer(thisValue, otherValue) {
-    if (thisValue === otherValue) {
-        return false;
-    }
-    var thisType = typeof thisValue;
-    if (thisType !== typeof otherValue) {
-        return true;
-    }
-    /**** ArraysDiffer ****/
-    function ArraysDiffer(thisArray, otherArray) {
-        if (!Array.isArray(otherArray)) {
-            return true;
-        }
-        if (thisArray.length !== otherArray.length) {
-            return true;
-        }
-        for (var i = 0, l = thisArray.length; i < l; i++) {
-            if (ValuesDiffer(thisArray[i], otherArray[i])) {
-                return true;
-            }
-        }
-        return false;
-    }
-    /**** ObjectsDiffer ****/
-    function ObjectsDiffer(thisObject, otherObject) {
-        if (Object.getPrototypeOf(thisObject) !== Object.getPrototypeOf(otherObject)) {
-            return true;
-        }
-        for (var key in thisObject) {
-            if (!(key in otherObject)) {
-                return true;
-            }
-        }
-        for (var key in otherObject) {
-            if (!(key in thisObject)) {
-                return true;
-            }
-            if (ValuesDiffer(thisObject[key], otherObject[key])) {
-                return true;
-            }
-        }
-        return false;
-    }
-    switch (thisType) {
-        case 'undefined':
-        case 'boolean':
-        case 'string':
-        case 'function': return true; // most primitives are compared using "==="
-        case 'number': return ((isNaN(thisValue) !== isNaN(otherValue)) ||
-            (Math.abs(thisValue - otherValue) > Number.EPSILON));
-        case 'object':
-            if (thisValue == null) {
-                return true;
-            } // since "other_value" != null!
-            if (otherValue == null) {
-                return true;
-            } // since "this_value" != null!
-            if (Array.isArray(thisValue)) {
-                return ArraysDiffer(thisValue, otherValue);
-            }
-            return ObjectsDiffer(thisValue, otherValue);
-        default: return true; // unsupported property type
-    }
-    return true;
+    return Quote + quotable$1(Text, Quote) + Quote;
 }
 /**** ObjectIsEmpty ****/
 function ObjectIsEmpty(Candidate) {
@@ -1059,13 +954,13 @@ function parsedDraggableOptions(Options) {
             break;
         case (Options.relativeTo === 'parent'):
         case (Options.relativeTo === 'body'):
-        case ValueIsNonEmptyString(Options.relativeTo):
+        case ValueIsNonEmptyString$1(Options.relativeTo):
         case (Options.relativeTo instanceof HTMLElement):
         case (Options.relativeTo instanceof SVGElement):
             //    case (Options.relativeTo instanceof MathMLElement):
             relativeTo = Options.relativeTo;
             break;
-        default: throwError('InvalidArgument: invalid position reference given');
+        default: throwError$1('InvalidArgument: invalid position reference given');
     }
     onlyFrom = allowedNonEmptyString('"onlyFrom" CSS selector', Options.onlyFrom);
     neverFrom = allowedNonEmptyString('"neverFrom" CSS selector', Options.neverFrom);
@@ -1075,14 +970,14 @@ function parsedDraggableOptions(Options) {
             break;
         case (Options.Dummy === 'standard'):
         case (Options.Dummy === 'none'):
-        case ValueIsNonEmptyString(Options.Dummy):
+        case ValueIsNonEmptyString$1(Options.Dummy):
         case (Options.Dummy instanceof HTMLElement):
         case (Options.Dummy instanceof SVGElement):
         //    case (Options.Dummy instanceof MathMLElement):
-        case ValueIsFunction(Options.Dummy):
+        case ValueIsFunction$1(Options.Dummy):
             Dummy = Options.Dummy;
             break;
-        default: throwError('InvalidArgument: invalid drag dummy specification given');
+        default: throwError$1('InvalidArgument: invalid drag dummy specification given');
     }
     DummyOffsetX = allowedFiniteNumber('dummy x offset', Options.DummyOffsetX);
     DummyOffsetY = allowedFiniteNumber('dummy y offset', Options.DummyOffsetY);
@@ -1242,7 +1137,7 @@ function asDroppable(Element, Options) {
         else {
             try {
                 var StartPosition = Options.onDragStart(Options.Extras);
-                if (ValueIsPlainObject(StartPosition)) {
+                if (ValueIsPlainObject$1(StartPosition)) {
                     var x = allowedFiniteNumber('x start position', StartPosition.x);
                     var y = allowedFiniteNumber('y start position', StartPosition.y);
                     ReferenceDeltaX = x - relativePosition.left;
@@ -1283,7 +1178,7 @@ function asDroppable(Element, Options) {
                         document.body.removeChild(DragImage);
                     }, 0);
                     break;
-                case ValueIsString(Options.Dummy):
+                case ValueIsString$1(Options.Dummy):
                     originalEvent.dataTransfer.setDragImage(DragImage, OffsetX, OffsetY);
                     setTimeout(function () {
                         document.body.removeChild(DragImage.parentElement);
@@ -1422,11 +1317,11 @@ function parsedDropZoneOptions(Options) {
     var onDroppableEnter, onDroppableMove, onDroppableLeave;
     var onDroppableHold, onDroppableRelease, onDrop;
     Extras = Options.Extras;
-    allowPlainObject('data types to be accepted', Options.TypesToAccept);
+    allowPlainObject$1('data types to be accepted', Options.TypesToAccept);
     TypesToAccept = Object.create(null);
     for (var Type in Options.TypesToAccept) {
         if (Options.TypesToAccept.hasOwnProperty(Type)) {
-            TypesToAccept[Type] = parsedOperations('list of accepted operations for type ' + quoted(Type), Options.TypesToAccept[Type]);
+            TypesToAccept[Type] = parsedOperations('list of accepted operations for type ' + quoted$1(Type), Options.TypesToAccept[Type]);
         }
     }
     HoldDelay = allowedIntegerInRange('min. time to hold', Options.HoldDelay, 0);
@@ -1620,7 +1515,7 @@ function asDropZone(Element, Options) {
                 currentTypeTransferred = undefined;
                 currentDataTransferred = undefined;
                 break;
-            case ValueIsOneOf(acceptedType, offeredTypeList):
+            case ValueIsOneOf$1(acceptedType, offeredTypeList):
                 DroppableWasDropped = true;
                 currentDropOperation = wantedOperation;
                 currentTypeTransferred = acceptedType;
@@ -1663,7 +1558,7 @@ function asDropZone(Element, Options) {
 }
 /**** ValueIsPosition ****/
 function ValueIsPosition(Candidate) {
-    return (ValueIsPlainObject(Candidate) &&
+    return (ValueIsPlainObject$1(Candidate) &&
         ValueIsFiniteNumber(Candidate.x) && ValueIsFiniteNumber(Candidate.y));
 }
 /**** asPosition ****/
@@ -1686,7 +1581,7 @@ function PositionReferenceFor(Element, Options) {
             PositionReference = Options.relativeTo;
             if ((PositionReference != document.body) &&
                 !document.body.contains(PositionReference))
-                throwError('InvalidArgument: the HTML element given as "relativeTo" option ' +
+                throwError$1('InvalidArgument: the HTML element given as "relativeTo" option ' +
                     'is not part of this HTML document');
             break;
         default: // CSS selector
@@ -1706,7 +1601,7 @@ function DragImageFor(Element, Options) {
                 'cursor:auto');
             document.body.appendChild(invisibleDragImage);
             return invisibleDragImage;
-        case ValueIsNonEmptyString(Options.Dummy): // may flicker shortly
+        case ValueIsNonEmptyString$1(Options.Dummy): // may flicker shortly
             var auxiliaryElement = document.createElement('div');
             auxiliaryElement.style.display = 'block';
             auxiliaryElement.style.position = 'absolute';
@@ -1718,7 +1613,7 @@ function DragImageFor(Element, Options) {
         case (Options.Dummy instanceof SVGElement):
             //    case (Options.Dummy instanceof MathMLElement):
             return Options.Dummy;
-        case ValueIsFunction(Options.Dummy):
+        case ValueIsFunction$1(Options.Dummy):
             var Candidate = undefined;
             try {
                 Candidate = Options.Dummy(Options.Extras, Element);
@@ -1740,13 +1635,13 @@ function DragImageFor(Element, Options) {
 /**** parsedOperations ****/
 function parsedOperations(Description, Argument, Default) {
     if (Default === void 0) { Default = 'copy move link'; }
-    var Operations = allowedString(Description, Argument) || Default;
+    var Operations = allowedString$1(Description, Argument) || Default;
     switch (Operations.trim()) {
         case 'all': return 'copy move link';
         case 'none': return '';
     }
     var OperationList = Operations.trim().replace(/\s+/g, ' ').split(' ');
-    allowListSatisfying(Description, OperationList, function (Operation) { return ValueIsOneOf(Operation, DropOperations); });
+    allowListSatisfying$1(Description, OperationList, function (Operation) { return ValueIsOneOf$1(Operation, DropOperations); });
     return OperationList.reduce(function (Result, Operation) { return (Result.indexOf(Operation) < 0 ? Result + Operation + ' ' : Result); }, ' ');
 }
 function allowedEffectsFrom(Operations) {
@@ -1769,15 +1664,347 @@ function invokeHandler(Name, Options) {
             return Options[Name].apply(null, Arguments);
         }
         catch (Signal) {
-            console.error(quoted(Name) + ' handler failed', Signal);
+            console.error(quoted$1(Name) + ' handler failed', Signal);
         }
     }
 }
 var ResultOfHandler = invokeHandler;
 
-var e,n=!1;e=navigator.userAgent||navigator.vendor||window.opera,(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(e)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(e.substr(0,4)))&&(n=!0);var i=!1;if(n){var t$1=window.innerWidth,a=window.innerHeight,o=Math.min(t$1,a),r$1=Math.max(t$1,a);i=o<=480&&r$1<=896;}var c=window.matchMedia||window.webkitMatchmedia||window.mozMatchmedia||window.oMatchmedia;function d(e){return null!=c&&c(e).matches}function s(){return "interactive"===document.readyState||"complete"===document.readyState}var l,m=!d("(pointer:fine)")&&!d("(pointer:coarse)")&&!d("-moz-touch-enabled")&&("ontouchstart"in Window||(navigator.maxTouchPoints||0)>0||/touch|android|iphone|ipod|ipad/i.test(navigator.userAgent));function u(){var e="fine";switch(!0){case d("(pointer:none)"):e="none";break;case d("(pointer:coarse)"):case d("-moz-touch-enabled"):case m:e="coarse";}if(l=e,s())switch(document.body.classList.remove("noPointer","finePointer","coarsePointer"),e){case"none":document.body.classList.add("noPointer");break;case"fine":document.body.classList.add("finePointer");break;case"coarse":document.body.classList.add("coarsePointer");}}u(),s()||window.addEventListener("DOMContentLoaded",u);var p=[];function h(e,n){if("function"!=typeof e)throw new Error("handler function expected");for(var i=0,t=p.length;i<t;i++)if(p[i].Handler===e)return void(p[i].onceOnly=n);p.push({Handler:e,onceOnly:n}),1===p.length&&(v=setInterval((function(){var e=l;u(),l!==e&&function(){for(var e=0,n=p.length;e<n;e++){var i=p[e],t=i.Handler,a=i.onceOnly;try{t(l);}catch(e){console.warn("PointingAccuracy observation function failed with",e);}a&&g(t);}}();}),500));}function g(e){for(var n=0,i=p.length;n<i;n++)if(p[n].Handler===e){p.splice(n,1);break}0===p.length&&(clearInterval(v),v=void 0);}var v=void 0;function w(e,n){return "function"==typeof e.item?e.item(n):e[n]}function f(e,n){for(var i=0,t=e.length;i<t;i++)if(n.test(w(e,i)))return !0;return !1}if(m){for(var b=document.styleSheets,y=0,k=b.length;y<k;y++)for(var x=b[y].cssRules||b[y].rules,P=0,z=x.length;P<z;P++){var A=x[P];if(A.type===CSSRule.MEDIA_RULE&&f(A.media,/handheld/i)){var M=A.media;M.mediaText=M.mediaText.replace("handheld","screen");}}var L=document.getElementsByTagName("link");for(y=0,k=L.length;y<k;y++){var T=L[y];/handheld/i.test(T.media)&&(T.media=T.media.replace("handheld","screen"));}}var j={get isMobile(){return n},get isPhone(){return i},get isTablet(){return n&&!i},get isLegacyTouchDevice(){return m},get PointingAccuracy(){return l},onPointingAccuracyChanged:function(e){h(e,!1);},oncePointingAccuracyChanged:function(e){h(e,!0);},offPointingAccuracyChanged:function(e){g(e);},get observesPointingAccuracy(){return null!=v}};
+var e={};function n(){var e,n=!1;return e=navigator.userAgent||navigator.vendor||window.opera,(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino|android|ipad|playbook|silk/i.test(e)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(e.substr(0,4)))&&(n=!0),n}function t$1(){if(n()){var e=window.innerWidth,t=window.innerHeight,i=Math.min(e,t),a=Math.max(e,t);return i<=480&&a<=896}return !1}function i(e){var n=window.matchMedia||window.webkitMatchmedia||window.mozMatchmedia||window.oMatchmedia;return null!=n&&n(e).matches}function a(){return "interactive"===document.readyState||"complete"===document.readyState}function o(){return null==e.AppRunsOnLegacyTouchDevice&&(e.AppRunsOnLegacyTouchDevice=!i("(pointer:fine)")&&!i("(pointer:coarse)")&&!i("-moz-touch-enabled")&&("ontouchstart"in Window||(navigator.maxTouchPoints||0)>0||/touch|android|iphone|ipod|ipad/i.test(navigator.userAgent))),e.AppRunsOnLegacyTouchDevice}function r$1(e,n){return "function"==typeof e.item?e.item(n):e[n]}function c(e,n){for(var t=0,i=e.length;t<i;t++)if(n.test(r$1(e,t)))return !0;return !1}function d(){return null==e.DevicePointingAccuracy&&(a()?s():window.addEventListener("DOMContentLoaded",s)),e.DevicePointingAccuracy}function s(){var n="fine";switch(!0){case i("(pointer:none)"):n="none";break;case i("(pointer:coarse)"):case i("-moz-touch-enabled"):case o():n="coarse";}if(e.DevicePointingAccuracy=n,a())switch(document.body.classList.remove("noPointer","finePointer","coarsePointer"),n){case"none":document.body.classList.add("noPointer");break;case"fine":document.body.classList.add("finePointer");break;case"coarse":document.body.classList.add("coarsePointer");}}function l(n,t){if("function"!=typeof n)throw new Error("handler function expected");null==e.EventHandlerRegistry&&(e.EventHandlerRegistry=[]);for(var i=e.EventHandlerRegistry,a=0,o=i.length;a<o;a++)if(i[a].Handler===n)return void(i[a].onceOnly=t);i.push({Handler:n,onceOnly:t}),1===i.length&&(e.AccuracyPoller=setInterval((function(){var n=d();s(),d()!==n&&function(){null==e.EventHandlerRegistry&&(e.EventHandlerRegistry=[]);for(var n=e.EventHandlerRegistry,t=0,i=n.length;t<i;t++){var a=n[t],o=a.Handler,r=a.onceOnly;try{o(d());}catch(e){console.warn("PointingAccuracy observation function failed with",e);}r&&u(o);}}();}),500));}function u(n){null==e.EventHandlerRegistry&&(e.EventHandlerRegistry=[]);for(var t=e.EventHandlerRegistry,i=0,a=t.length;i<a;i++)if(t[i].Handler===n){t.splice(i,1);break}0===t.length&&(clearInterval(e.AccuracyPoller),e.AccuracyPoller=void 0);}var m={get isMobile(){return n()},get isPhone(){return t$1()},get isTablet(){return n()&&!t$1()},get isLegacyTouchDevice(){return o()},rewriteMediaQueriesOnLegacyTouchDevices:function n(){if(!e.MediaQueriesHaveBeenRewritten&&o())if(a()){for(var t=document.styleSheets,i=0,r=t.length;i<r;i++)for(var d=t[i].cssRules||t[i].rules,s=0,l=d.length;s<l;s++){var u=d[s];if(u.type===CSSRule.MEDIA_RULE&&c(u.media,/handheld/i)){var m=u.media;m.mediaText=m.mediaText.replace("handheld","screen");}}var g=document.getElementsByTagName("link");for(i=0,r=g.length;i<r;i++){var v=g[i];/handheld/i.test(v.media)&&(v.media=v.media.replace("handheld","screen"));}e.MediaQueriesHaveBeenRewritten=!0;}else window.addEventListener("DOMContentLoaded",n);},get PointingAccuracy(){return d()},onPointingAccuracyChanged:function(e){l(e,!1);},oncePointingAccuracyChanged:function(e){l(e,!0);},offPointingAccuracyChanged:function(e){u(e);},get observesPointingAccuracy(){return null!=e.AccuracyPoller}};
 
 var r=0;function t(){return "uid-"+ ++r}
+
+//----------------------------------------------------------------------------//
+/**** throwError - simplifies construction of named errors ****/
+function throwError(Message) {
+    var Match = /^([$a-zA-Z][$a-zA-Z0-9]*):\s*(\S.+)\s*$/.exec(Message);
+    if (Match == null) {
+        throw new Error(Message);
+    }
+    else {
+        var namedError = new Error(Match[2]);
+        namedError.name = Match[1];
+        throw namedError;
+    }
+}
+/**** ValueIsBoolean ****/
+function ValueIsBoolean(Value) {
+    return (typeof Value === 'boolean') || (Value instanceof Boolean);
+}
+/**** ValueIsOrdinal ****/
+function ValueIsOrdinal(Value) {
+    if ((typeof Value !== 'number') && !(Value instanceof Number)) {
+        return false;
+    }
+    Value = Value.valueOf();
+    return isFinite(Value) && (Math.round(Value) === Value) && (Value >= 0);
+}
+/**** ValueIsString ****/
+function ValueIsString(Value) {
+    return (typeof Value === 'string') || (Value instanceof String);
+}
+/**** ValueIs[Non]EmptyString ****/
+var emptyStringPattern = /^\s*$/;
+function ValueIsNonEmptyString(Value) {
+    return ((typeof Value === 'string') || (Value instanceof String)) && !emptyStringPattern.test(Value.valueOf());
+}
+/**** ValueIsFunction ****/
+function ValueIsFunction(Value) {
+    return (typeof Value === 'function');
+}
+/**** ValueIsObject ****/
+function ValueIsObject(Value) {
+    return (Value != null) && (typeof Value === 'object');
+}
+/**** ValueIsPlainObject ****/
+function ValueIsPlainObject(Value) {
+    return ((Value != null) && (typeof Value === 'object') &&
+        (Object.getPrototypeOf(Value) === Object.prototype));
+}
+/**** ValueIsArray ****/
+var ValueIsArray = Array.isArray;
+/**** ValueIsList ("dense" array) ****/
+function ValueIsList(Value, minLength, maxLength) {
+    if (ValueIsArray(Value)) {
+        for (var i = 0, l = Value.length; i < l; i++) {
+            if (Value[i] === undefined) {
+                return false;
+            }
+        }
+        if (minLength != null) {
+            if (Value.length < minLength) {
+                return false;
+            }
+        }
+        if (maxLength != null) {
+            if (Value.length > maxLength) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+/**** ValueIsListSatisfying ****/
+function ValueIsListSatisfying(Value, Validator, minLength, maxLength) {
+    if (ValueIsArray(Value)) {
+        try {
+            for (var i = 0, l = Value.length; i < l; i++) {
+                if (Validator(Value[i]) == false) {
+                    return false;
+                }
+            }
+            if (minLength != null) {
+                if (Value.length < minLength) {
+                    return false;
+                }
+            }
+            if (maxLength != null) {
+                if (Value.length > maxLength) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        catch (Signal) { /* nop */ }
+    }
+    return false;
+}
+/**** ValueIsOneOf ****/
+function ValueIsOneOf(Value, ValueList) {
+    return (ValueList.indexOf(Value) >= 0);
+} // no automatic unboxing of boxed values and vice-versa!
+var acceptNil = true;
+/**** validatedArgument ****/
+function validatedArgument(Description, Argument, ValueIsValid, NilIsAcceptable, Expectation) {
+    if (Argument == null) {
+        if (NilIsAcceptable) {
+            return Argument;
+        }
+        else {
+            throwError("MissingArgument: no " + escaped(Description) + " given");
+        }
+    }
+    else {
+        if (ValueIsValid(Argument)) {
+            switch (true) {
+                case Argument instanceof Boolean:
+                case Argument instanceof Number:
+                case Argument instanceof String:
+                    return Argument.valueOf(); // unboxes any primitives
+                default:
+                    return Argument;
+            }
+        }
+        else {
+            throwError("InvalidArgument: the given " + escaped(Description) + " is no valid " + escaped(Expectation));
+        }
+    }
+}
+/**** ValidatorForClassifier ****/
+function ValidatorForClassifier(Classifier, NilIsAcceptable, Expectation) {
+    var Validator = function (Description, Argument) {
+        return validatedArgument(Description, Argument, Classifier, NilIsAcceptable, Expectation);
+    };
+    var ClassifierName = Classifier.name;
+    if ((ClassifierName != null) && /^ValueIs/.test(ClassifierName)) {
+        var ValidatorName = ClassifierName.replace(// derive name from validator
+        /^ValueIs/, NilIsAcceptable ? 'allow' : 'expect');
+        return FunctionWithName(Validator, ValidatorName);
+    }
+    else {
+        return Validator; // without any specific name
+    }
+}
+/**** FunctionWithName (works with older JS engines as well) ****/
+function FunctionWithName(originalFunction, desiredName) {
+    if (originalFunction == null) {
+        throwError('MissingArgument: no function given');
+    }
+    if (typeof originalFunction !== 'function') {
+        throwError('InvalidArgument: the given 1st Argument is not a JavaScript function');
+    }
+    if (desiredName == null) {
+        throwError('MissingArgument: no desired name given');
+    }
+    if ((typeof desiredName !== 'string') && !(desiredName instanceof String)) {
+        throwError('InvalidArgument: the given desired name is not a string');
+    }
+    if (originalFunction.name === desiredName) {
+        return originalFunction;
+    }
+    try {
+        Object.defineProperty(originalFunction, 'name', { value: desiredName });
+        if (originalFunction.name === desiredName) {
+            return originalFunction;
+        }
+    }
+    catch (signal) { /* ok - let's take the hard way */ }
+    var renamed = new Function('originalFunction', 'return function ' + desiredName + ' () {' +
+        'return originalFunction.apply(this,Array.prototype.slice.apply(arguments))' +
+        '}');
+    return renamed(originalFunction);
+} // also works with older JavaScript engines
+/**** allow/expect[ed]Boolean ****/
+var allowBoolean = /*#__PURE__*/ ValidatorForClassifier(ValueIsBoolean, acceptNil, 'boolean value'), allowedBoolean = allowBoolean;
+/**** allow/expect[ed]Ordinal ****/
+var allowOrdinal = /*#__PURE__*/ ValidatorForClassifier(ValueIsOrdinal, acceptNil, 'ordinal number');
+/**** allow/expect[ed]String ****/
+var allowString = /*#__PURE__*/ ValidatorForClassifier(ValueIsString, acceptNil, 'literal string'), allowedString = allowString;
+/**** allow/expect[ed]NonEmptyString ****/
+var allowNonEmptyString = /*#__PURE__*/ ValidatorForClassifier(ValueIsNonEmptyString, acceptNil, 'non-empty literal string');
+/**** allow/expect[ed]Function ****/
+var allowFunction = /*#__PURE__*/ ValidatorForClassifier(ValueIsFunction, acceptNil, 'JavaScript function');
+/**** allow/expect[ed]PlainObject ****/
+var allowPlainObject = /*#__PURE__*/ ValidatorForClassifier(ValueIsPlainObject, acceptNil, '"plain" JavaScript object');
+/**** allow[ed]ListSatisfying ****/
+function allowListSatisfying(Description, Argument, Validator, Expectation, minLength, maxLength) {
+    return (Argument == null
+        ? Argument
+        : expectedListSatisfying(Description, Argument, Validator, Expectation, minLength, maxLength));
+}
+var allowedListSatisfying = allowListSatisfying;
+/**** expect[ed]ListSatisfying ****/
+function expectListSatisfying(Description, Argument, Validator, Expectation, minLength, maxLength) {
+    if (Argument == null) {
+        throwError("MissingArgument: no " + escaped(Description) + " given");
+    }
+    if (ValueIsListSatisfying(Argument, Validator, minLength, maxLength)) {
+        return Argument;
+    }
+    else {
+        throwError("InvalidArgument: the given " + escaped(Description) + " is " + (Expectation == null
+            ? 'either not a list or contains invalid elements'
+            : 'no ' + escaped(Expectation)));
+    }
+}
+var expectedListSatisfying = expectListSatisfying;
+/**** escaped - escapes all control characters in a given string ****/
+function escaped(Text) {
+    var EscapeSequencePattern = /\\x[0-9a-zA-Z]{2}|\\u[0-9a-zA-Z]{4}|\\[0bfnrtv'"\\\/]?/g;
+    var CtrlCharCodePattern = /[\x00-\x1f\x7f-\x9f]/g;
+    return Text
+        .replace(EscapeSequencePattern, function (Match) {
+        return (Match === '\\' ? '\\\\' : Match);
+    })
+        .replace(CtrlCharCodePattern, function (Match) {
+        switch (Match) {
+            case '\0': return '\\0';
+            case '\b': return '\\b';
+            case '\f': return '\\f';
+            case '\n': return '\\n';
+            case '\r': return '\\r';
+            case '\t': return '\\t';
+            case '\v': return '\\v';
+            default: {
+                var HexCode = Match.charCodeAt(0).toString(16);
+                return '\\x' + '00'.slice(HexCode.length) + HexCode;
+            }
+        }
+    });
+}
+/**** quotable - makes a given string ready to be put in single/double quotes ****/
+function quotable(Text, Quote) {
+    if (Quote === void 0) { Quote = '"'; }
+    var EscSeqOrSglQuotePattern = /\\x[0-9a-zA-Z]{2}|\\u[0-9a-zA-Z]{4}|\\[0bfnrtv'"\\\/]?|'/g;
+    var EscSeqOrDblQuotePattern = /\\x[0-9a-zA-Z]{2}|\\u[0-9a-zA-Z]{4}|\\[0bfnrtv'"\\\/]?|"/g;
+    var CtrlCharCodePattern = /[\x00-\x1f\x7f-\x9f]/g;
+    return Text
+        .replace(Quote === "'" ? EscSeqOrSglQuotePattern : EscSeqOrDblQuotePattern, function (Match) {
+        switch (Match) {
+            case "'": return "\\'";
+            case '"': return '\\"';
+            case '\\': return '\\\\';
+            default: return Match;
+        }
+    })
+        .replace(CtrlCharCodePattern, function (Match) {
+        switch (Match) {
+            case '\0': return '\\0';
+            case '\b': return '\\b';
+            case '\f': return '\\f';
+            case '\n': return '\\n';
+            case '\r': return '\\r';
+            case '\t': return '\\t';
+            case '\v': return '\\v';
+            default: {
+                var HexCode = Match.charCodeAt(0).toString(16);
+                return '\\x' + '00'.slice(HexCode.length) + HexCode;
+            }
+        }
+    });
+}
+/**** quoted ****/
+function quoted(Text, Quote) {
+    if (Quote === void 0) { Quote = '"'; }
+    return Quote + quotable(Text, Quote) + Quote;
+}
+/**** ValuesDiffer ****/
+function ValuesDiffer(thisValue, otherValue) {
+    if (thisValue === otherValue) {
+        return false;
+    }
+    var thisType = typeof thisValue;
+    if (thisType !== typeof otherValue) {
+        return true;
+    }
+    /**** ArraysDiffer ****/
+    function ArraysDiffer(thisArray, otherArray) {
+        if (!Array.isArray(otherArray)) {
+            return true;
+        }
+        if (thisArray.length !== otherArray.length) {
+            return true;
+        }
+        for (var i = 0, l = thisArray.length; i < l; i++) {
+            if (ValuesDiffer(thisArray[i], otherArray[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**** ObjectsDiffer ****/
+    function ObjectsDiffer(thisObject, otherObject) {
+        if (Object.getPrototypeOf(thisObject) !== Object.getPrototypeOf(otherObject)) {
+            return true;
+        }
+        for (var key in thisObject) {
+            if (!(key in otherObject)) {
+                return true;
+            }
+        }
+        for (var key in otherObject) {
+            if (!(key in thisObject)) {
+                return true;
+            }
+            if (ValuesDiffer(thisObject[key], otherObject[key])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    switch (thisType) {
+        case 'undefined':
+        case 'boolean':
+        case 'string':
+        case 'function': return true; // most primitives are compared using "==="
+        case 'number': return ((isNaN(thisValue) !== isNaN(otherValue)) ||
+            (Math.abs(thisValue - otherValue) > Number.EPSILON));
+        case 'object':
+            if (thisValue == null) {
+                return true;
+            } // since "other_value" != null!
+            if (otherValue == null) {
+                return true;
+            } // since "this_value" != null!
+            if (Array.isArray(thisValue)) {
+                return ArraysDiffer(thisValue, otherValue);
+            }
+            return ObjectsDiffer(thisValue, otherValue);
+        default: return true; // unsupported property type
+    }
+    return true;
+}
 
 function styleInject(css, ref) {
   if ( ref === void 0 ) ref = {};
@@ -1845,7 +2072,7 @@ const get_default_slot_context = ctx => ({
 	Index: /*Index*/ ctx[66]
 });
 
-// (652:4) {:else}
+// (653:4) {:else}
 function create_else_block_1(ctx) {
 	let li;
 	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -1869,7 +2096,7 @@ function create_else_block_1(ctx) {
 	};
 }
 
-// (644:4) {#if extendable}
+// (645:4) {#if extendable}
 function create_if_block_3(ctx) {
 	let li;
 	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -1918,7 +2145,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (601:2) {#if (List.length > 0)}
+// (602:2) {#if (List.length > 0)}
 function create_if_block(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -1988,7 +2215,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (632:4) {:else}
+// (633:4) {:else}
 function create_else_block(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -2053,7 +2280,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (602:4) {#if sortable || extendable || shrinkable}
+// (603:4) {#if sortable || extendable || shrinkable}
 function create_if_block_1(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -2140,7 +2367,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (639:31)  
+// (640:31)  
 function fallback_block_1(ctx) {
 	let t_value = /*KeyOf*/ ctx[11](/*Item*/ ctx[64]) + "";
 	let t;
@@ -2161,7 +2388,7 @@ function fallback_block_1(ctx) {
 	};
 }
 
-// (633:6) {#each List as Item,Index (KeyOf(Item))}
+// (634:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block_1(key_1, ctx) {
 	let li;
 	let t;
@@ -2237,7 +2464,7 @@ function create_each_block_1(key_1, ctx) {
 	};
 }
 
-// (619:31)  
+// (620:31)  
 function fallback_block(ctx) {
 	let t_value = /*KeyOf*/ ctx[11](/*Item*/ ctx[64]) + "";
 	let t;
@@ -2258,7 +2485,7 @@ function fallback_block(ctx) {
 	};
 }
 
-// (603:6) {#each List as Item,Index (KeyOf(Item))}
+// (604:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block(key_1, ctx) {
 	let li;
 	let asDroppable_action;
@@ -2391,7 +2618,7 @@ function create_each_block(key_1, ctx) {
 	};
 }
 
-// (623:6) {#if sortable || extendable}
+// (624:6) {#if sortable || extendable}
 function create_if_block_2(ctx) {
 	let li;
 	let raw_value = (/*AttachmentRegion*/ ctx[4] || "") + "";
@@ -2777,7 +3004,7 @@ function instance($$self, $$props, $$invalidate) {
 				return;
 			case Event.buttons !== 0 && Event.buttons !== 1:
 				return;
-			case j.PointingAccuracy === "coarse":
+			case m.PointingAccuracy === "coarse":
 			case Event.ctrlKey:
 			case Event.metaKey:
 				toggleSelectionOf(Item);

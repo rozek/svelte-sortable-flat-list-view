@@ -1,4 +1,4 @@
-// see https://remarkablemark.org/blog/2019/07/12/rollup-commonjs-umd/
+// see https://github.com/rozek/build-configuration-study
 
 import svelte         from 'rollup-plugin-svelte'
 import commonjs       from '@rollup/plugin-commonjs'
@@ -10,8 +10,25 @@ import saveToFile     from 'save-to-file'
 
 export default {
   input: './src/index.ts',
+  external: [
+    'javascript-interface-library', 'locally-unique-id-generator',
+    'svelte-device-info', 'svelte-drag-and-drop-actions'
+  ],
   output: [
     {
+      file:     './dist/svelte-sortable-flat-list-view.js',
+      format:    'umd', // builds for both Node.js and Browser
+      name:      'sortableFlatListView', // required for UMD modules
+      globals: {
+        'javascript-interface-library':'JIL',
+        'locally-unique-id-generator': 'newUniqueId',
+        'svelte-device-info':          'Device',
+        'svelte-drag-and-drop-actions':'DragAndDropAction'
+      },
+      noConflict:true,
+      sourcemap: true,
+      exports:   'default',
+    },{
       file:     './dist/svelte-sortable-flat-list-view.esm.js',
       format:   'esm',
       sourcemap:true,

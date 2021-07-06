@@ -3,7 +3,7 @@
     typeof define === 'function' && define.amd ? define(['svelte-drag-and-drop-actions', 'svelte-device-info', 'locally-unique-id-generator', 'javascript-interface-library'], factory) :
     (global = typeof globalThis !== 'undefined' ? globalThis : global || self, (function () {
         var current = global.sortableFlatListView;
-        var exports = global.sortableFlatListView = factory(global.DragAndDropAction, global.Device, global.newUniqueId, global.JIL);
+        var exports = global.sortableFlatListView = factory(global.DragAndDropActions, global.Device, global.newUniqueId, global.JIL);
         exports.noConflict = function () { global.sortableFlatListView = current; return exports; };
     }()));
 }(this, (function (svelteDragAndDropActions, Device, newUniqueId, javascriptInterfaceLibrary) { 'use strict';

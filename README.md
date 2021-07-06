@@ -43,47 +43,47 @@ In addition, this repo also contains a file `example_ListView_on_web_page.html` 
 
 For TypeScript users, `svelte-sortable-flat-list-view` exports the following types
 
-* `type ListDroppableExtras = { List:any[], Item:any, ItemList?:any[] }` -
-* `type ListDropZoneExtras  = { List:any[], Item:any }` -
+* **`type ListDroppableExtras = { List:any[], Item:any, ItemList?:any[] }`**
+* **`type ListDropZoneExtras  = { List:any[], Item:any }`**
 
 ### exported Svelte Props ###
 
 `svelte-sortable-flat-list-view` exports the following Svelte "props" (shown with TypeScript type annotations - JavaScript users may simply ignore them):
 
-* `class:string` -
-* `style:string` - <br>&nbsp;<br>
-* `List:{}[]` -
-* `Key:string|Function` -
-* `SelectionLimit:number` -
-* `InsertionRegion:string` -
-* `AttachmentRegion:string` -
-* `Placeholder:string` -
-* `sortable:boolean` - <br>&nbsp;<br>
-* `onlyFrom:string` -
-* `neverFrom:string` -
-* `onSortRequest:(x:number,y:number, DroppableExtras:ListDroppableExtras, DropZoneExtras:ListDropZoneExtras) => boolean` -
-* `onSort:(beforeItem:any|undefined, ItemList:{}[]) => void` - <br>&nbsp;<br>
-* `Operations:string` -
-* `DataToOffer:DataOfferSet` -
-* `TypesToAccept:TypeAcceptanceSet` -
-* `onOuterDropRequest:(x:number,y:number, Operation:DropOperation, offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:ListDropZoneExtras) => boolean` -
-* `onDroppedOutside:(x:number,y:number, Operation:DropOperation, TypeTransferred:string, DataTransferred:any, DropZoneExtras:any, DroppableExtras:ListDroppableExtras) => void` -
-* `onDropFromOutside:(x:number,y:number, Operation:DropOperation, DataOffered:DataOfferSet, DroppableExtras:any, DropZoneExtras:ListDropZoneExtras) => string | undefined` -
+* **`class:string`**
+* **`style:string`**<br>&nbsp;<br>
+* **`List:{}[]`**
+* **`Key:string|Function`**
+* **`SelectionLimit:number`**
+* **`InsertionRegion:string`**
+* **`AttachmentRegion:string`**
+* **`Placeholder:string`**
+* **`sortable:boolean`**<br>&nbsp;<br>
+* **`onlyFrom:string`**
+* **`neverFrom:string`**
+* **`onSortRequest:(x:number,y:number, DroppableExtras:ListDroppableExtras, DropZoneExtras:ListDropZoneExtras) => boolean`**
+* **`onSort:(beforeItem:any|undefined, ItemList:{}[]) => void`**<br>&nbsp;<br>
+* **`Operations:string`**
+* **`DataToOffer:DataOfferSet`**
+* **`TypesToAccept:TypeAcceptanceSet`**
+* **`onOuterDropRequest:(x:number,y:number, Operation:DropOperation, offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:ListDropZoneExtras) => boolean`**
+* **`onDroppedOutside:(x:number,y:number, Operation:DropOperation, TypeTransferred:string, DataTransferred:any, DropZoneExtras:any, DroppableExtras:ListDroppableExtras) => void`**
+* **`onDropFromOutside:(x:number,y:number, Operation:DropOperation, DataOffered:DataOfferSet, DroppableExtras:any, DropZoneExtras:ListDropZoneExtras) => string | undefined`**
 
 ## CSS Classes ##
 
 Without explicitly specifying a CSS class for a list view, standard styling is applied. Otherwise, the following selectors may be used to define custom list view styling (assuming that you instantiate your list view with a class attribute containing `ListView`, like so: `<sortableFlatListView class="ListView" .../>`):
 
-* `ListView`<br>use this selector to style the list view itself (i.e., not the individual items). In combination with the `ListView > .ListItemView` selector, this also allows for horizontal or even two-dimensional list views
-* `ListView > .ListItemView`<br>use this selector to style any list item view. In combination with the `ListView` selector itself, this also allows for horizontal or even two-dimensional list views
-* `ListView > .ListItemView > *`<br>use this selector to style the actual contents of a list item view
-* `ListView > .ListItemView:hover:not(.dragged)`<br>you may want some visual feedback whenever a mouse pointer hovers over a list item. If so, use this selector to provide it
-* `ListView > .ListItemView.selected:not(.dragged)`<br>if list items are selected, there should be some visual feedback. Use this selector to provide it
-* `ListView > .ListItemView.dragged`<br>if list items are dragged, there should be some visual feedback. Use this selector to provide it
-* `ListView > .ListItemView.hovered:not(.dragged)`<br>if list items are dragged over other list items which may serve a drop zones, those items should visually indicate that a drop would be allowed. Use this selector to do so
-* `ListView > .AttachmentRegion`<br>in order to allow for appending list elements while dragging, a specific "attachment region" is rendered at the end of any list. Use this selector to style it
-* `ListView > .AttachmentRegion.hovered`<br>normally, the "attachment region" does not stand out. Use this selector to change that while a list item is dragged over it
-* `ListView > .Placeholder`<br>empty lists show a "placeholder" instead of just an empty space. Use this selector to style it
+* **`ListView`**<br>use this selector to style the list view itself (i.e., not the individual items). In combination with the `ListView > .ListItemView` selector, this also allows for horizontal or even two-dimensional list views
+* **`ListView > .ListItemView`**<br>use this selector to style any list item view. In combination with the `ListView` selector itself, this also allows for horizontal or even two-dimensional list views
+* **`ListView > .ListItemView > *`**<br>use this selector to style the actual contents of a list item view
+* **`ListView > .ListItemView:hover:not(.dragged)`**<br>you may want some visual feedback whenever a mouse pointer hovers over a list item. If so, use this selector to provide it
+* **`ListView > .ListItemView.selected:not(.dragged)`**<br>if list items are selected, there should be some visual feedback. Use this selector to provide it
+* **`ListView > .ListItemView.dragged`**<br>if list items are dragged, there should be some visual feedback. Use this selector to provide it
+* **`ListView > .ListItemView.hovered:not(.dragged)`**<br>if list items are dragged over other list items which may serve a drop zones, those items should visually indicate that a drop would be allowed. Use this selector to do so
+* **`ListView > .AttachmentRegion`**<br>in order to allow for appending list elements while dragging, a specific "attachment region" is rendered at the end of any list. Use this selector to style it
+* **`ListView > .AttachmentRegion.hovered`**<br>normally, the "attachment region" does not stand out. Use this selector to change that while a list item is dragged over it
+* **`ListView > .Placeholder`**<br>empty lists show a "placeholder" instead of just an empty space. Use this selector to style it
 
 **Important**: whenever you change the style of a list item during dragging, you should take great care that HTML5 drag-and-drop still recognizes the styled list item as a draggable or drop zone. More precisely: you should avoid to move drop zones away from the mouse pointer (or finger, resp.), hide draggables or drop zones completely (e.g., with `display:none`) or change their sensitivity to mouse and touch events (with `pointer-events:none`)
 

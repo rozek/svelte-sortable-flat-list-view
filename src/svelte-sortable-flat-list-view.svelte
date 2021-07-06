@@ -81,8 +81,8 @@
 
 /**** common Attributes ****/
 
-  let ClassNames:string = undefined; export { ClassNames as class } // used to...
-  export let style:string = undefined                       // ...control styling
+  let ClassNames:string|undefined = undefined; export { ClassNames as class } // used to...
+  export let style:string|undefined = undefined                       // ...control styling
 
   $: allowNonEmptyString('"class" attribute',ClassNames)
   $: allowNonEmptyString('"style" attribute',style)
@@ -90,7 +90,6 @@
   export let List:{}[]
   export let Key:string|Function|undefined     = undefined
   export let SelectionLimit:number|undefined   = undefined
-  export let InsertionRegion:string|undefined  = undefined
   export let AttachmentRegion:string|undefined = undefined
   export let Placeholder:string|undefined      = undefined
 
@@ -112,7 +111,6 @@
 
   $: allowOrdinal('selection limit',SelectionLimit)
 
-  $: allowNonEmptyString ('"InsertionRegion" attribute',InsertionRegion)
   $: allowNonEmptyString('"AttachmentRegion" attribute',AttachmentRegion)
   $: allowNonEmptyString     ('"Placeholder" attribute',Placeholder)
 

@@ -89,7 +89,6 @@ $: allowNonEmptyString('"style" attribute', style);
 export let List;
 export let Key = undefined;
 export let SelectionLimit = undefined;
-export let InsertionRegion = undefined;
 export let AttachmentRegion = undefined;
 export let Placeholder = undefined;
 $: List = allowedListSatisfying('"List" attribute', List, ValueIsObject) || [];
@@ -108,7 +107,6 @@ $: switch (true) {
         'a non-empty string nor a function returning such a string');
 }
 $: allowOrdinal('selection limit', SelectionLimit);
-$: allowNonEmptyString('"InsertionRegion" attribute', InsertionRegion);
 $: allowNonEmptyString('"AttachmentRegion" attribute', AttachmentRegion);
 $: allowNonEmptyString('"Placeholder" attribute', Placeholder);
 /**** Key Validation and quick Lookup ****/

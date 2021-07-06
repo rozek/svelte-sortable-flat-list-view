@@ -378,7 +378,7 @@ $: if (!isDragging) { // do not update while already dragging
 }
 $: if (!isDragging) { // do not update while already dragging
     TypesAccepted = {};
-    if ('none' in TypesToAccept)
+    if ((TypesToAccept != null) && ('none' in TypesToAccept))
         throwError('InvalidArgument: "none" is not a valid data type');
     for (let Type in TypesToAccept) {
         if (TypesToAccept.hasOwnProperty(Type)) {

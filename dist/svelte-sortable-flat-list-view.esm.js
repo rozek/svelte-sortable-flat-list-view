@@ -2088,7 +2088,7 @@ function instance($$self, $$props, $$invalidate) {
 				// do not update while already dragging
 				$$invalidate(10, TypesAccepted = {});
 
-				if ("none" in TypesToAccept) throwError("InvalidArgument: \"none\" is not a valid data type");
+				if (TypesToAccept != null && "none" in TypesToAccept) throwError("InvalidArgument: \"none\" is not a valid data type");
 
 				for (let Type in TypesToAccept) {
 					if (TypesToAccept.hasOwnProperty(Type)) {

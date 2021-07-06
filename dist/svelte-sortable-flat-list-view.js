@@ -2098,7 +2098,7 @@
     				// do not update while already dragging
     				$$invalidate(10, TypesAccepted = {});
 
-    				if ("none" in TypesToAccept) javascriptInterfaceLibrary.throwError("InvalidArgument: \"none\" is not a valid data type");
+    				if (TypesToAccept != null && "none" in TypesToAccept) javascriptInterfaceLibrary.throwError("InvalidArgument: \"none\" is not a valid data type");
 
     				for (let Type in TypesToAccept) {
     					if (TypesToAccept.hasOwnProperty(Type)) {

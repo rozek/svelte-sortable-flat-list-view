@@ -37,14 +37,14 @@ In addition, this repo also contains a file `example_ListView_on_web_page.html` 
 
 ## API ##
 
-**a description will follow by tomorrow, for now just have a look into the examples**
+`svelte-sortable-flat-list-view` emits some Svelte events and exports some types (for TypeScript users) and some properties (for anybody), as shown below. 
 
 ### exported Types ###
 
-For TypeScript users, `svelte-sortable-flat-list-view` exports the following types
+TypeScript programmers may import the following types in order to benefit from static type checking (JavaScript programmers may simply skip this section):
 
-* **`type ListDroppableExtras = { List:any[], Item:any, ItemList?:any[] }`**
-* **`type ListDropZoneExtras  = { List:any[], Item:any }`**
+* **`type ListDroppableExtras = { List:any[], Item:any, ItemList:any[] }`**<br>`ListDroppableExtras` defines the shape of `DroppableExtras` (as defined by [svelte-drag-and-drop-actions](https://github.com/rozek/svelte-drag-and-drop-actions)) when a `Droppable` which is dragged over a list item that may serve as a `DropZone` comes from this (or another) `svelte-sortable-flat-list-view` instance
+* **`type ListDropZoneExtras = { List:any[], Item:any }`**<br>`ListDropZoneExtras` defines the shape of `DropZoneExtras` (as defined by [svelte-drag-and-drop-actions](https://github.com/rozek/svelte-drag-and-drop-actions)) when a `Droppable` is dragged over this drop zone
 
 ### exported Svelte Props ###
 
@@ -53,21 +53,23 @@ For TypeScript users, `svelte-sortable-flat-list-view` exports the following typ
 * **`class?:string`**<br>list views come with a default styling. However, if you set the (optional) `class` attribute (to a CSS class name), the list view assumes that you will take over any styling and remove its defaults (see below for more details)
 * **`style?:string`**<br>use the (optional) `style` attribute to set important CSS properties for the list view itself (not its item views). "Important" CSS properties could, f.e., control position and size of a list view and set basic visual parameters such as background, borders or text size and color<br>&nbsp;<br>
 * **`List:{}[]`**<br>the mandatory `List` attribute accepts the actual list to be shown. It should be a JavaScript array with arbitrary objects as elements. Note: **lists of JavaScript primitives will be rejected!**
-* **`Key?:string|Function`**<br>the optional `Key` attribute specifies which string to be used as the (unique) "key" of a list item - such "keys" are required by Svelte for proper rendering of lists. `Key` may either be set to the (fixed) name of a list item property containing the key or to a function which receives a list item and returns that item's key (which must be a string). If omitted, the list item itself is used as its key (after conversion into a string). List item keys must be unique within the whole list - or Svelte will throw an error
+* **`Key?:string|Function`**<br>the optional `Key` attribute specifies which string to be used as the (unique) "key" of a list item - such "keys" are required by Svelte for proper rendering of lists. `Key` may either be set to the (fixed) name of a list item property containing the key or to a function which receives a list item and returns that item's key (which must be a string). If omitted, the list item itself is used as its key (after conversion into a string). List item keys must be unique within the whole list - or Svelte will throw an error 
 * **`SelectionLimit?:number`**<br>by default, any number of list items may be selected simultaneously. By setting the (optional) `SelectionLimit` attribute to an ordinal number, you may set an upper limit for selections
 * **`AttachmentRegion?:string`**<br>in order to allow for appending list elements while dragging, a specific "attachment region" is rendered at the end of any list. Set the (optional) `AttachmentRegion` attribute to the HTML you want to be shown in that region - by default, attachment regions are just empty
 * **`Placeholder?:string`**<br>empty lists show a "placeholder" instead of just an empty space. Set the (optional) `Placeholder` attribute to the HTML you want to be shown in that placeholder - by default, the text "(empty list)" is shown
 * **`sortable?:boolean`**<br>set the (optional) `sortable` attribute to `true` if you want the list view to support sorting - or `false` otherwise. By default, sorting is *not* supported (such list views just support selections)<br>&nbsp;<br>
 * **`onlyFrom?:string`**<br>`onlyFrom` is an optional, comma-separated list of CSS selectors identifying the inner elements of a list item view, from which a drag operation must be started in order to be allowed. If `onlyFrom` is missing, no `onlyFrom` restriction is applied
 * **`neverFrom?:string`**<br>`neverFrom` is an optional, comma-separated list of CSS selectors identifying the inner elements of a list item view, from which a drag operation must *never* be started in order to be allowed. If `neverFrom` is missing, no `neverFrom` restriction is applied
-* **`onSortRequest?:(x:number,y:number, DroppableExtras:ListDroppableExtras, DropZoneExtras:ListDropZoneExtras) => boolean`**<br>
-* **`onSort?:(beforeItem:any|undefined, ItemList:{}[]) => void`**<br>&nbsp;<br>
-* **`Operations?:string`**<br>
-* **`DataToOffer?:DataOfferSet`**<br>
-* **`TypesToAccept?:TypeAcceptanceSet`**<br>
+* **`onSortRequest?:(x:number,y:number, DroppableExtras:ListDroppableExtras, DropZoneExtras:ListDropZoneExtras) => boolean`**<br>`onSortRequest` is an optional callback which (when invoked during sorting) indicates whether the currently dragged list items may be inserted immediately before the currently hovered list element or not. `x` and `y` contain the current mouse pointer (or finger) position within the hovered list item, `DroppableExtras` are the configured "extras" for the currently dragged list item and `DropZoneExtras` those for the currently hovered one. If `onSortRequest` is missing, insertion is allowed everywhere in the list
+* **`onSort?:(beforeItem:any|undefined, ItemList:{}[]) => void`**<br>`onSort` is an optional callback which (when invoked during sorting) performs the actual reordering of list items - it can be used to update the state of the surrounding Svelte application if the default behaviour (which simply updates the given list and emits an event) does not suffice. The callback receives the sequence `ItemList` of list items to be moved (given in their original order) and the list item `beforeItem` before wich the dragged list items should be inserted - if `beforeItem` is `undefined`, the dragged items should just be appended to the list<br>&nbsp;<br>
+* **`Operations?:string`**<br>`Operations` is either a blank-separated list of drop operations (`'copy'`, `'move'` or `'link'`), the keyword `all` (which includes all three available operations) or the keyword `none` (which effectively suppresses dropping) and specifies which kind of data transfer list items support when dropped outside of their list - by default, no such drop is allowed 
+* **`DataToOffer?:DataOfferSet`**<br>`DataToOffer` is a plain JavaScript object whose keys represent the various data formats a droppable list item supports and whose corresponding values contain the transferrable data in that format. Often, the given keys denote MIME formats (which simplifies data transfer between different applications) or contain the special value "DownloadURL", but - in principle - any string may be used
+* **`TypesToAccept?:TypeAcceptanceSet`**<br>`TypesToAccept` is a plain JavaScript object whose keys represent the various data formats a list item serving as drop zone may accept and whose corresponding values contain a blank-separated, perhaps empty, list of supported drop operations for that format. Often, the given keys denote MIME formats (which simplifies data transfer between different applications) or contain the special value "DownloadURL", but - in principle - any string may be used. Note: since native HTML5 drag-and-drop implementations often fail reporting a correct "dropEffect", the given drop operations can not be properly checked - with the exception, that types with empty operation lists will never be accepted
 * **`onOuterDropRequest?:(x:number,y:number, Operation:DropOperation, offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:ListDropZoneExtras) => boolean`**<br>
 * **`onDroppedOutside?:(x:number,y:number, Operation:DropOperation, TypeTransferred:string, DataTransferred:any, DropZoneExtras:any, DroppableExtras:ListDroppableExtras) => void`**<br>
 * **`onDropFromOutside?:(x:number,y:number, Operation:DropOperation, DataOffered:DataOfferSet, DroppableExtras:any, DropZoneExtras:ListDropZoneExtras) => string | undefined`**<br>
+
+### emitted Svelte Events ###
 
 ## CSS Classes ##
 

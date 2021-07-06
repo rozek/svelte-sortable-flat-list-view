@@ -690,7 +690,7 @@ const get_default_slot_context = ctx => ({
 	Index: /*Index*/ ctx[65]
 });
 
-// (651:4) {:else}
+// (655:4) {:else}
 function create_else_block_1(ctx) {
 	let li;
 	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -714,7 +714,7 @@ function create_else_block_1(ctx) {
 	};
 }
 
-// (643:4) {#if extendable}
+// (647:4) {#if extendable}
 function create_if_block_3(ctx) {
 	let li;
 	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -763,7 +763,7 @@ function create_if_block_3(ctx) {
 	};
 }
 
-// (600:2) {#if (List.length > 0)}
+// (604:2) {#if (List.length > 0)}
 function create_if_block(ctx) {
 	let current_block_type_index;
 	let if_block;
@@ -833,7 +833,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (631:4) {:else}
+// (635:4) {:else}
 function create_else_block(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -898,7 +898,7 @@ function create_else_block(ctx) {
 	};
 }
 
-// (601:4) {#if sortable || extendable || shrinkable}
+// (605:4) {#if sortable || extendable || shrinkable}
 function create_if_block_1(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -985,7 +985,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (638:31)  
+// (642:31)  
 function fallback_block_1(ctx) {
 	let t_value = /*KeyOf*/ ctx[11](/*Item*/ ctx[63]) + "";
 	let t;
@@ -1006,7 +1006,7 @@ function fallback_block_1(ctx) {
 	};
 }
 
-// (632:6) {#each List as Item,Index (KeyOf(Item))}
+// (636:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block_1(key_1, ctx) {
 	let li;
 	let t;
@@ -1082,7 +1082,7 @@ function create_each_block_1(key_1, ctx) {
 	};
 }
 
-// (618:31)  
+// (622:31)  
 function fallback_block(ctx) {
 	let t_value = /*KeyOf*/ ctx[11](/*Item*/ ctx[63]) + "";
 	let t;
@@ -1103,7 +1103,7 @@ function fallback_block(ctx) {
 	};
 }
 
-// (602:6) {#each List as Item,Index (KeyOf(Item))}
+// (606:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block(key_1, ctx) {
 	let li;
 	let asDroppable_action;
@@ -1236,7 +1236,7 @@ function create_each_block(key_1, ctx) {
 	};
 }
 
-// (622:6) {#if sortable || extendable}
+// (626:6) {#if sortable || extendable}
 function create_if_block_2(ctx) {
 	let li;
 	let raw_value = (/*AttachmentRegion*/ ctx[4] || "") + "";
@@ -2069,10 +2069,12 @@ function instance($$self, $$props, $$invalidate) {
 			allowFunction("\"onDropFromOutside\" callback", onDropFromOutside);
 		}
 
-		if ($$self.$$.dirty[0] & /*sortable*/ 2 | $$self.$$.dirty[1] & /*isDragging, DataToOffer*/ 8448) {
+		if ($$self.$$.dirty[0] & /*DataOffered, sortable*/ 514 | $$self.$$.dirty[1] & /*isDragging, DataToOffer*/ 8448) {
 			if (!isDragging) {
 				// do not update while already dragging
 				$$invalidate(9, DataOffered = Object.assign({}, DataToOffer));
+
+				if ("none" in DataOffered) throwError("InvalidArgument: \"none\" is not a valid data type");
 
 				// @ts-ignore "DataOffered" is definitely not undefined
 				if (sortable) {
@@ -2085,6 +2087,8 @@ function instance($$self, $$props, $$invalidate) {
 			if (!isDragging) {
 				// do not update while already dragging
 				$$invalidate(10, TypesAccepted = {});
+
+				if ("none" in TypesToAccept) throwError("InvalidArgument: \"none\" is not a valid data type");
 
 				for (let Type in TypesToAccept) {
 					if (TypesToAccept.hasOwnProperty(Type)) {

@@ -369,6 +369,8 @@ $: allowFunction('"onDroppedOutside" callback', onDroppedOutside);
 $: allowFunction('"onDropFromOutside" callback', onDropFromOutside);
 $: if (!isDragging) { // do not update while already dragging
     DataOffered = Object.assign({}, DataToOffer);
+    if ('none' in DataOffered)
+        throwError('InvalidArgument: "none" is not a valid data type');
     // @ts-ignore "DataOffered" is definitely not undefined
     if (sortable) {
         DataOffered[privateKey] = '';
@@ -376,6 +378,8 @@ $: if (!isDragging) { // do not update while already dragging
 }
 $: if (!isDragging) { // do not update while already dragging
     TypesAccepted = {};
+    if ('none' in TypesToAccept)
+        throwError('InvalidArgument: "none" is not a valid data type');
     for (let Type in TypesToAccept) {
         if (TypesToAccept.hasOwnProperty(Type)) {
             // @ts-ignore "TypesAccepted" is definitely not undefined

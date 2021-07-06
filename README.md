@@ -16,7 +16,7 @@ npm install svelte-sortable-flat-list-view
 
 ## Usage ##
 
-`svelte-sortable-flat-list-view` should be imported within a module script (perhaps together with `svelte-drag-drop-touch`) and may then be used in your markup:
+`svelte-sortable-flat-list-view` should be imported in a module context (perhaps together with `svelte-drag-drop-touch`) and may then be used in your markup:
 
 ```
 <script context="module">

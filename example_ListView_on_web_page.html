@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html lang="en" style="width:100%; height:100%">
+ <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+  <meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+
+  <meta name="apple-mobile-web-app-capable"          content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+  <meta name="format-detection"                      content="telephone=no">
+
+  <style type="text/css">
+    html {
+      text-size-adjust: 100%;
+      -moz-text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%;
+      -o-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+  </style>
+
+  <style>
+    html, body {
+      overflow:hidden;
+
+      font-family:'Source Sans Pro','Helvetica Neue',Helvetica,Arial,sans-serif;
+      font-size:14px; font-weight:400;
+      line-height:150%;
+    }
+  </style>
+
+<style> /* recommended for mobile platforms */
+  [draggable] {
+    -webkit-touch-callout:none;
+    -ms-touch-action:none; touch-action:none;
+    -moz-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none;
+  }
+</style>
+
+<script src="https://unpkg.com/svelte-drag-drop-touch"></script>
+
+<!-- the following script elements load unbundled versions -->
+<script src="https://unpkg.com/javascript-interface-library"></script>
+<script src="https://unpkg.com/locally-unique-id-generator"></script>
+<script src="https://unpkg.com/svelte-device-info"></script>
+<script src="https://unpkg.com/svelte-coordinate-conversion"></script>
+<script src="https://unpkg.com/svelte-drag-and-drop-actions"></script>
+<script src="https://unpkg.com/svelte-sortable-flat-list-view"></script>
+
+<!-- the following script element loads a fully bundled version -->
+<!--script src="https://unpkg.com/svelte-sortable-flat-list-view.bundled"></script-->
+
+<script>
+  let List = []
+  for (let i = 1; i < 10; i++) { List.push(new String('Item ' + i)) }
+
+  let ListView
+
+  document.addEventListener("DOMContentLoaded", function () {
+    ListView = new sortableFlatListView({
+      target: document.getElementById('ListView'),
+      props: {
+        List, sortable:true, SelectionLimit:3,
+        style:'width:180px; height:240px; border:solid 1px; overflow:auto'
+      }
+    })
+  })
+</script>
+ </head>
+ <body>
+
+  <p style="line-height:150%">
+    This example demonstrates multiple list item selection (with a limit of 3
+    selected items): you may select individual items or (by pressing the Shift
+    key while clicking or tapping) complete ranges of items. Selection behaviour
+    differs depending on whether a mouse or a touch screen are used for input
+  </p>
+
+  <div id="ListView"></div>
+ </body>
+</html>

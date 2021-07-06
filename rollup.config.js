@@ -12,7 +12,8 @@ export default {
   input: './src/index.ts',
   external: [
     'javascript-interface-library', 'locally-unique-id-generator',
-    'svelte-device-info', 'svelte-drag-and-drop-actions'
+    'svelte-device-info', 'svelte-coordinate-conversion',
+    'svelte-drag-and-drop-actions'
   ],
   output: [
     {
@@ -23,7 +24,8 @@ export default {
         'javascript-interface-library':'JIL',
         'locally-unique-id-generator': 'newUniqueId',
         'svelte-device-info':          'Device',
-        'svelte-drag-and-drop-actions':'DragAndDropAction'
+        'svelte-coordinate-conversion':'Conversion',
+        'svelte-drag-and-drop-actions':'DragAndDropActions'
       },
       noConflict:true,
       sourcemap: true,

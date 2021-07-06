@@ -50,25 +50,24 @@ For TypeScript users, `svelte-sortable-flat-list-view` exports the following typ
 
 `svelte-sortable-flat-list-view` exports the following Svelte "props" (shown with TypeScript type annotations - JavaScript users may simply ignore them):
 
-* **`class:string`**
-* **`style:string`**<br>&nbsp;<br>
-* **`List:{}[]`**
-* **`Key:string|Function`**
-* **`SelectionLimit:number`**
-* **`InsertionRegion:string`**
-* **`AttachmentRegion:string`**
-* **`Placeholder:string`**
-* **`sortable:boolean`**<br>&nbsp;<br>
-* **`onlyFrom:string`**
-* **`neverFrom:string`**
-* **`onSortRequest:(x:number,y:number, DroppableExtras:ListDroppableExtras, DropZoneExtras:ListDropZoneExtras) => boolean`**
-* **`onSort:(beforeItem:any|undefined, ItemList:{}[]) => void`**<br>&nbsp;<br>
-* **`Operations:string`**
-* **`DataToOffer:DataOfferSet`**
-* **`TypesToAccept:TypeAcceptanceSet`**
-* **`onOuterDropRequest:(x:number,y:number, Operation:DropOperation, offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:ListDropZoneExtras) => boolean`**
-* **`onDroppedOutside:(x:number,y:number, Operation:DropOperation, TypeTransferred:string, DataTransferred:any, DropZoneExtras:any, DroppableExtras:ListDroppableExtras) => void`**
-* **`onDropFromOutside:(x:number,y:number, Operation:DropOperation, DataOffered:DataOfferSet, DroppableExtras:any, DropZoneExtras:ListDropZoneExtras) => string | undefined`**
+* **`class?:string`**<br>list views come with a default styling. However, if you set the (optional) `class` attribute (to a CSS class name), the list view assumes that you will take over any styling and remove its defaults (see below for more details)
+* **`style?:string`**<br>&nbsp;<br>use the (optional) `style` attribute to set important CSS properties for the list view itself (not its item views). "Important" CSS properties could, f.e., control position and size of a list view and set basic visual parameters such as background, borders or text size and color
+* **`List:{}[]`**<br>the mandatory `List` attribute accepts the actual list to be shown. It should be a JavaScript array with arbitrary objects as elements. Note: lists of JavaScript primitives will be rejected!
+* **`Key?:string|Function`**<br>the optional `Key` attribute specifies which string to be used as the (unique) "key" of any list item - such "keys" are required by Svelte for proper rendering of lists. `Key` may either be set to the (fixed) name of a list item property containing the key or to a function which receives a list item any returns that item's key. If omitted, the list item itself is used as its key (after conversion into a string). List item keys must be unique within the whole list - or Svelte will throw an error
+* **`SelectionLimit?:number`**<br>by default, any number of list items may be selected simultaneously. By setting the (optional) `SelectionLimit` attribute to an ordinal number, you may set an upper limit for selections
+* **`AttachmentRegion?:string`**<br>in order to allow for appending list elements while dragging, a specific "attachment region" is rendered at the end of any list. Set the (optional) `AttachmentRegion` attribute to the HTML you want to be shown in that region - by default, attachment regions are just empty
+* **`Placeholder?:string`**<br>empty lists show a "placeholder" instead of just an empty space. Set the (optional) `Placeholder` attribute to the HTML you want to be shown in that placeholder - by default, the text "(empty list)" is shown
+* **`sortable?:boolean`**<br>set the (optional) `sortable` attribute to `true` if you want the list view to support sorting - or `false` otherwise. By default, sorting is *not* supported (such list views just support selections)<br>&nbsp;<br>
+* **`onlyFrom?:string`**<br>`onlyFrom` is an optional, comma-separated list of CSS selectors identifying the inner elements of a list item view, from which a drag operation must be started in order to be allowed. If `onlyFrom` is missing, no `onlyFrom` restriction is applied
+* **`neverFrom?:string`**<br>`neverFrom` is an optional, comma-separated list of CSS selectors identifying the inner elements of a list item view, from which a drag operation must *never* be started in order to be allowed. If `neverFrom` is missing, no `neverFrom` restriction is applied
+* **`onSortRequest?:(x:number,y:number, DroppableExtras:ListDroppableExtras, DropZoneExtras:ListDropZoneExtras) => boolean`**<br>
+* **`onSort?:(beforeItem:any|undefined, ItemList:{}[]) => void`**<br>&nbsp;<br>
+* **`Operations?:string`**<br>
+* **`DataToOffer?:DataOfferSet`**<br>
+* **`TypesToAccept?:TypeAcceptanceSet`**<br>
+* **`onOuterDropRequest?:(x:number,y:number, Operation:DropOperation, offeredTypeList:string[], DroppableExtras:any, DropZoneExtras:ListDropZoneExtras) => boolean`**<br>
+* **`onDroppedOutside?:(x:number,y:number, Operation:DropOperation, TypeTransferred:string, DataTransferred:any, DropZoneExtras:any, DroppableExtras:ListDroppableExtras) => void`**<br>
+* **`onDropFromOutside?:(x:number,y:number, Operation:DropOperation, DataOffered:DataOfferSet, DroppableExtras:any, DropZoneExtras:ListDropZoneExtras) => string | undefined`**<br>
 
 ## CSS Classes ##
 

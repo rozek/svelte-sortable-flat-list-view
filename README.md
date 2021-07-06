@@ -37,7 +37,7 @@ In addition, this repo also contains a file `example_ListView_on_web_page.html` 
 
 ## API ##
 
-`svelte-sortable-flat-list-view` emits some Svelte events and exports some types (for TypeScript users) and some properties (for anybody), as shown below. 
+`svelte-sortable-flat-list-view` emits some Svelte events and exports some types (for TypeScript users) and properties (for anybody), as shown below. 
 
 ### exported Types ###
 

@@ -26,7 +26,8 @@
           }}
           use:asDropZone={{
             Extras:{ List, Item }, TypesToAccept:TypesAccepted,
-            onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave
+            onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave,
+            HoldDelay, onDroppableHold
           }}
           animate:flip
           transition:scale on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
@@ -40,7 +41,8 @@
           class:AttachmentRegion={true}
           use:asDropZone={{
             Extras:{ List, Item:undefined }, TypesToAccept:TypesAccepted,
-            onDroppableEnter, onDroppableMove, onDrop
+            onDroppableEnter, onDroppableMove, onDrop,
+            HoldDelay, onDroppableHold
           }}
         >{@html AttachmentRegion || ''}</li>
       {/if}
@@ -82,7 +84,7 @@ import { flip } from 'svelte/animate';
 </script>
 <script>
 import { // see https://github.com/sveltejs/svelte/issues/5954
-throwError, ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList, ValueIsOneOf, allowedBoolean, allowOrdinal, allowedString, allowNonEmptyString, allowFunction, allowPlainObject, allowListSatisfying, allowedListSatisfying, ValuesDiffer, quoted } from 'javascript-interface-library';
+throwError, ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList, ValueIsOneOf, allowedBoolean, allowIntegerInRange, allowOrdinal, allowedString, allowNonEmptyString, allowFunction, allowPlainObject, allowListSatisfying, allowedListSatisfying, ValuesDiffer, quoted } from 'javascript-interface-library';
 let privateKey = newUniqueId();
 const dispatch = createEventDispatcher();
 let ListElement; // will refer to the list view's DOM element
@@ -364,6 +366,8 @@ export let TypesToAccept = undefined;
 export let onOuterDropRequest = undefined;
 export let onDroppedOutside = undefined;
 export let onDropFromOutside = undefined; // returns act. accepted type (if known)
+export let HoldDelay = undefined;
+export let onDroppableHold = undefined;
 let wantedOperations;
 let DataOffered;
 let TypesAccepted;
@@ -373,6 +377,8 @@ $: allowPlainObject('"TypesToAccept" attribute', TypesToAccept);
 $: allowFunction('"onOuterDropRequest" callback', onOuterDropRequest);
 $: allowFunction('"onDroppedOutside" callback', onDroppedOutside);
 $: allowFunction('"onDropFromOutside" callback', onDropFromOutside);
+$: allowIntegerInRange('"HoldDelay" attribute', HoldDelay, 0);
+$: allowFunction('"onDroppableHold" callback', onDroppableHold);
 $: if (!isDragging) { // do not update while already dragging
     DataOffered = Object.assign({}, DataToOffer);
     if ('none' in DataOffered)

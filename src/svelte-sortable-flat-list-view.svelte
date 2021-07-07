@@ -71,7 +71,7 @@
     throwError,
     ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList,
     ValueIsOneOf,
-    allowedBoolean, allowOrdinal, allowedString, allowNonEmptyString,
+    allowedBoolean, allowIntegerInRange, allowOrdinal, allowedString, allowNonEmptyString,
     allowFunction, allowPlainObject, allowListSatisfying, allowedListSatisfying,
     ValuesDiffer, quoted
   } from 'javascript-interface-library'
@@ -440,6 +440,13 @@
     DroppableExtras:any, DropZoneExtras:ListDropZoneExtras
   ) => string | undefined) = undefined  // returns act. accepted type (if known)
 
+  export let HoldDelay:number|undefined = undefined
+  export let onDroppableHold:undefined|((     // opt. callback after a long hold
+    x:number,y:number,
+    DroppableExtras:any, DropZoneExtras:ListDropZoneExtras
+  ) => boolean) = undefined
+
+
   let wantedOperations:string|undefined
   let DataOffered:DataOfferSet|undefined
   let TypesAccepted:TypeAcceptanceSet|undefined
@@ -452,6 +459,9 @@
   $: allowFunction('"onOuterDropRequest" callback',onOuterDropRequest)
   $: allowFunction  ('"onDroppedOutside" callback',onDroppedOutside)
   $: allowFunction ('"onDropFromOutside" callback',onDropFromOutside)
+
+  $: allowIntegerInRange('"HoldDelay" attribute',HoldDelay, 0)
+  $: allowFunction ('"onDroppableHold" callback',onDroppableHold)
 
   $: if (! isDragging) {                 // do not update while already dragging
     DataOffered = Object.assign({}, DataToOffer)
@@ -833,7 +843,8 @@
           }}
           use:asDropZone={{
             Extras:{ List, Item }, TypesToAccept:TypesAccepted,
-            onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave
+            onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave,
+            HoldDelay, onDroppableHold
           }}
           animate:flip
           transition:scale on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
@@ -847,7 +858,8 @@
           class:AttachmentRegion={true}
           use:asDropZone={{
             Extras:{ List, Item:undefined }, TypesToAccept:TypesAccepted,
-            onDroppableEnter, onDroppableMove, onDrop
+            onDroppableEnter, onDroppableMove, onDrop,
+            HoldDelay, onDroppableHold
           }}
         >{@html AttachmentRegion || ''}</li>
       {/if}

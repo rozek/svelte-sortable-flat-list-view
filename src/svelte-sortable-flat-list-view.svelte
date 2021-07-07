@@ -28,8 +28,8 @@
     pointer-events:none;
   }
 
-  .defaultListView > :global(.ListItemView:hover:not(.dragged))    { border:solid 1px }
-  .defaultListView > :global(.ListItemView.selected:not(.dragged)) { background:dodgerblue }
+  .defaultListView:not(.transitioning) > :global(.ListItemView:hover:not(.dragged))    { border:solid 1px }
+  .defaultListView:not(.transitioning) > :global(.ListItemView.selected:not(.dragged)) { background:dodgerblue }
 
   .defaultListView > :global(.ListItemView.dragged)               { opacity:0.3 }
   .defaultListView > :global(.ListItemView.hovered:not(.dragged)) { border-top:solid 10px transparent }
@@ -58,6 +58,7 @@
   import      { DropOperations, asDroppable, asDropZone } from 'svelte-drag-and-drop-actions'
 
   import { createEventDispatcher } from 'svelte'
+  import { flip }                  from 'svelte/animate'
 
 /**** types must always be exported from a "module" script ****/
 
@@ -78,6 +79,8 @@
   let privateKey:string = newUniqueId()
 
   const dispatch = createEventDispatcher()
+
+  let ListElement:HTMLElement       // will refer to the list view's DOM element
 
 /**** common Attributes ****/
 
@@ -763,6 +766,33 @@
     }
   }
 
+/**** scale ****/
+
+  function scale (Element:HTMLElement, Options:any):{} {
+    const currentStyle = window.getComputedStyle(Element)
+
+    const currentTransform:string = (
+      currentStyle.transform === 'none' ? '' : currentStyle.transform
+    )
+
+    return {
+      delay:0, duration:300,
+      css: (t:number, u:number) => (
+        `transform: ${currentTransform} translateX(-${50*u}%) scaleX(${t})`
+      )
+    }
+  }
+
+/**** TransitionStarted ****/
+
+  function TransitionStarted ():void {
+    ListElement.classList.add('transitioning')
+  }
+
+  function TransitionEnded ():void {
+    ListElement.classList.remove('transitioning')
+  }
+
 /**** SetOfItemsIn ****/
 
   function SetOfItemsIn (ItemList:any[]):{} {
@@ -782,6 +812,7 @@
 </script>
 
 <ul
+  bind:this={ListElement}
   class:defaultListView={ClassNames == null}
   class:withoutTextSelection={true}
   class={ClassNames} {style}
@@ -804,6 +835,8 @@
             Extras:{ List, Item }, TypesToAccept:TypesAccepted,
             onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave
           }}
+          animate:flip
+          transition:scale on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
         >
           <slot {Item} {Index}> {KeyOf(Item)} </slot>
         </li>
@@ -824,6 +857,7 @@
           class:ListItemView={true}
           class:selected={isSelected(Item)}
           on:click={(Event) => handleClick(Event,Item)}
+          transition:scale on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
         >
           <slot {Item} {Index}> {KeyOf(Item)} </slot>
         </li>

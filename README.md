@@ -123,6 +123,7 @@ A few examples may help understanding how `svelte-sortable-flat-list-view` may b
 * [sorting with single selection](https://svelte.dev/repl/7de55ceb5ae841499d8752addf33fbce) - in the simplest case, individual list items may be rearranged with mouse or finger
 * [sorting with multiple selections](https://svelte.dev/repl/6ae6b28514c742f6a911c7b72188570c) - rearranging multiple list items at once is supported as well
 * [sorting with handles](https://svelte.dev/repl/4adf5f8c28a549edae25eeb94edd281f) - on mobile platforms, it is preferred to drag list items from handles only
+* [holding a dragged list item](https://svelte.dev/repl/b179ed1e9f584bd687f2588da2129f12) - demonstrates what happens if a Droppable is held over a list item for a long time 
 * [sorting a horizontal list](https://svelte.dev/repl/a960543f3f88431ab30592fea997ac91) - with proper CSS Styling, a sortable list view may also arrange its items horizontally
 * [sorting a two-dimensional list](https://svelte.dev/repl/e9d4a2312d1e436ba27a6914d590acec) - with proper CSS Styling, even 2-dimensional lists may become sortable
 * [sorting with callbacks](https://svelte.dev/repl/82d3d414e81d4680b3210c08f23a16fa) - optional callbacks give full control over sorting "semantics"

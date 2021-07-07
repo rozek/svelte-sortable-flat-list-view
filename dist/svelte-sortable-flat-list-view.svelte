@@ -5,6 +5,7 @@
 <svelte:options accessors={true}/>
 
 <ul
+  bind:this={ListElement}
   class:defaultListView={ClassNames == null}
   class:withoutTextSelection={true}
   class={ClassNames} {style}
@@ -27,6 +28,8 @@
             Extras:{ List, Item }, TypesToAccept:TypesAccepted,
             onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave
           }}
+          animate:flip
+          transition:scale on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
         >
           <slot {Item} {Index}> {KeyOf(Item)} </slot>
         </li>
@@ -47,6 +50,7 @@
           class:ListItemView={true}
           class:selected={isSelected(Item)}
           on:click={(Event) => handleClick(Event,Item)}
+          transition:scale on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
         >
           <slot {Item} {Index}> {KeyOf(Item)} </slot>
         </li>
@@ -74,12 +78,14 @@ import Device from 'svelte-device-info';
 ;
 import { DropOperations, asDroppable, asDropZone } from 'svelte-drag-and-drop-actions';
 import { createEventDispatcher } from 'svelte';
+import { flip } from 'svelte/animate';
 </script>
 <script>
 import { // see https://github.com/sveltejs/svelte/issues/5954
 throwError, ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList, ValueIsOneOf, allowedBoolean, allowOrdinal, allowedString, allowNonEmptyString, allowFunction, allowPlainObject, allowListSatisfying, allowedListSatisfying, ValuesDiffer, quoted } from 'javascript-interface-library';
 let privateKey = newUniqueId();
 const dispatch = createEventDispatcher();
+let ListElement; // will refer to the list view's DOM element
 /**** common Attributes ****/
 let ClassNames = undefined;
 export { ClassNames as class }; // used to...
@@ -605,6 +611,22 @@ function onDrop(x, y, Operation, DataOffered, DroppableExtras, DropZoneExtras) {
         }
     }
 }
+/**** scale ****/
+function scale(Element, Options) {
+    const currentStyle = window.getComputedStyle(Element);
+    const currentTransform = (currentStyle.transform === 'none' ? '' : currentStyle.transform);
+    return {
+        delay: 0, duration: 300,
+        css: (t, u) => (`transform: ${currentTransform} translateX(-${50 * u}%) scaleX(${t})`)
+    };
+}
+/**** TransitionStarted ****/
+function TransitionStarted() {
+    ListElement.classList.add('transitioning');
+}
+function TransitionEnded() {
+    ListElement.classList.remove('transitioning');
+}
 /**** SetOfItemsIn ****/
 function SetOfItemsIn(ItemList) {
     let ItemSet = Object.create(null);
@@ -641,8 +663,8 @@ function triggerRedraw() { List = List; }
     pointer-events:none;
   }
 
-  .defaultListView > :global(.ListItemView:hover:not(.dragged))    { border:solid 1px }
-  .defaultListView > :global(.ListItemView.selected:not(.dragged)) { background:dodgerblue }
+  .defaultListView:not(.transitioning) > :global(.ListItemView:hover:not(.dragged))    { border:solid 1px }
+  .defaultListView:not(.transitioning) > :global(.ListItemView.selected:not(.dragged)) { background:dodgerblue }
 
   .defaultListView > :global(.ListItemView.dragged)               { opacity:0.3 }
   .defaultListView > :global(.ListItemView.hovered:not(.dragged)) { border-top:solid 10px transparent }

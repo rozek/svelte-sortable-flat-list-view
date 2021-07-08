@@ -35,7 +35,7 @@ npm install svelte-sortable-flat-list-view
 <ListView {List}/>
 ```
 
-More detailled examples for a variety of use cases can be found below.
+More detailled [examples](#examples) for a variety of use cases can be found below.
 
 In addition, this repo also contains a file `example_ListView_on_web_page.html` which demonstrates how to use a ListView on a web page (i.e., outside of Svelte)
 

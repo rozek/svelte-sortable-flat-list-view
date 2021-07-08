@@ -22,7 +22,7 @@
           use:asDroppable={{
             onlyFrom, neverFrom, Dummy:dynamicDummy,
             Extras:{ List, Item }, DataToOffer:DataOffered,
-            Pannable:ListViewElement,
+            Pannable:ListViewElement, PanSensorWidth,PanSensorHeight, PanSpeed,
             onDragStart, onDragEnd, onDropped
           }}
           use:asDropZone={{
@@ -360,6 +360,13 @@ $: allowNonEmptyString('"onlyFrom" CSS selector list', onlyFrom);
 $: allowNonEmptyString('"neverFrom" CSS selector list', neverFrom);
 $: allowFunction('"onSortRequest" callback', onSortRequest);
 $: allowFunction('"onSort" callback', onSort);
+/**** Panning Attributes ****/
+export let PanSensorWidth = undefined;
+export let PanSensorHeight = undefined;
+export let PanSpeed = undefined;
+$: allowOrdinal('panning sensor width', PanSensorWidth);
+$: allowOrdinal('panning sensor height', PanSensorHeight);
+$: allowOrdinal('panning speed', PanSpeed);
 /**** Attributes for Drag-and-Drop ****/
 export let Operations = undefined;
 export let DataToOffer = undefined;

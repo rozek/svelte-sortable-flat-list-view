@@ -5,7 +5,7 @@
 <svelte:options accessors={true}/>
 
 <ul
-  bind:this={ListElement}
+  bind:this={ListViewElement}
   class:defaultListView={ClassNames == null}
   class:withoutTextSelection={true}
   class={ClassNames} {style}
@@ -22,6 +22,7 @@
           use:asDroppable={{
             onlyFrom, neverFrom, Dummy:dynamicDummy,
             Extras:{ List, Item }, DataToOffer:DataOffered,
+            Pannable:ListViewElement,
             onDragStart, onDragEnd, onDropped
           }}
           use:asDropZone={{
@@ -87,7 +88,7 @@ import { // see https://github.com/sveltejs/svelte/issues/5954
 throwError, ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList, ValueIsOneOf, allowedBoolean, allowIntegerInRange, allowOrdinal, allowedString, allowNonEmptyString, allowFunction, allowPlainObject, allowListSatisfying, allowedListSatisfying, ValuesDiffer, quoted } from 'javascript-interface-library';
 let privateKey = newUniqueId();
 const dispatch = createEventDispatcher();
-let ListElement; // will refer to the list view's DOM element
+let ListViewElement; // will refer to the list view's DOM element
 /**** common Attributes ****/
 let ClassNames = undefined;
 export { ClassNames as class }; // used to...
@@ -628,10 +629,10 @@ function scale(Element, Options) {
 }
 /**** TransitionStarted ****/
 function TransitionStarted() {
-    ListElement.classList.add('transitioning');
+    ListViewElement.classList.add('transitioning');
 }
 function TransitionEnded() {
-    ListElement.classList.remove('transitioning');
+    ListViewElement.classList.remove('transitioning');
 }
 /**** SetOfItemsIn ****/
 function SetOfItemsIn(ItemList) {

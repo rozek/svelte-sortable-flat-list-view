@@ -1002,7 +1002,7 @@ const get_default_slot_context = ctx => ({
 	Index: /*Index*/ ctx[71]
 });
 
-// (683:4) {:else}
+// (684:4) {:else}
 function create_else_block_1(ctx) {
 	let li;
 	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -1026,7 +1026,7 @@ function create_else_block_1(ctx) {
 	};
 }
 
-// (675:4) {#if extendable}
+// (676:4) {#if extendable}
 function create_if_block_3(ctx) {
 	let li;
 	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -1145,7 +1145,7 @@ function create_if_block(ctx) {
 	};
 }
 
-// (662:4) {:else}
+// (663:4) {:else}
 function create_else_block(ctx) {
 	let each_blocks = [];
 	let each_1_lookup = new Map();
@@ -1249,7 +1249,7 @@ function create_if_block_1(ctx) {
 			current = true;
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*onlyFrom, neverFrom, dynamicDummy, List, DataOffered, onDragStart, onDragEnd, onDropped, TypesAccepted, onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave, HoldDelay, onDroppableHold, draggedItemList, isSelected, handleClick, TransitionStarted, TransitionEnded, KeyOf*/ 536666049 | dirty[1] & /*$$scope*/ 524288) {
+			if (dirty[0] & /*onlyFrom, neverFrom, dynamicDummy, List, DataOffered, ListViewElement, onDragStart, onDragEnd, onDropped, TypesAccepted, onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave, HoldDelay, onDroppableHold, draggedItemList, isSelected, handleClick, TransitionStarted, TransitionEnded, KeyOf*/ 536674241 | dirty[1] & /*$$scope*/ 524288) {
 				each_value = /*List*/ ctx[0];
 				group_outros();
 				for (let i = 0; i < each_blocks.length; i += 1) each_blocks[i].r();
@@ -1299,7 +1299,7 @@ function create_if_block_1(ctx) {
 	};
 }
 
-// (670:31)  
+// (671:31)  
 function fallback_block_1(ctx) {
 	let t_value = /*KeyOf*/ ctx[14](/*Item*/ ctx[69]) + "";
 	let t;
@@ -1320,7 +1320,7 @@ function fallback_block_1(ctx) {
 	};
 }
 
-// (663:6) {#each List as Item,Index (KeyOf(Item))}
+// (664:6) {#each List as Item,Index (KeyOf(Item))}
 function create_each_block_1(key_1, ctx) {
 	let li;
 	let t;
@@ -1411,7 +1411,7 @@ function create_each_block_1(key_1, ctx) {
 	};
 }
 
-// (648:31)  
+// (649:31)  
 function fallback_block(ctx) {
 	let t_value = /*KeyOf*/ ctx[14](/*Item*/ ctx[69]) + "";
 	let t;
@@ -1483,6 +1483,7 @@ function create_each_block(key_1, ctx) {
 							Item: /*Item*/ ctx[69]
 						},
 						DataToOffer: /*DataOffered*/ ctx[11],
+						Pannable: /*ListViewElement*/ ctx[13],
 						onDragStart: /*onDragStart*/ ctx[20],
 						onDragEnd: /*onDragEnd*/ ctx[21],
 						onDropped: /*onDropped*/ ctx[22]
@@ -1520,7 +1521,7 @@ function create_each_block(key_1, ctx) {
 				}
 			}
 
-			if (asDroppable_action && is_function(asDroppable_action.update) && dirty[0] & /*onlyFrom, neverFrom, List, DataOffered*/ 2433) asDroppable_action.update.call(null, {
+			if (asDroppable_action && is_function(asDroppable_action.update) && dirty[0] & /*onlyFrom, neverFrom, List, DataOffered, ListViewElement*/ 10625) asDroppable_action.update.call(null, {
 				onlyFrom: /*onlyFrom*/ ctx[7],
 				neverFrom: /*neverFrom*/ ctx[8],
 				Dummy: /*dynamicDummy*/ ctx[19],
@@ -1529,6 +1530,7 @@ function create_each_block(key_1, ctx) {
 					Item: /*Item*/ ctx[69]
 				},
 				DataToOffer: /*DataOffered*/ ctx[11],
+				Pannable: /*ListViewElement*/ ctx[13],
 				onDragStart: /*onDragStart*/ ctx[20],
 				onDragEnd: /*onDragEnd*/ ctx[21],
 				onDropped: /*onDropped*/ ctx[22]
@@ -1595,7 +1597,7 @@ function create_each_block(key_1, ctx) {
 	};
 }
 
-// (652:6) {#if sortable || extendable}
+// (653:6) {#if sortable || extendable}
 function create_if_block_2(ctx) {
 	let li;
 	let raw_value = (/*AttachmentRegion*/ ctx[4] || "") + "";
@@ -1769,7 +1771,7 @@ function instance($$self, $$props, $$invalidate) {
 	let { $$slots: slots = {}, $$scope } = $$props;
 	let privateKey = newUniqueId();
 	const dispatch = createEventDispatcher();
-	let ListElement; // will refer to the list view's DOM element
+	let ListViewElement; // will refer to the list view's DOM element
 
 	/**** common Attributes ****/
 	let { class: ClassNames = undefined } = $$props;
@@ -2304,11 +2306,11 @@ function instance($$self, $$props, $$invalidate) {
 
 	/**** TransitionStarted ****/
 	function TransitionStarted() {
-		ListElement.classList.add("transitioning");
+		ListViewElement.classList.add("transitioning");
 	}
 
 	function TransitionEnded() {
-		ListElement.classList.remove("transitioning");
+		ListViewElement.classList.remove("transitioning");
 	}
 
 	/**** SetOfItemsIn ****/
@@ -2333,8 +2335,8 @@ function instance($$self, $$props, $$invalidate) {
 
 	function ul_binding($$value) {
 		binding_callbacks[$$value ? "unshift" : "push"](() => {
-			ListElement = $$value;
-			$$invalidate(13, ListElement);
+			ListViewElement = $$value;
+			$$invalidate(13, ListViewElement);
 		});
 	}
 
@@ -2536,7 +2538,7 @@ function instance($$self, $$props, $$invalidate) {
 		onDroppableHold,
 		DataOffered,
 		TypesAccepted,
-		ListElement,
+		ListViewElement,
 		KeyOf,
 		draggedItemList,
 		shrinkable,

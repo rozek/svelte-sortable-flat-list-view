@@ -418,6 +418,16 @@
   $: allowFunction('"onSortRequest" callback',onSortRequest)
   $: allowFunction       ('"onSort" callback',onSort)
 
+/**** Panning Attributes ****/
+
+  export let PanSensorWidth:number|undefined  = undefined
+  export let PanSensorHeight:number|undefined = undefined
+  export let PanSpeed:number|undefined        = undefined
+
+  $: allowOrdinal ('panning sensor width',PanSensorWidth)
+  $: allowOrdinal('panning sensor height',PanSensorHeight)
+  $: allowOrdinal        ('panning speed',PanSpeed)
+
 /**** Attributes for Drag-and-Drop ****/
 
   export let Operations:string|undefined               = undefined
@@ -839,7 +849,7 @@
           use:asDroppable={{
             onlyFrom, neverFrom, Dummy:dynamicDummy,
             Extras:{ List, Item }, DataToOffer:DataOffered,
-            Pannable:ListViewElement,
+            Pannable:ListViewElement, PanSensorWidth,PanSensorHeight, PanSpeed,
             onDragStart, onDragEnd, onDropped
           }}
           use:asDropZone={{

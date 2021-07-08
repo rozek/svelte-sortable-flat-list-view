@@ -849,13 +849,13 @@
           use:asDroppable={{
             onlyFrom, neverFrom, Dummy:dynamicDummy,
             Extras:{ List, Item }, DataToOffer:DataOffered,
-            Pannable:ListViewElement, PanSensorWidth,PanSensorHeight, PanSpeed,
             onDragStart, onDragEnd, onDropped
           }}
           use:asDropZone={{
             Extras:{ List, Item }, TypesToAccept:TypesAccepted,
             onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave,
-            HoldDelay, onDroppableHold
+            HoldDelay, onDroppableHold,
+            Pannable:ListViewElement, PanSensorWidth,PanSensorHeight, PanSpeed
           }}
           animate:flip
           transition:scale on:outrostart={TransitionStarted} on:outroend={TransitionEnded}

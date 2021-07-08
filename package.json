@@ -39,7 +39,7 @@
     "locally-unique-id-generator": "^0.1.3",
     "svelte-coordinate-conversion": "^0.1.9",
     "svelte-device-info": "^0.1.14",
-    "svelte-drag-and-drop-actions": "^0.1.34"
+    "svelte-drag-and-drop-actions": "^0.1.35"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^19.0.0",

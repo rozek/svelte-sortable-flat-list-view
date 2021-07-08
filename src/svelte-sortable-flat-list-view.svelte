@@ -80,7 +80,7 @@
 
   const dispatch = createEventDispatcher()
 
-  let ListElement:HTMLElement       // will refer to the list view's DOM element
+  let ListViewElement:HTMLElement   // will refer to the list view's DOM element
 
 /**** common Attributes ****/
 
@@ -796,11 +796,11 @@
 /**** TransitionStarted ****/
 
   function TransitionStarted ():void {
-    ListElement.classList.add('transitioning')
+    ListViewElement.classList.add('transitioning')
   }
 
   function TransitionEnded ():void {
-    ListElement.classList.remove('transitioning')
+    ListViewElement.classList.remove('transitioning')
   }
 
 /**** SetOfItemsIn ****/
@@ -822,7 +822,7 @@
 </script>
 
 <ul
-  bind:this={ListElement}
+  bind:this={ListViewElement}
   class:defaultListView={ClassNames == null}
   class:withoutTextSelection={true}
   class={ClassNames} {style}
@@ -839,6 +839,7 @@
           use:asDroppable={{
             onlyFrom, neverFrom, Dummy:dynamicDummy,
             Extras:{ List, Item }, DataToOffer:DataOffered,
+            Pannable:ListViewElement,
             onDragStart, onDragEnd, onDropped
           }}
           use:asDropZone={{

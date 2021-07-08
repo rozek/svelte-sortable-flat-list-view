@@ -1249,7 +1249,7 @@ function create_if_block_1(ctx) {
 			current = true;
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*onlyFrom, neverFrom, dynamicDummy, List, DataOffered, ListViewElement, PanSensorWidth, PanSensorHeight, PanSpeed, onDragStart, onDragEnd, onDropped, TypesAccepted, onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave, HoldDelay, onDroppableHold, draggedItemList, isSelected, handleClick, TransitionStarted, KeyOf*/ 2145910721 | dirty[1] & /*TransitionEnded, $$scope*/ 4194305) {
+			if (dirty[0] & /*onlyFrom, neverFrom, dynamicDummy, List, DataOffered, onDragStart, onDragEnd, onDropped, TypesAccepted, onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave, HoldDelay, onDroppableHold, ListViewElement, PanSensorWidth, PanSensorHeight, PanSpeed, draggedItemList, isSelected, handleClick, TransitionStarted, KeyOf*/ 2145910721 | dirty[1] & /*TransitionEnded, $$scope*/ 4194305) {
 				each_value = /*List*/ ctx[0];
 				group_outros();
 				for (let i = 0; i < each_blocks.length; i += 1) each_blocks[i].r();
@@ -1483,10 +1483,6 @@ function create_each_block(key_1, ctx) {
 							Item: /*Item*/ ctx[72]
 						},
 						DataToOffer: /*DataOffered*/ ctx[14],
-						Pannable: /*ListViewElement*/ ctx[16],
-						PanSensorWidth: /*PanSensorWidth*/ ctx[9],
-						PanSensorHeight: /*PanSensorHeight*/ ctx[10],
-						PanSpeed: /*PanSpeed*/ ctx[11],
 						onDragStart: /*onDragStart*/ ctx[23],
 						onDragEnd: /*onDragEnd*/ ctx[24],
 						onDropped: /*onDropped*/ ctx[25]
@@ -1502,7 +1498,11 @@ function create_each_block(key_1, ctx) {
 						onDroppableMove: /*onDroppableMove*/ ctx[27],
 						onDroppableLeave: /*onDroppableLeave*/ ctx[28],
 						HoldDelay: /*HoldDelay*/ ctx[12],
-						onDroppableHold: /*onDroppableHold*/ ctx[13]
+						onDroppableHold: /*onDroppableHold*/ ctx[13],
+						Pannable: /*ListViewElement*/ ctx[16],
+						PanSensorWidth: /*PanSensorWidth*/ ctx[9],
+						PanSensorHeight: /*PanSensorHeight*/ ctx[10],
+						PanSpeed: /*PanSpeed*/ ctx[11]
 					})),
 					listen(li, "outrostart", /*TransitionStarted*/ ctx[30]),
 					listen(li, "outroend", /*TransitionEnded*/ ctx[31])
@@ -1524,7 +1524,7 @@ function create_each_block(key_1, ctx) {
 				}
 			}
 
-			if (asDroppable_action && is_function(asDroppable_action.update) && dirty[0] & /*onlyFrom, neverFrom, List, DataOffered, ListViewElement, PanSensorWidth, PanSensorHeight, PanSpeed*/ 85889) asDroppable_action.update.call(null, {
+			if (asDroppable_action && is_function(asDroppable_action.update) && dirty[0] & /*onlyFrom, neverFrom, List, DataOffered*/ 16769) asDroppable_action.update.call(null, {
 				onlyFrom: /*onlyFrom*/ ctx[7],
 				neverFrom: /*neverFrom*/ ctx[8],
 				Dummy: /*dynamicDummy*/ ctx[22],
@@ -1533,16 +1533,12 @@ function create_each_block(key_1, ctx) {
 					Item: /*Item*/ ctx[72]
 				},
 				DataToOffer: /*DataOffered*/ ctx[14],
-				Pannable: /*ListViewElement*/ ctx[16],
-				PanSensorWidth: /*PanSensorWidth*/ ctx[9],
-				PanSensorHeight: /*PanSensorHeight*/ ctx[10],
-				PanSpeed: /*PanSpeed*/ ctx[11],
 				onDragStart: /*onDragStart*/ ctx[23],
 				onDragEnd: /*onDragEnd*/ ctx[24],
 				onDropped: /*onDropped*/ ctx[25]
 			});
 
-			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List, TypesAccepted, HoldDelay, onDroppableHold*/ 45057) asDropZone_action.update.call(null, {
+			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List, TypesAccepted, HoldDelay, onDroppableHold, ListViewElement, PanSensorWidth, PanSensorHeight, PanSpeed*/ 114177) asDropZone_action.update.call(null, {
 				Extras: {
 					List: /*List*/ ctx[0],
 					Item: /*Item*/ ctx[72]
@@ -1553,7 +1549,11 @@ function create_each_block(key_1, ctx) {
 				onDroppableMove: /*onDroppableMove*/ ctx[27],
 				onDroppableLeave: /*onDroppableLeave*/ ctx[28],
 				HoldDelay: /*HoldDelay*/ ctx[12],
-				onDroppableHold: /*onDroppableHold*/ ctx[13]
+				onDroppableHold: /*onDroppableHold*/ ctx[13],
+				Pannable: /*ListViewElement*/ ctx[16],
+				PanSensorWidth: /*PanSensorWidth*/ ctx[9],
+				PanSensorHeight: /*PanSensorHeight*/ ctx[10],
+				PanSpeed: /*PanSpeed*/ ctx[11]
 			});
 
 			if (dirty[0] & /*draggedItemList, List*/ 262145) {

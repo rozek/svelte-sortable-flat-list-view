@@ -4,6 +4,12 @@ a sortable view for flat lists which also supports dragging items into and out o
 
 It is based on [svelte-drag-and-drop-actions](https://github.com/rozek/svelte-drag-and-drop-actions) and, consequently, on HTML5 native Drag-and-Drop.
 
+**some of its Features:**
+
+* works on mobile devices (when combined with [svelte-drag-drop-touch](https://github.com/rozek/svelte-drag-drop-touch))
+* recognizes when a draggable stands still (i.e., it's "held") over a sortable list view for a given time (see example)
+* provides lots of live(!) [examples](#examples) for many use cases
+
 **But try yourself**: there are a number of [examples](#examples) that can be tried out live
 
 **NPM users**: please consider the [Github README](https://github.com/rozek/svelte-sortable-flat-list-view/blob/main/README.md) for the latest description of this package (as updating the docs would otherwise always require a new NPM package version)

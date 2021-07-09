@@ -14,7 +14,7 @@ All examples are live and may be changed on the fly!
 * can be styled using a given set of selectors (see [example](https://svelte.dev/repl/806db6bfe11b485aa4b9268492e32088))
 * supports single and multiple selection (with a configurable limit of selectable elements, see [example](https://svelte.dev/repl/d12c72cd0bc84d01b716ab9394965115))
 * supports sorting elements from a given handle only (rather than from the whole element itself, see [example](https://svelte.dev/repl/4adf5f8c28a549edae25eeb94edd281f))
-* recognizes when a draggable stands still (i.e., it's "held") over a sortable list view for a given time (see [example](https://svelte.dev/repl/b179ed1e9f584bd687f2588da2129f12))
+* recognizes when a draggable stands still (i.e., is "held") over a sortable list view for a given time (see [example](https://svelte.dev/repl/b179ed1e9f584bd687f2588da2129f12))
 * supports horizontal lists (see [example](https://svelte.dev/repl/a960543f3f88431ab30592fea997ac91)) and - up to a certain extent - even two-dimensonal ones (see [example](https://svelte.dev/repl/e9d4a2312d1e436ba27a6914d590acec))
 * does the sorting itself or gives you full control over it (see [example](https://svelte.dev/repl/82d3d414e81d4680b3210c08f23a16fa))
 * supports dragging of external elements into a list (see [example](https://svelte.dev/repl/ee96b00b21914807ba72eefaa5b618e1))

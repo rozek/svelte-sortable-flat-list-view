@@ -6,8 +6,20 @@ It is based on [svelte-drag-and-drop-actions](https://github.com/rozek/svelte-dr
 
 **some of its Features:**
 
+All examples are live and may be changed on the fly!
+
 * works on mobile devices (when combined with [svelte-drag-drop-touch](https://github.com/rozek/svelte-drag-drop-touch))
-* recognizes when a draggable stands still (i.e., it's "held") over a sortable list view for a given time (see example)
+* provides a configurable placeholder for empty lists (see [example](https://svelte.dev/repl/bf8eeeffc1be47be976eeb7ceb58a140))
+* can render list elements itself or use a given template (see [example](https://svelte.dev/repl/d0314246026c48c685ed97542b56e518))
+* can be styled using a given set of selectors (see [example](https://svelte.dev/repl/806db6bfe11b485aa4b9268492e32088))
+* supports single and multiple selection (with a configurable limit of selectable elements, see [example](https://svelte.dev/repl/d12c72cd0bc84d01b716ab9394965115))
+* supports sorting elements from a given handle only (rather than from the whole element itself, see [example](https://svelte.dev/repl/4adf5f8c28a549edae25eeb94edd281f))
+* recognizes when a draggable stands still (i.e., it's "held") over a sortable list view for a given time (see [example](https://svelte.dev/repl/b179ed1e9f584bd687f2588da2129f12))
+* supports horizontal lists (see [example](https://svelte.dev/repl/a960543f3f88431ab30592fea997ac91)) and - up to a certain extent - even two-dimensonal ones (see [example](https://svelte.dev/repl/e9d4a2312d1e436ba27a6914d590acec))
+* does the sorting itself or gives you full control over it (see [example](https://svelte.dev/repl/82d3d414e81d4680b3210c08f23a16fa))
+* supports dragging of external elements into a list (see [example](https://svelte.dev/repl/ee96b00b21914807ba72eefaa5b618e1))
+* supports dragging of list elements onto external drop zones (see [example](https://svelte.dev/repl/3290cdf6cd61453f9b5a4c867c38ae7a))
+* supports dragging of list elements between lists (see [example](https://svelte.dev/repl/26e9bb4cebd0431e931d66c521061bfb))
 * provides lots of live(!) [examples](#examples) for many use cases
 
 **But try yourself**: there are a number of [examples](#examples) that can be tried out live

@@ -22,8 +22,6 @@ All examples are live and may be changed on the fly!
 * supports dragging of list elements between lists (see [example](https://svelte.dev/repl/26e9bb4cebd0431e931d66c521061bfb))
 * provides lots of live(!) [examples](#examples) for many use cases
 
-**But try yourself**: there are a number of [examples](#examples) that can be tried out live
-
 **NPM users**: please consider the [Github README](https://github.com/rozek/svelte-sortable-flat-list-view/blob/main/README.md) for the latest description of this package (as updating the docs would otherwise always require a new NPM package version)
 
 **Mobile Developers**: since many mobile platforms lack support for native HTML5 drag-and-drop, you should consider importing [svelte-drag-drop-touch](https://github.com/rozek/svelte-drag-drop-touch) as a polyfill (a simple import of that package will suffice - there is no extra programming needed)

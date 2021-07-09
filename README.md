@@ -21,6 +21,7 @@ All examples are live and may be changed on the fly!
 * supports dragging of list elements onto external drop zones (see [example](https://svelte.dev/repl/3290cdf6cd61453f9b5a4c867c38ae7a))
 * supports dragging of list elements between lists (see [example](https://svelte.dev/repl/26e9bb4cebd0431e931d66c521061bfb))
 * provides lots of live(!) [examples](#examples) for many use cases
+* however, unfortunately, `svelte-sortable-flat-list-view` may also suffer from any bugs in the browser implementations of native HTML drag-and-drop (thinking of Safari 13.0/13.1, f.e.) if they can not be compensated by the author
 
 **NPM users**: please consider the [Github README](https://github.com/rozek/svelte-sortable-flat-list-view/blob/main/README.md) for the latest description of this package (as updating the docs would otherwise always require a new NPM package version)
 

@@ -6,7 +6,7 @@ It is based on [svelte-drag-and-drop-actions](https://github.com/rozek/svelte-dr
 
 **some of its Features:**
 
-All examples are live and may be changed on the fly!
+All [examples](#examples) are live and may be changed on the fly!
 
 * works on mobile devices (when combined with [svelte-drag-drop-touch](https://github.com/rozek/svelte-drag-drop-touch))
 * provides a configurable placeholder for empty lists (see [example](https://svelte.dev/repl/bf8eeeffc1be47be976eeb7ceb58a140))

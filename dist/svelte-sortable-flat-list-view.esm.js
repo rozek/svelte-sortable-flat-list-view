@@ -1152,7 +1152,7 @@ function create_else_block(ctx) {
 	let each_1_anchor;
 	let current;
 	let each_value_1 = /*List*/ ctx[0];
-	const get_key = ctx => /*KeyOf*/ ctx[17](/*Item*/ ctx[72]);
+	const get_key = ctx => /*KeyOf*/ ctx[17](/*Item*/ ctx[72], /*Index*/ ctx[74]);
 
 	for (let i = 0; i < each_value_1.length; i += 1) {
 		let child_ctx = get_each_context_1(ctx, each_value_1, i);
@@ -1218,7 +1218,7 @@ function create_if_block_1(ctx) {
 	let if_block_anchor;
 	let current;
 	let each_value = /*List*/ ctx[0];
-	const get_key = ctx => /*KeyOf*/ ctx[17](/*Item*/ ctx[72]);
+	const get_key = ctx => /*KeyOf*/ ctx[17](/*Item*/ ctx[72], /*Index*/ ctx[74]);
 
 	for (let i = 0; i < each_value.length; i += 1) {
 		let child_ctx = get_each_context(ctx, each_value, i);
@@ -1301,7 +1301,7 @@ function create_if_block_1(ctx) {
 
 // (678:31)  
 function fallback_block_1(ctx) {
-	let t_value = /*KeyOf*/ ctx[17](/*Item*/ ctx[72]) + "";
+	let t_value = /*KeyOf*/ ctx[17](/*Item*/ ctx[72], /*Index*/ ctx[74]) + "";
 	let t;
 
 	return {
@@ -1312,7 +1312,7 @@ function fallback_block_1(ctx) {
 			insert(target, t, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*KeyOf, List*/ 131073 && t_value !== (t_value = /*KeyOf*/ ctx[17](/*Item*/ ctx[72]) + "")) set_data(t, t_value);
+			if (dirty[0] & /*KeyOf, List*/ 131073 && t_value !== (t_value = /*KeyOf*/ ctx[17](/*Item*/ ctx[72], /*Index*/ ctx[74]) + "")) set_data(t, t_value);
 		},
 		d(detaching) {
 			if (detaching) detach(t);
@@ -1320,7 +1320,7 @@ function fallback_block_1(ctx) {
 	};
 }
 
-// (671:6) {#each List as Item,Index (KeyOf(Item))}
+// (671:6) {#each List as Item,Index (KeyOf(Item,Index))}
 function create_each_block_1(key_1, ctx) {
 	let li;
 	let t;
@@ -1413,7 +1413,7 @@ function create_each_block_1(key_1, ctx) {
 
 // (656:31)  
 function fallback_block(ctx) {
-	let t_value = /*KeyOf*/ ctx[17](/*Item*/ ctx[72]) + "";
+	let t_value = /*KeyOf*/ ctx[17](/*Item*/ ctx[72], /*Index*/ ctx[74]) + "";
 	let t;
 
 	return {
@@ -1424,7 +1424,7 @@ function fallback_block(ctx) {
 			insert(target, t, anchor);
 		},
 		p(ctx, dirty) {
-			if (dirty[0] & /*KeyOf, List*/ 131073 && t_value !== (t_value = /*KeyOf*/ ctx[17](/*Item*/ ctx[72]) + "")) set_data(t, t_value);
+			if (dirty[0] & /*KeyOf, List*/ 131073 && t_value !== (t_value = /*KeyOf*/ ctx[17](/*Item*/ ctx[72], /*Index*/ ctx[74]) + "")) set_data(t, t_value);
 		},
 		d(detaching) {
 			if (detaching) detach(t);
@@ -1432,7 +1432,7 @@ function fallback_block(ctx) {
 	};
 }
 
-// (636:6) {#each List as Item,Index (KeyOf(Item))}
+// (636:6) {#each List as Item,Index (KeyOf(Item,Index))}
 function create_each_block(key_1, ctx) {
 	let li;
 	let asDroppable_action;
@@ -1841,7 +1841,7 @@ function instance($$self, $$props, $$invalidate) {
 	}
 
 	function selectOnly(...ItemList) {
-		if (ValuesDiffer(selectedItems(), ItemList)) {
+		if (ValuesDiffer(selectedItems(), ItemList, "by-reference")) {
 			// not perfect...
 			deselectAll();
 
@@ -2400,7 +2400,7 @@ function instance($$self, $$props, $$invalidate) {
 					$$invalidate(17, KeyOf = Item => String(Item[Key]));
 					break;
 				case ValueIsFunction(Key):
-					$$invalidate(17, KeyOf = Item => String(Key(Item)));
+					$$invalidate(17, KeyOf = (Item, Index) => String(Key(Item, Index)));
 					break;
 				default:
 					throwError("InvalidArgument: the given \"Key\" attribute is neither " + "a non-empty string nor a function returning such a string");

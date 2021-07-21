@@ -105,7 +105,7 @@
     case ValueIsNonEmptyString(Key):
       KeyOf = (Item) => String(Item[Key as string]); break
     case ValueIsFunction(Key):
-      KeyOf = (Item) => String((Key as Function)(Item)); break
+      KeyOf = (Item, Index) => String((Key as Function)(Item, Index)); break
     default: throwError(
       'InvalidArgument: the given "Key" attribute is neither ' +
       'a non-empty string nor a function returning such a string'
@@ -181,7 +181,7 @@
 /**** selectOnly ****/
 
   export function selectOnly (...ItemList:{}[]):void {
-    if (ValuesDiffer(selectedItems(),ItemList)) {              // not perfect...
+    if (ValuesDiffer(selectedItems(),ItemList, 'by-reference')) {// not perfect...
       deselectAll()
       select(...ItemList)
 //    triggerRedraw()                                     // already done before
@@ -840,7 +840,7 @@
 >
   {#if (List.length > 0)}
     {#if sortable || extendable || shrinkable}
-      {#each List as Item,Index (KeyOf(Item))}
+      {#each List as Item,Index (KeyOf(Item,Index))}
         <li
           class:ListItemView={true}
           class:dragged={draggedItemList.indexOf(Item) >= 0}
@@ -860,7 +860,7 @@
           animate:flip
           transition:scale on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
         >
-          <slot {Item} {Index}> {KeyOf(Item)} </slot>
+          <slot {Item} {Index}> {KeyOf(Item,Index)} </slot>
         </li>
       {/each}
 
@@ -875,14 +875,14 @@
         >{@html AttachmentRegion || ''}</li>
       {/if}
     {:else}
-      {#each List as Item,Index (KeyOf(Item))}
+      {#each List as Item,Index (KeyOf(Item,Index))}
         <li
           class:ListItemView={true}
           class:selected={isSelected(Item)}
           on:click={(Event) => handleClick(Event,Item)}
           transition:scale on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
         >
-          <slot {Item} {Index}> {KeyOf(Item)} </slot>
+          <slot {Item} {Index}> {KeyOf(Item,Index)} </slot>
         </li>
       {/each}
     {/if}

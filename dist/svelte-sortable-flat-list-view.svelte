@@ -329,6 +329,12 @@ function handleClick(Event, Item) {
         case (Event.buttons === 0) && (Event.button !== 0): return; // workaround
         case (Event.buttons !== 0) && (Event.buttons !== 1): return; // ...for bug
         case (Device.PointingAccuracy === 'coarse'):
+            if ( // special handling for touch devices to feel "familiar"
+            (SelectionLimit === 1) && !isSelected(Item) &&
+                !Event.ctrlKey && !Event.metaKey && !Event.shiftKey) {
+                selectOnly(Item);
+                break;
+            }
         case Event.ctrlKey:
         case Event.metaKey:
             toggleSelectionOf(Item);

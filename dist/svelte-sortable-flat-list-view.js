@@ -1012,7 +1012,7 @@
     	Index: /*Index*/ ctx[74]
     });
 
-    // (691:4) {:else}
+    // (697:4) {:else}
     function create_else_block_1(ctx) {
     	let li;
     	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -1036,7 +1036,7 @@
     	};
     }
 
-    // (683:4) {#if extendable}
+    // (689:4) {#if extendable}
     function create_if_block_3(ctx) {
     	let li;
     	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -1085,7 +1085,7 @@
     	};
     }
 
-    // (634:2) {#if (List.length > 0)}
+    // (640:2) {#if (List.length > 0)}
     function create_if_block(ctx) {
     	let current_block_type_index;
     	let if_block;
@@ -1155,7 +1155,7 @@
     	};
     }
 
-    // (670:4) {:else}
+    // (676:4) {:else}
     function create_else_block(ctx) {
     	let each_blocks = [];
     	let each_1_lookup = new Map();
@@ -1220,7 +1220,7 @@
     	};
     }
 
-    // (635:4) {#if sortable || extendable || shrinkable}
+    // (641:4) {#if sortable || extendable || shrinkable}
     function create_if_block_1(ctx) {
     	let each_blocks = [];
     	let each_1_lookup = new Map();
@@ -1309,7 +1309,7 @@
     	};
     }
 
-    // (678:31)  
+    // (684:31)  
     function fallback_block_1(ctx) {
     	let t_value = /*KeyOf*/ ctx[17](/*Item*/ ctx[72], /*Index*/ ctx[74]) + "";
     	let t;
@@ -1330,7 +1330,7 @@
     	};
     }
 
-    // (671:6) {#each List as Item,Index (KeyOf(Item,Index))}
+    // (677:6) {#each List as Item,Index (KeyOf(Item,Index))}
     function create_each_block_1(key_1, ctx) {
     	let li;
     	let t;
@@ -1421,7 +1421,7 @@
     	};
     }
 
-    // (656:31)  
+    // (662:31)  
     function fallback_block(ctx) {
     	let t_value = /*KeyOf*/ ctx[17](/*Item*/ ctx[72], /*Index*/ ctx[74]) + "";
     	let t;
@@ -1442,7 +1442,7 @@
     	};
     }
 
-    // (636:6) {#each List as Item,Index (KeyOf(Item,Index))}
+    // (642:6) {#each List as Item,Index (KeyOf(Item,Index))}
     function create_each_block(key_1, ctx) {
     	let li;
     	let asDroppable_action;
@@ -1613,7 +1613,7 @@
     	};
     }
 
-    // (660:6) {#if sortable || extendable}
+    // (666:6) {#if sortable || extendable}
     function create_if_block_2(ctx) {
     	let li;
     	let raw_value = (/*AttachmentRegion*/ ctx[4] || "") + "";
@@ -2020,6 +2020,13 @@
     			case Event.buttons !== 0 && Event.buttons !== 1:
     				return;
     			case Device__default['default'].PointingAccuracy === "coarse":
+    				if (// special handling for touch devices to feel "familiar"
+    				SelectionLimit === 1 && !isSelected(Item) && !Event.ctrlKey && !Event.metaKey && !Event.shiftKey) {
+    					selectOnly(Item); // workaround
+    					// ...for bug
+
+    					break;
+    				}
     			case Event.ctrlKey:
     			case Event.metaKey:
     				toggleSelectionOf(Item);
@@ -2030,8 +2037,7 @@
     			default:
     				selectOnly(Item);
     				break;
-    		} // workaround
-    		// ...for bug
+    		}
 
     		Event.preventDefault();
     		Event.stopPropagation();

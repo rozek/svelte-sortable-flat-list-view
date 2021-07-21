@@ -1,6 +1,6 @@
 {
   "name": "svelte-sortable-flat-list-view",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "description": "a sortable view for flat lists",
   "type": "module",
   "browser": "./dist/svelte-sortable-flat-list-view.js",

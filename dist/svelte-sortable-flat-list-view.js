@@ -2038,10 +2038,8 @@
     				selectOnly(Item);
     				break;
     		}
-
-    		Event.preventDefault();
-    		Event.stopPropagation();
-    	}
+    	} //  Event.preventDefault()
+    	//  Event.stopPropagation()
 
     	//----------------------------------------------------------------------------//
     	//                           Drag-and-Drop Handling                           //

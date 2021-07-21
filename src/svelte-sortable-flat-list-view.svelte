@@ -378,6 +378,10 @@
       case (Event.buttons !== 0) && (Event.buttons !== 1): return  // ...for bug
 
       case (Device.PointingAccuracy === 'coarse'):
+        if (            // special handling for touch devices to feel "familiar"
+          (SelectionLimit === 1) && ! isSelected(Item) &&
+          ! Event.ctrlKey && ! Event.metaKey && ! Event.shiftKey
+        ) { selectOnly(Item); break }
       case Event.ctrlKey:
       case Event.metaKey:  toggleSelectionOf(Item); break
       case Event.shiftKey: selectRange(Item);       break

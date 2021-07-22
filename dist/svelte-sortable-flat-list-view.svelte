@@ -31,7 +31,9 @@
             Pannable:ListViewElement, PanSensorWidth,PanSensorHeight, PanSpeed
           }}
           animate:flip
-          transition:scale on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
+          transition:scale
+            on:introstart={TransitionStarted} on:introend={TransitionEnded}
+            on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
         >
           <slot {Item} {Index}> {KeyOf(Item,Index)} </slot>
         </li>
@@ -53,7 +55,9 @@
           class:ListItemView={true}
           class:selected={isSelected(Item)}
           on:click={(Event) => handleClick(Event,Item)}
-          transition:scale on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
+          transition:scale
+            on:introstart={TransitionStarted} on:introend={TransitionEnded}
+            on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
         >
           <slot {Item} {Index}> {KeyOf(Item,Index)} </slot>
         </li>

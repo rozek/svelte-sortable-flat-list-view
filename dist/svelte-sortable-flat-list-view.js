@@ -1012,7 +1012,7 @@
     	Index: /*Index*/ ctx[74]
     });
 
-    // (697:4) {:else}
+    // (701:4) {:else}
     function create_else_block_1(ctx) {
     	let li;
     	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -1036,7 +1036,7 @@
     	};
     }
 
-    // (689:4) {#if extendable}
+    // (693:4) {#if extendable}
     function create_if_block_3(ctx) {
     	let li;
     	let raw_value = (/*Placeholder*/ ctx[5] || "(empty list)") + "";
@@ -1155,7 +1155,7 @@
     	};
     }
 
-    // (676:4) {:else}
+    // (678:4) {:else}
     function create_else_block(ctx) {
     	let each_blocks = [];
     	let each_1_lookup = new Map();
@@ -1309,7 +1309,7 @@
     	};
     }
 
-    // (684:31)  
+    // (688:31)  
     function fallback_block_1(ctx) {
     	let t_value = /*KeyOf*/ ctx[17](/*Item*/ ctx[72], /*Index*/ ctx[74]) + "";
     	let t;
@@ -1330,7 +1330,7 @@
     	};
     }
 
-    // (677:6) {#each List as Item,Index (KeyOf(Item,Index))}
+    // (679:6) {#each List as Item,Index (KeyOf(Item,Index))}
     function create_each_block_1(key_1, ctx) {
     	let li;
     	let t;
@@ -1370,6 +1370,8 @@
     			if (!mounted) {
     				dispose = [
     					listen(li, "click", click_handler_1),
+    					listen(li, "introstart", /*TransitionStarted*/ ctx[30]),
+    					listen(li, "introend", /*TransitionEnded*/ ctx[31]),
     					listen(li, "outrostart", /*TransitionStarted*/ ctx[30]),
     					listen(li, "outroend", /*TransitionEnded*/ ctx[31])
     				];
@@ -1421,7 +1423,7 @@
     	};
     }
 
-    // (662:31)  
+    // (664:31)  
     function fallback_block(ctx) {
     	let t_value = /*KeyOf*/ ctx[17](/*Item*/ ctx[72], /*Index*/ ctx[74]) + "";
     	let t;
@@ -1514,6 +1516,8 @@
     						PanSensorHeight: /*PanSensorHeight*/ ctx[10],
     						PanSpeed: /*PanSpeed*/ ctx[11]
     					})),
+    					listen(li, "introstart", /*TransitionStarted*/ ctx[30]),
+    					listen(li, "introend", /*TransitionEnded*/ ctx[31]),
     					listen(li, "outrostart", /*TransitionStarted*/ ctx[30]),
     					listen(li, "outroend", /*TransitionEnded*/ ctx[31])
     				];
@@ -1613,7 +1617,7 @@
     	};
     }
 
-    // (666:6) {#if sortable || extendable}
+    // (668:6) {#if sortable || extendable}
     function create_if_block_2(ctx) {
     	let li;
     	let raw_value = (/*AttachmentRegion*/ ctx[4] || "") + "";

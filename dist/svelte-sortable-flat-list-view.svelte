@@ -1,6 +1,6 @@
-<!----------------------------------------------------------------------------//
-//                       Svelte Sortable Flat List View                       //
-//----------------------------------------------------------------------------->
+<!------------------------------------------------------------------------------
+--                       Svelte Sortable Flat List View                       --
+------------------------------------------------------------------------------->
 
 <svelte:options accessors={true}/>
 
@@ -101,11 +101,15 @@ $: allowNonEmptyString('"class" attribute', ClassNames);
 $: allowNonEmptyString('"style" attribute', style);
 export let List;
 export let Key = undefined;
-export let SelectionLimit = undefined;
 export let AttachmentRegion = undefined;
 export let Placeholder = undefined;
 export let withTransitions = true;
-$: List = allowedListSatisfying('"List" attribute', List, ValueIsObject) || [];
+$: {
+    allowListSatisfying('"List" attribute', List, ValueIsObject);
+    if (List == null) {
+        List = [];
+    }
+}
 let KeyOf;
 $: switch (true) {
     case (Key == null):
@@ -120,7 +124,6 @@ $: switch (true) {
     default: throwError('InvalidArgument: the given "Key" attribute is neither ' +
         'a non-empty string nor a function returning such a string');
 }
-$: allowOrdinal('selection limit', SelectionLimit);
 $: allowNonEmptyString('"AttachmentRegion" attribute', AttachmentRegion);
 $: allowNonEmptyString('"Placeholder" attribute', Placeholder);
 $: {
@@ -155,9 +158,54 @@ $: updateItemSet(List, Key);
 //                         Selection and Deselection                          //
 //----------------------------------------------------------------------------//
 let SelectionSet = new WeakMap(); // automatically "updates" on list changes
+/**** Selection Attributes ****/
+export let SelectionLimit = undefined;
+export let SelectionList = [];
+$: allowOrdinal('selection limit', SelectionLimit);
+$: {
+    allowListSatisfying('"SelectionList" attribute', SelectionList, ValueIsObject);
+    if (SelectionList == null) {
+        SelectionList = [];
+    }
+    let newSelectionSet = new WeakMap(), newSelectionCount = 0;
+    SelectionList.forEach((Item) => {
+        let Key = KeyOf(Item);
+        if (Key in ItemSet) {
+            if (!newSelectionSet.has(Item)) {
+                if ((SelectionLimit == null) || (newSelectionCount < SelectionLimit)) {
+                    newSelectionSet.set(Item, true);
+                    newSelectionCount++;
+                }
+            }
+        }
+        else {
+            throwError('InvalidArgument: one or multiple of the given items to select ' +
+                'are not part of the given "List"');
+        }
+    });
+    let SelectionChanged = false;
+    List.forEach((Item) => {
+        if (SelectionSet.has(Item)) {
+            if (!newSelectionSet.has(Item)) {
+                SelectionSet.delete(Item);
+                SelectionChanged = true;
+            }
+        }
+        else {
+            if (newSelectionSet.has(Item)) {
+                SelectionSet.set(Item, true);
+                SelectionChanged = true;
+            }
+        }
+    });
+    if (SelectionChanged) {
+        SelectionList = selectedItems();
+        triggerRedraw();
+    }
+}
 /**** select ****/
 export function select(...ItemList) {
-    let curSelectionCount = SelectionCount();
+    let curSelectionCount = SelectionCount(), SelectionChanged = false;
     ItemList.forEach((Item) => {
         let Key = KeyOf(Item);
         if (Key in ItemSet) {
@@ -165,6 +213,7 @@ export function select(...ItemList) {
                 if ((SelectionLimit == null) || (curSelectionCount < SelectionLimit)) {
                     SelectionSet.set(Item, true);
                     curSelectionCount++;
+                    SelectionChanged = true;
                     dispatch('selected-item', Item);
                 }
             }
@@ -176,30 +225,38 @@ export function select(...ItemList) {
     });
     SelectionRangeBoundaryA = (ItemList.length === 1 ? ItemList[0] : undefined);
     SelectionRangeBoundaryB = undefined;
-    triggerRedraw();
+    if (SelectionChanged) {
+        SelectionList = selectedItems();
+        triggerRedraw();
+    }
 }
 /**** selectOnly ****/
 export function selectOnly(...ItemList) {
     if (ValuesDiffer(selectedItems(), ItemList, 'by-reference')) { // not perfect...
         deselectAll();
         select(...ItemList);
-        //    triggerRedraw()                                     // already done before
+        //    SelectionList = selectedItems()                     // already done before
+        //    triggerRedraw()                                                    // dto.
     }
 }
 /**** selectAll ****/
 export function selectAll() {
-    let curSelectionCount = SelectionCount();
+    let curSelectionCount = SelectionCount(), SelectionChanged = false;
     List.forEach((Item) => {
         if (!SelectionSet.has(Item)) {
             if ((SelectionLimit == null) || (curSelectionCount < SelectionLimit)) {
                 SelectionSet.set(Item, true);
                 curSelectionCount++;
+                SelectionChanged = true;
                 dispatch('selected-item', Item);
             }
         }
     });
     SelectionRangeBoundaryA = SelectionRangeBoundaryB = undefined;
-    triggerRedraw();
+    if (SelectionChanged) {
+        SelectionList = selectedItems();
+        triggerRedraw();
+    }
 }
 let SelectionRangeBoundaryA;
 let SelectionRangeBoundaryB;
@@ -219,17 +276,22 @@ export function selectRange(RangeBoundary) {
     let IndexB = List.indexOf(RangeBoundary);
     let firstIndex = Math.min(IndexA, IndexB);
     let lastIndex = Math.max(IndexA, IndexB);
-    let curSelectionCount = SelectionCount();
+    let curSelectionCount = SelectionCount(), SelectionChanged = false;
     for (let i = firstIndex; i <= lastIndex; i++) {
         if (!SelectionSet.has(List[i])) {
             if ((SelectionLimit == null) || (curSelectionCount < SelectionLimit)) {
                 SelectionSet.set(List[i], true);
+                curSelectionCount++;
+                SelectionChanged = true;
                 dispatch('selected-item', List[i]);
             }
         }
     }
     SelectionRangeBoundaryB = RangeBoundary;
-    triggerRedraw();
+    if (SelectionChanged) {
+        SelectionList = selectedItems();
+        triggerRedraw();
+    }
 }
 /**** deselectRange (internal only) ****/
 function deselectRange(RangeBoundary) {
@@ -237,20 +299,28 @@ function deselectRange(RangeBoundary) {
     let IndexB = List.indexOf(RangeBoundary);
     let firstIndex = Math.min(IndexA, IndexB);
     let lastIndex = Math.max(IndexA, IndexB);
+    let SelectionChanged = false;
     for (let i = firstIndex; i <= lastIndex; i++) {
         if (SelectionSet.has(List[i])) {
             SelectionSet.delete(List[i]);
+            SelectionChanged = true;
             dispatch('deselected-item', List[i]);
         }
+    }
+    if (SelectionChanged) {
+        SelectionList = selectedItems();
+        triggerRedraw();
     }
 }
 /**** deselect ****/
 export function deselect(...ItemList) {
+    let SelectionChanged = false;
     ItemList.forEach((Item) => {
         let Key = KeyOf(Item);
         if (Key in ItemSet) {
             if (SelectionSet.has(Item)) {
                 SelectionSet.delete(Item);
+                SelectionChanged = true;
                 dispatch('deselected-item', Item);
             }
         }
@@ -260,28 +330,37 @@ export function deselect(...ItemList) {
         }
     });
     SelectionRangeBoundaryA = SelectionRangeBoundaryB = undefined;
-    triggerRedraw();
+    if (SelectionChanged) {
+        SelectionList = selectedItems();
+        triggerRedraw();
+    }
 }
 /**** deselectAll ****/
 export function deselectAll() {
+    let SelectionChanged = false;
     List.forEach((Item) => {
         if (SelectionSet.has(Item)) {
             SelectionSet.delete(Item);
+            SelectionChanged = true;
             dispatch('deselected-item', Item);
         }
     });
     SelectionRangeBoundaryA = SelectionRangeBoundaryB = undefined;
-    triggerRedraw();
+    if (SelectionChanged) {
+        SelectionList = selectedItems();
+        triggerRedraw();
+    }
 }
 /**** toggleSelectionOf - no check for multiply mentioned items ****/
 export function toggleSelectionOf(...ItemList) {
     SelectionRangeBoundaryA = undefined;
-    let ItemsToBeSelected = [];
+    let ItemsToBeSelected = [], SelectionChanged = false;
     ItemList.forEach((Item) => {
         let Key = KeyOf(Item);
         if (Key in ItemSet) {
             if (SelectionSet.has(Item)) {
                 SelectionSet.delete(Item);
+                SelectionChanged = true;
                 dispatch('deselected-item', Item);
             }
             else {
@@ -302,13 +381,17 @@ export function toggleSelectionOf(...ItemList) {
     }
     ItemsToBeSelected.forEach((Item) => {
         SelectionSet.set(Item, true);
+        SelectionChanged = true;
         dispatch('selected-item', Item);
         if (ItemList.length === 1) {
             SelectionRangeBoundaryA = Item;
             SelectionRangeBoundaryB = undefined;
         }
     });
-    triggerRedraw();
+    if (SelectionChanged) {
+        SelectionList = selectedItems();
+        triggerRedraw();
+    }
 }
 /**** selectedItems ****/
 export function selectedItems() {

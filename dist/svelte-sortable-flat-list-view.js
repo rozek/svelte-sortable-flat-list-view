@@ -980,8 +980,8 @@
 
     function get_each_context_1(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[73] = list[i];
-    	child_ctx[75] = i;
+    	child_ctx[74] = list[i];
+    	child_ctx[76] = i;
     	return child_ctx;
     }
 
@@ -991,14 +991,14 @@
     });
 
     const get_default_slot_context_1 = ctx => ({
-    	Item: /*Item*/ ctx[73],
-    	Index: /*Index*/ ctx[75]
+    	Item: /*Item*/ ctx[74],
+    	Index: /*Index*/ ctx[76]
     });
 
     function get_each_context(ctx, list, i) {
     	const child_ctx = ctx.slice();
-    	child_ctx[73] = list[i];
-    	child_ctx[75] = i;
+    	child_ctx[74] = list[i];
+    	child_ctx[76] = i;
     	return child_ctx;
     }
 
@@ -1008,11 +1008,11 @@
     });
 
     const get_default_slot_context = ctx => ({
-    	Item: /*Item*/ ctx[73],
-    	Index: /*Index*/ ctx[75]
+    	Item: /*Item*/ ctx[74],
+    	Index: /*Index*/ ctx[76]
     });
 
-    // (708:4) {:else}
+    // (791:4) {:else}
     function create_else_block_1(ctx) {
     	let li;
     	let raw_value = (/*Placeholder*/ ctx[6] || "(empty list)") + "";
@@ -1036,7 +1036,7 @@
     	};
     }
 
-    // (700:4) {#if extendable}
+    // (783:4) {#if extendable}
     function create_if_block_3(ctx) {
     	let li;
     	let raw_value = (/*Placeholder*/ ctx[6] || "(empty list)") + "";
@@ -1056,7 +1056,7 @@
     			if (!mounted) {
     				dispose = action_destroyer(asDropZone_action = svelteDragAndDropActions.asDropZone.call(null, li, {
     					Extras: { List: /*List*/ ctx[0], Item: undefined },
-    					TypesToAccept: /*TypesAccepted*/ ctx[16],
+    					TypesToAccept: /*TypesAccepted*/ ctx[17],
     					onDroppableEnter: /*onDroppableEnter*/ ctx[27],
     					onDroppableMove: /*onDroppableMove*/ ctx[28],
     					onDrop: /*onDrop*/ ctx[30]
@@ -1067,9 +1067,9 @@
     		},
     		p(ctx, dirty) {
     			if (dirty[0] & /*Placeholder*/ 64 && raw_value !== (raw_value = (/*Placeholder*/ ctx[6] || "(empty list)") + "")) li.innerHTML = raw_value;
-    			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List, TypesAccepted*/ 65537) asDropZone_action.update.call(null, {
+    			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List, TypesAccepted*/ 131073) asDropZone_action.update.call(null, {
     				Extras: { List: /*List*/ ctx[0], Item: undefined },
-    				TypesToAccept: /*TypesAccepted*/ ctx[16],
+    				TypesToAccept: /*TypesAccepted*/ ctx[17],
     				onDroppableEnter: /*onDroppableEnter*/ ctx[27],
     				onDroppableMove: /*onDroppableMove*/ ctx[28],
     				onDrop: /*onDrop*/ ctx[30]
@@ -1085,7 +1085,7 @@
     	};
     }
 
-    // (647:2) {#if (List.length > 0)}
+    // (730:2) {#if (List.length > 0)}
     function create_if_block(ctx) {
     	let current_block_type_index;
     	let if_block;
@@ -1155,14 +1155,14 @@
     	};
     }
 
-    // (685:4) {:else}
+    // (768:4) {:else}
     function create_else_block(ctx) {
     	let each_blocks = [];
     	let each_1_lookup = new Map();
     	let each_1_anchor;
     	let current;
     	let each_value_1 = /*List*/ ctx[0];
-    	const get_key = ctx => /*KeyOf*/ ctx[18](/*Item*/ ctx[73], /*Index*/ ctx[75]);
+    	const get_key = ctx => /*KeyOf*/ ctx[15](/*Item*/ ctx[74], /*Index*/ ctx[76]);
 
     	for (let i = 0; i < each_value_1.length; i += 1) {
     		let child_ctx = get_each_context_1(ctx, each_value_1, i);
@@ -1187,7 +1187,7 @@
     			current = true;
     		},
     		p(ctx, dirty) {
-    			if (dirty[0] & /*withTransitions, isSelected, List, handleClick, KeyOf*/ 4456579 | dirty[1] & /*TransitionStarted, TransitionEnded, $$scope*/ 8388611) {
+    			if (dirty[0] & /*withTransitions, isSelected, List, handleClick, KeyOf*/ 4227203 | dirty[1] & /*TransitionStarted, TransitionEnded, $$scope*/ 33554435) {
     				each_value_1 = /*List*/ ctx[0];
     				group_outros();
     				each_blocks = update_keyed_each(each_blocks, dirty, get_key, 1, ctx, each_value_1, each_1_lookup, each_1_anchor.parentNode, outro_and_destroy_block, create_each_block_1, each_1_anchor, get_each_context_1);
@@ -1220,7 +1220,7 @@
     	};
     }
 
-    // (648:4) {#if sortable || extendable || shrinkable}
+    // (731:4) {#if sortable || extendable || shrinkable}
     function create_if_block_1(ctx) {
     	let each_blocks = [];
     	let each_1_lookup = new Map();
@@ -1228,7 +1228,7 @@
     	let if_block_anchor;
     	let current;
     	let each_value = /*List*/ ctx[0];
-    	const get_key = ctx => /*KeyOf*/ ctx[18](/*Item*/ ctx[73], /*Index*/ ctx[75]);
+    	const get_key = ctx => /*KeyOf*/ ctx[15](/*Item*/ ctx[74], /*Index*/ ctx[76]);
 
     	for (let i = 0; i < each_value.length; i += 1) {
     		let child_ctx = get_each_context(ctx, each_value, i);
@@ -1259,7 +1259,7 @@
     			current = true;
     		},
     		p(ctx, dirty) {
-    			if (dirty[0] & /*withTransitions, onlyFrom, neverFrom, dynamicDummy, List, DataOffered, onDragStart, onDragEnd, onDropped, TypesAccepted, onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave, HoldDelay, onDroppableHold, ListViewElement, PanSensorWidth, PanSensorHeight, PanSpeed, draggedItemList, isSelected, handleClick, KeyOf*/ 2144337795 | dirty[1] & /*TransitionStarted, TransitionEnded, $$scope*/ 8388611) {
+    			if (dirty[0] & /*withTransitions, onlyFrom, neverFrom, dynamicDummy, List, DataOffered, onDragStart, onDragEnd, onDropped, TypesAccepted, onDrop, onDroppableEnter, onDroppableMove, onDroppableLeave, HoldDelay, onDroppableHold, ListViewElement, PanSensorWidth, PanSensorHeight, PanSpeed, draggedItemList, isSelected, handleClick, KeyOf*/ 2144337795 | dirty[1] & /*TransitionStarted, TransitionEnded, $$scope*/ 33554435) {
     				each_value = /*List*/ ctx[0];
     				group_outros();
     				for (let i = 0; i < each_blocks.length; i += 1) each_blocks[i].r();
@@ -1309,9 +1309,9 @@
     	};
     }
 
-    // (695:31)  
+    // (778:31)  
     function fallback_block_1(ctx) {
-    	let t_value = /*KeyOf*/ ctx[18](/*Item*/ ctx[73], /*Index*/ ctx[75]) + "";
+    	let t_value = /*KeyOf*/ ctx[15](/*Item*/ ctx[74], /*Index*/ ctx[76]) + "";
     	let t;
 
     	return {
@@ -1322,7 +1322,7 @@
     			insert(target, t, anchor);
     		},
     		p(ctx, dirty) {
-    			if (dirty[0] & /*KeyOf, List*/ 262145 && t_value !== (t_value = /*KeyOf*/ ctx[18](/*Item*/ ctx[73], /*Index*/ ctx[75]) + "")) set_data(t, t_value);
+    			if (dirty[0] & /*KeyOf, List*/ 32769 && t_value !== (t_value = /*KeyOf*/ ctx[15](/*Item*/ ctx[74], /*Index*/ ctx[76]) + "")) set_data(t, t_value);
     		},
     		d(detaching) {
     			if (detaching) detach(t);
@@ -1330,7 +1330,7 @@
     	};
     }
 
-    // (686:6) {#each List as Item,Index (KeyOf(Item,Index))}
+    // (769:6) {#each List as Item,Index (KeyOf(Item,Index))}
     function create_each_block_1(key_1, ctx) {
     	let li;
     	let t;
@@ -1338,12 +1338,12 @@
     	let current;
     	let mounted;
     	let dispose;
-    	const default_slot_template = /*#slots*/ ctx[55].default;
-    	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[54], get_default_slot_context_1);
+    	const default_slot_template = /*#slots*/ ctx[57].default;
+    	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[56], get_default_slot_context_1);
     	const default_slot_or_fallback = default_slot || fallback_block_1(ctx);
 
     	function click_handler_1(...args) {
-    		return /*click_handler_1*/ ctx[57](/*Item*/ ctx[73], ...args);
+    		return /*click_handler_1*/ ctx[59](/*Item*/ ctx[74], ...args);
     	}
 
     	return {
@@ -1354,7 +1354,7 @@
     			if (default_slot_or_fallback) default_slot_or_fallback.c();
     			t = space();
     			toggle_class(li, "ListItemView", true);
-    			toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[73]));
+    			toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[74]));
     			this.first = li;
     		},
     		m(target, anchor) {
@@ -1383,17 +1383,17 @@
     			ctx = new_ctx;
 
     			if (default_slot) {
-    				if (default_slot.p && (!current || dirty[0] & /*List*/ 1 | dirty[1] & /*$$scope*/ 8388608)) {
-    					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[54], !current ? [-1, -1, -1] : dirty, get_default_slot_changes_1, get_default_slot_context_1);
+    				if (default_slot.p && (!current || dirty[0] & /*List*/ 1 | dirty[1] & /*$$scope*/ 33554432)) {
+    					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[56], !current ? [-1, -1, -1] : dirty, get_default_slot_changes_1, get_default_slot_context_1);
     				}
     			} else {
-    				if (default_slot_or_fallback && default_slot_or_fallback.p && (!current || dirty[0] & /*KeyOf, List*/ 262145)) {
+    				if (default_slot_or_fallback && default_slot_or_fallback.p && (!current || dirty[0] & /*KeyOf, List*/ 32769)) {
     					default_slot_or_fallback.p(ctx, !current ? [-1, -1, -1] : dirty);
     				}
     			}
 
     			if (dirty[0] & /*isSelected, List*/ 129) {
-    				toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[73]));
+    				toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[74]));
     			}
     		},
     		i(local) {
@@ -1440,9 +1440,9 @@
     	};
     }
 
-    // (671:31)  
+    // (754:31)  
     function fallback_block(ctx) {
-    	let t_value = /*KeyOf*/ ctx[18](/*Item*/ ctx[73], /*Index*/ ctx[75]) + "";
+    	let t_value = /*KeyOf*/ ctx[15](/*Item*/ ctx[74], /*Index*/ ctx[76]) + "";
     	let t;
 
     	return {
@@ -1453,7 +1453,7 @@
     			insert(target, t, anchor);
     		},
     		p(ctx, dirty) {
-    			if (dirty[0] & /*KeyOf, List*/ 262145 && t_value !== (t_value = /*KeyOf*/ ctx[18](/*Item*/ ctx[73], /*Index*/ ctx[75]) + "")) set_data(t, t_value);
+    			if (dirty[0] & /*KeyOf, List*/ 32769 && t_value !== (t_value = /*KeyOf*/ ctx[15](/*Item*/ ctx[74], /*Index*/ ctx[76]) + "")) set_data(t, t_value);
     		},
     		d(detaching) {
     			if (detaching) detach(t);
@@ -1461,7 +1461,7 @@
     	};
     }
 
-    // (649:6) {#each List as Item,Index (KeyOf(Item,Index))}
+    // (732:6) {#each List as Item,Index (KeyOf(Item,Index))}
     function create_each_block(key_1, ctx) {
     	let li;
     	let asDroppable_action;
@@ -1472,12 +1472,12 @@
     	let current;
     	let mounted;
     	let dispose;
-    	const default_slot_template = /*#slots*/ ctx[55].default;
-    	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[54], get_default_slot_context);
+    	const default_slot_template = /*#slots*/ ctx[57].default;
+    	const default_slot = create_slot(default_slot_template, ctx, /*$$scope*/ ctx[56], get_default_slot_context);
     	const default_slot_or_fallback = default_slot || fallback_block(ctx);
 
     	function click_handler(...args) {
-    		return /*click_handler*/ ctx[56](/*Item*/ ctx[73], ...args);
+    		return /*click_handler*/ ctx[58](/*Item*/ ctx[74], ...args);
     	}
 
     	return {
@@ -1487,8 +1487,8 @@
     			li = element("li");
     			if (default_slot_or_fallback) default_slot_or_fallback.c();
     			toggle_class(li, "ListItemView", true);
-    			toggle_class(li, "dragged", /*draggedItemList*/ ctx[19].indexOf(/*Item*/ ctx[73]) >= 0);
-    			toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[73]));
+    			toggle_class(li, "dragged", /*draggedItemList*/ ctx[19].indexOf(/*Item*/ ctx[74]) >= 0);
+    			toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[74]));
     			this.first = li;
     		},
     		m(target, anchor) {
@@ -1509,9 +1509,9 @@
     						Dummy: /*dynamicDummy*/ ctx[23],
     						Extras: {
     							List: /*List*/ ctx[0],
-    							Item: /*Item*/ ctx[73]
+    							Item: /*Item*/ ctx[74]
     						},
-    						DataToOffer: /*DataOffered*/ ctx[15],
+    						DataToOffer: /*DataOffered*/ ctx[16],
     						onDragStart: /*onDragStart*/ ctx[24],
     						onDragEnd: /*onDragEnd*/ ctx[25],
     						onDropped: /*onDropped*/ ctx[26]
@@ -1519,16 +1519,16 @@
     					action_destroyer(asDropZone_action = svelteDragAndDropActions.asDropZone.call(null, li, {
     						Extras: {
     							List: /*List*/ ctx[0],
-    							Item: /*Item*/ ctx[73]
+    							Item: /*Item*/ ctx[74]
     						},
-    						TypesToAccept: /*TypesAccepted*/ ctx[16],
+    						TypesToAccept: /*TypesAccepted*/ ctx[17],
     						onDrop: /*onDrop*/ ctx[30],
     						onDroppableEnter: /*onDroppableEnter*/ ctx[27],
     						onDroppableMove: /*onDroppableMove*/ ctx[28],
     						onDroppableLeave: /*onDroppableLeave*/ ctx[29],
     						HoldDelay: /*HoldDelay*/ ctx[13],
     						onDroppableHold: /*onDroppableHold*/ ctx[14],
-    						Pannable: /*ListViewElement*/ ctx[17],
+    						Pannable: /*ListViewElement*/ ctx[18],
     						PanSensorWidth: /*PanSensorWidth*/ ctx[10],
     						PanSensorHeight: /*PanSensorHeight*/ ctx[11],
     						PanSpeed: /*PanSpeed*/ ctx[12]
@@ -1546,53 +1546,53 @@
     			ctx = new_ctx;
 
     			if (default_slot) {
-    				if (default_slot.p && (!current || dirty[0] & /*List*/ 1 | dirty[1] & /*$$scope*/ 8388608)) {
-    					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[54], !current ? [-1, -1, -1] : dirty, get_default_slot_changes, get_default_slot_context);
+    				if (default_slot.p && (!current || dirty[0] & /*List*/ 1 | dirty[1] & /*$$scope*/ 33554432)) {
+    					update_slot(default_slot, default_slot_template, ctx, /*$$scope*/ ctx[56], !current ? [-1, -1, -1] : dirty, get_default_slot_changes, get_default_slot_context);
     				}
     			} else {
-    				if (default_slot_or_fallback && default_slot_or_fallback.p && (!current || dirty[0] & /*KeyOf, List*/ 262145)) {
+    				if (default_slot_or_fallback && default_slot_or_fallback.p && (!current || dirty[0] & /*KeyOf, List*/ 32769)) {
     					default_slot_or_fallback.p(ctx, !current ? [-1, -1, -1] : dirty);
     				}
     			}
 
-    			if (asDroppable_action && is_function(asDroppable_action.update) && dirty[0] & /*onlyFrom, neverFrom, List, DataOffered*/ 33537) asDroppable_action.update.call(null, {
+    			if (asDroppable_action && is_function(asDroppable_action.update) && dirty[0] & /*onlyFrom, neverFrom, List, DataOffered*/ 66305) asDroppable_action.update.call(null, {
     				onlyFrom: /*onlyFrom*/ ctx[8],
     				neverFrom: /*neverFrom*/ ctx[9],
     				Dummy: /*dynamicDummy*/ ctx[23],
     				Extras: {
     					List: /*List*/ ctx[0],
-    					Item: /*Item*/ ctx[73]
+    					Item: /*Item*/ ctx[74]
     				},
-    				DataToOffer: /*DataOffered*/ ctx[15],
+    				DataToOffer: /*DataOffered*/ ctx[16],
     				onDragStart: /*onDragStart*/ ctx[24],
     				onDragEnd: /*onDragEnd*/ ctx[25],
     				onDropped: /*onDropped*/ ctx[26]
     			});
 
-    			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List, TypesAccepted, HoldDelay, onDroppableHold, ListViewElement, PanSensorWidth, PanSensorHeight, PanSpeed*/ 228353) asDropZone_action.update.call(null, {
+    			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List, TypesAccepted, HoldDelay, onDroppableHold, ListViewElement, PanSensorWidth, PanSensorHeight, PanSpeed*/ 424961) asDropZone_action.update.call(null, {
     				Extras: {
     					List: /*List*/ ctx[0],
-    					Item: /*Item*/ ctx[73]
+    					Item: /*Item*/ ctx[74]
     				},
-    				TypesToAccept: /*TypesAccepted*/ ctx[16],
+    				TypesToAccept: /*TypesAccepted*/ ctx[17],
     				onDrop: /*onDrop*/ ctx[30],
     				onDroppableEnter: /*onDroppableEnter*/ ctx[27],
     				onDroppableMove: /*onDroppableMove*/ ctx[28],
     				onDroppableLeave: /*onDroppableLeave*/ ctx[29],
     				HoldDelay: /*HoldDelay*/ ctx[13],
     				onDroppableHold: /*onDroppableHold*/ ctx[14],
-    				Pannable: /*ListViewElement*/ ctx[17],
+    				Pannable: /*ListViewElement*/ ctx[18],
     				PanSensorWidth: /*PanSensorWidth*/ ctx[10],
     				PanSensorHeight: /*PanSensorHeight*/ ctx[11],
     				PanSpeed: /*PanSpeed*/ ctx[12]
     			});
 
     			if (dirty[0] & /*draggedItemList, List*/ 524289) {
-    				toggle_class(li, "dragged", /*draggedItemList*/ ctx[19].indexOf(/*Item*/ ctx[73]) >= 0);
+    				toggle_class(li, "dragged", /*draggedItemList*/ ctx[19].indexOf(/*Item*/ ctx[74]) >= 0);
     			}
 
     			if (dirty[0] & /*isSelected, List*/ 129) {
-    				toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[73]));
+    				toggle_class(li, "selected", /*isSelected*/ ctx[7](/*Item*/ ctx[74]));
     			}
     		},
     		r() {
@@ -1651,7 +1651,7 @@
     	};
     }
 
-    // (675:6) {#if sortable || extendable}
+    // (758:6) {#if sortable || extendable}
     function create_if_block_2(ctx) {
     	let li;
     	let raw_value = (/*AttachmentRegion*/ ctx[5] || "") + "";
@@ -1671,7 +1671,7 @@
     			if (!mounted) {
     				dispose = action_destroyer(asDropZone_action = svelteDragAndDropActions.asDropZone.call(null, li, {
     					Extras: { List: /*List*/ ctx[0], Item: undefined },
-    					TypesToAccept: /*TypesAccepted*/ ctx[16],
+    					TypesToAccept: /*TypesAccepted*/ ctx[17],
     					onDroppableEnter: /*onDroppableEnter*/ ctx[27],
     					onDroppableMove: /*onDroppableMove*/ ctx[28],
     					onDrop: /*onDrop*/ ctx[30],
@@ -1684,9 +1684,9 @@
     		},
     		p(ctx, dirty) {
     			if (dirty[0] & /*AttachmentRegion*/ 32 && raw_value !== (raw_value = (/*AttachmentRegion*/ ctx[5] || "") + "")) li.innerHTML = raw_value;
-    			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List, TypesAccepted, HoldDelay, onDroppableHold*/ 90113) asDropZone_action.update.call(null, {
+    			if (asDropZone_action && is_function(asDropZone_action.update) && dirty[0] & /*List, TypesAccepted, HoldDelay, onDroppableHold*/ 155649) asDropZone_action.update.call(null, {
     				Extras: { List: /*List*/ ctx[0], Item: undefined },
-    				TypesToAccept: /*TypesAccepted*/ ctx[16],
+    				TypesToAccept: /*TypesAccepted*/ ctx[17],
     				onDroppableEnter: /*onDroppableEnter*/ ctx[27],
     				onDroppableMove: /*onDroppableMove*/ ctx[28],
     				onDrop: /*onDrop*/ ctx[30],
@@ -1743,7 +1743,7 @@
     		m(target, anchor) {
     			insert(target, ul, anchor);
     			if_blocks[current_block_type_index].m(ul, null);
-    			/*ul_binding*/ ctx[58](ul);
+    			/*ul_binding*/ ctx[60](ul);
     			current = true;
     		},
     		p(ctx, dirty) {
@@ -1795,7 +1795,7 @@
     		d(detaching) {
     			if (detaching) detach(ul);
     			if_blocks[current_block_type_index].d();
-    			/*ul_binding*/ ctx[58](null);
+    			/*ul_binding*/ ctx[60](null);
     		}
     	};
     }
@@ -1818,7 +1818,7 @@
 
     function instance($$self, $$props, $$invalidate) {
     	const omit_props_names = [
-    		"class","style","List","Key","SelectionLimit","AttachmentRegion","Placeholder","withTransitions","select","selectOnly","selectAll","selectRange","deselect","deselectAll","toggleSelectionOf","selectedItems","SelectionCount","isSelected","sortable","onlyFrom","neverFrom","onSortRequest","onSort","PanSensorWidth","PanSensorHeight","PanSpeed","Operations","DataToOffer","TypesToAccept","onOuterDropRequest","onDroppedOutside","onDropFromOutside","HoldDelay","onDroppableHold"
+    		"class","style","List","Key","AttachmentRegion","Placeholder","withTransitions","SelectionLimit","SelectionList","select","selectOnly","selectAll","selectRange","deselect","deselectAll","toggleSelectionOf","selectedItems","SelectionCount","isSelected","sortable","onlyFrom","neverFrom","onSortRequest","onSort","PanSensorWidth","PanSensorHeight","PanSpeed","Operations","DataToOffer","TypesToAccept","onOuterDropRequest","onDroppedOutside","onDropFromOutside","HoldDelay","onDroppableHold"
     	];
 
     	let $$restProps = compute_rest_props($$props, omit_props_names);
@@ -1833,7 +1833,6 @@
     	let { style = undefined } = $$props; // ...control styling
     	let { List } = $$props;
     	let { Key = undefined } = $$props;
-    	let { SelectionLimit = undefined } = $$props;
     	let { AttachmentRegion = undefined } = $$props;
     	let { Placeholder = undefined } = $$props;
     	let { withTransitions = true } = $$props;
@@ -1843,7 +1842,7 @@
     	let ItemSet;
 
     	function updateItemSet(...ArgumentsAreForReactivityOnly) {
-    		ItemSet = Object.create(null);
+    		$$invalidate(54, ItemSet = Object.create(null));
 
     		List.forEach(Item => {
     			let Key = KeyOf(Item);
@@ -1855,7 +1854,7 @@
     					javascriptInterfaceLibrary.throwError("InvalidArgument: the given \"Key\" does not produce unique keys " + "for every \"List\" item");
     				}
     			} else {
-    				ItemSet[Key] = Item;
+    				$$invalidate(54, ItemSet[Key] = Item, ItemSet);
     			}
     		});
     	}
@@ -1865,8 +1864,11 @@
     	//----------------------------------------------------------------------------//
     	let SelectionSet = new WeakMap(); // automatically "updates" on list changes
 
+    	let { SelectionLimit = undefined } = $$props;
+    	let { SelectionList = [] } = $$props;
+
     	function select(...ItemList) {
-    		let curSelectionCount = SelectionCount();
+    		let curSelectionCount = SelectionCount(), SelectionChanged = false;
 
     		ItemList.forEach(Item => {
     			let Key = KeyOf(Item);
@@ -1876,6 +1878,7 @@
     					if (SelectionLimit == null || curSelectionCount < SelectionLimit) {
     						SelectionSet.set(Item, true);
     						curSelectionCount++;
+    						SelectionChanged = true;
     						dispatch("selected-item", Item);
     					}
     				}
@@ -1886,7 +1889,11 @@
 
     		SelectionRangeBoundaryA = ItemList.length === 1 ? ItemList[0] : undefined;
     		SelectionRangeBoundaryB = undefined;
-    		triggerRedraw();
+
+    		if (SelectionChanged) {
+    			$$invalidate(34, SelectionList = selectedItems());
+    			triggerRedraw();
+    		}
     	}
 
     	function selectOnly(...ItemList) {
@@ -1895,24 +1902,30 @@
     			deselectAll();
 
     			select(...ItemList);
-    		} //    triggerRedraw()                                     // already done before
+    		} //    SelectionList = selectedItems()                     // already done before
+    		//    triggerRedraw()                                                    // dto.
     	}
 
     	function selectAll() {
-    		let curSelectionCount = SelectionCount();
+    		let curSelectionCount = SelectionCount(), SelectionChanged = false;
 
     		List.forEach(Item => {
     			if (!SelectionSet.has(Item)) {
     				if (SelectionLimit == null || curSelectionCount < SelectionLimit) {
     					SelectionSet.set(Item, true);
     					curSelectionCount++;
+    					SelectionChanged = true;
     					dispatch("selected-item", Item);
     				}
     			}
     		});
 
     		SelectionRangeBoundaryA = SelectionRangeBoundaryB = undefined;
-    		triggerRedraw();
+
+    		if (SelectionChanged) {
+    			$$invalidate(34, SelectionList = selectedItems());
+    			triggerRedraw();
+    		}
     	}
 
     	let SelectionRangeBoundaryA;
@@ -1936,19 +1949,25 @@
     		let IndexB = List.indexOf(RangeBoundary);
     		let firstIndex = Math.min(IndexA, IndexB);
     		let lastIndex = Math.max(IndexA, IndexB);
-    		let curSelectionCount = SelectionCount();
+    		let curSelectionCount = SelectionCount(), SelectionChanged = false;
 
     		for (let i = firstIndex; i <= lastIndex; i++) {
     			if (!SelectionSet.has(List[i])) {
     				if (SelectionLimit == null || curSelectionCount < SelectionLimit) {
     					SelectionSet.set(List[i], true);
+    					curSelectionCount++;
+    					SelectionChanged = true;
     					dispatch("selected-item", List[i]);
     				}
     			}
     		}
 
     		SelectionRangeBoundaryB = RangeBoundary;
-    		triggerRedraw();
+
+    		if (SelectionChanged) {
+    			$$invalidate(34, SelectionList = selectedItems());
+    			triggerRedraw();
+    		}
     	}
 
     	/**** deselectRange (internal only) ****/
@@ -1957,22 +1976,32 @@
     		let IndexB = List.indexOf(RangeBoundary);
     		let firstIndex = Math.min(IndexA, IndexB);
     		let lastIndex = Math.max(IndexA, IndexB);
+    		let SelectionChanged = false;
 
     		for (let i = firstIndex; i <= lastIndex; i++) {
     			if (SelectionSet.has(List[i])) {
     				SelectionSet.delete(List[i]);
+    				SelectionChanged = true;
     				dispatch("deselected-item", List[i]);
     			}
+    		}
+
+    		if (SelectionChanged) {
+    			$$invalidate(34, SelectionList = selectedItems());
+    			triggerRedraw();
     		}
     	}
 
     	function deselect(...ItemList) {
+    		let SelectionChanged = false;
+
     		ItemList.forEach(Item => {
     			let Key = KeyOf(Item);
 
     			if (Key in ItemSet) {
     				if (SelectionSet.has(Item)) {
     					SelectionSet.delete(Item);
+    					SelectionChanged = true;
     					dispatch("deselected-item", Item);
     				}
     			} else {
@@ -1981,24 +2010,35 @@
     		});
 
     		SelectionRangeBoundaryA = SelectionRangeBoundaryB = undefined;
-    		triggerRedraw();
+
+    		if (SelectionChanged) {
+    			$$invalidate(34, SelectionList = selectedItems());
+    			triggerRedraw();
+    		}
     	}
 
     	function deselectAll() {
+    		let SelectionChanged = false;
+
     		List.forEach(Item => {
     			if (SelectionSet.has(Item)) {
     				SelectionSet.delete(Item);
+    				SelectionChanged = true;
     				dispatch("deselected-item", Item);
     			}
     		});
 
     		SelectionRangeBoundaryA = SelectionRangeBoundaryB = undefined;
-    		triggerRedraw();
+
+    		if (SelectionChanged) {
+    			$$invalidate(34, SelectionList = selectedItems());
+    			triggerRedraw();
+    		}
     	}
 
     	function toggleSelectionOf(...ItemList) {
     		SelectionRangeBoundaryA = undefined;
-    		let ItemsToBeSelected = [];
+    		let ItemsToBeSelected = [], SelectionChanged = false;
 
     		ItemList.forEach(Item => {
     			let Key = KeyOf(Item);
@@ -2006,6 +2046,7 @@
     			if (Key in ItemSet) {
     				if (SelectionSet.has(Item)) {
     					SelectionSet.delete(Item);
+    					SelectionChanged = true;
     					dispatch("deselected-item", Item);
     				} else {
     					ItemsToBeSelected.push(Item);
@@ -2027,6 +2068,7 @@
 
     		ItemsToBeSelected.forEach(Item => {
     			SelectionSet.set(Item, true);
+    			SelectionChanged = true;
     			dispatch("selected-item", Item);
 
     			if (ItemList.length === 1) {
@@ -2035,7 +2077,10 @@
     			}
     		});
 
-    		triggerRedraw();
+    		if (SelectionChanged) {
+    			$$invalidate(34, SelectionList = selectedItems());
+    			triggerRedraw();
+    		}
     	}
 
     	function selectedItems() {
@@ -2173,7 +2218,7 @@
 
     	/**** onDragStart ****/
     	function onDragStart(DroppableExtras) {
-    		$$invalidate(53, isDragging = true);
+    		$$invalidate(55, isDragging = true);
 
     		if (!isSelected(DroppableExtras.Item)) {
     			selectOnly(DroppableExtras.Item);
@@ -2185,7 +2230,7 @@
 
     	/**** onDragEnd ****/
     	function onDragEnd(x, y, dx, dy, DroppableExtras) {
-    		$$invalidate(53, isDragging = false);
+    		$$invalidate(55, isDragging = false);
     		delete DroppableExtras.ItemList;
     		$$invalidate(19, draggedItemList.length = 0, draggedItemList);
     	}
@@ -2398,7 +2443,7 @@
     	function ul_binding($$value) {
     		binding_callbacks[$$value ? "unshift" : "push"](() => {
     			ListViewElement = $$value;
-    			$$invalidate(17, ListViewElement);
+    			$$invalidate(18, ListViewElement);
     		});
     	}
 
@@ -2408,28 +2453,29 @@
     		if ("class" in $$new_props) $$invalidate(3, ClassNames = $$new_props.class);
     		if ("style" in $$new_props) $$invalidate(4, style = $$new_props.style);
     		if ("List" in $$new_props) $$invalidate(0, List = $$new_props.List);
-    		if ("Key" in $$new_props) $$invalidate(34, Key = $$new_props.Key);
-    		if ("SelectionLimit" in $$new_props) $$invalidate(35, SelectionLimit = $$new_props.SelectionLimit);
+    		if ("Key" in $$new_props) $$invalidate(35, Key = $$new_props.Key);
     		if ("AttachmentRegion" in $$new_props) $$invalidate(5, AttachmentRegion = $$new_props.AttachmentRegion);
     		if ("Placeholder" in $$new_props) $$invalidate(6, Placeholder = $$new_props.Placeholder);
     		if ("withTransitions" in $$new_props) $$invalidate(1, withTransitions = $$new_props.withTransitions);
+    		if ("SelectionLimit" in $$new_props) $$invalidate(36, SelectionLimit = $$new_props.SelectionLimit);
+    		if ("SelectionList" in $$new_props) $$invalidate(34, SelectionList = $$new_props.SelectionList);
     		if ("sortable" in $$new_props) $$invalidate(2, sortable = $$new_props.sortable);
     		if ("onlyFrom" in $$new_props) $$invalidate(8, onlyFrom = $$new_props.onlyFrom);
     		if ("neverFrom" in $$new_props) $$invalidate(9, neverFrom = $$new_props.neverFrom);
-    		if ("onSortRequest" in $$new_props) $$invalidate(45, onSortRequest = $$new_props.onSortRequest);
-    		if ("onSort" in $$new_props) $$invalidate(46, onSort = $$new_props.onSort);
+    		if ("onSortRequest" in $$new_props) $$invalidate(46, onSortRequest = $$new_props.onSortRequest);
+    		if ("onSort" in $$new_props) $$invalidate(47, onSort = $$new_props.onSort);
     		if ("PanSensorWidth" in $$new_props) $$invalidate(10, PanSensorWidth = $$new_props.PanSensorWidth);
     		if ("PanSensorHeight" in $$new_props) $$invalidate(11, PanSensorHeight = $$new_props.PanSensorHeight);
     		if ("PanSpeed" in $$new_props) $$invalidate(12, PanSpeed = $$new_props.PanSpeed);
-    		if ("Operations" in $$new_props) $$invalidate(47, Operations = $$new_props.Operations);
-    		if ("DataToOffer" in $$new_props) $$invalidate(48, DataToOffer = $$new_props.DataToOffer);
-    		if ("TypesToAccept" in $$new_props) $$invalidate(49, TypesToAccept = $$new_props.TypesToAccept);
-    		if ("onOuterDropRequest" in $$new_props) $$invalidate(50, onOuterDropRequest = $$new_props.onOuterDropRequest);
-    		if ("onDroppedOutside" in $$new_props) $$invalidate(51, onDroppedOutside = $$new_props.onDroppedOutside);
-    		if ("onDropFromOutside" in $$new_props) $$invalidate(52, onDropFromOutside = $$new_props.onDropFromOutside);
+    		if ("Operations" in $$new_props) $$invalidate(48, Operations = $$new_props.Operations);
+    		if ("DataToOffer" in $$new_props) $$invalidate(49, DataToOffer = $$new_props.DataToOffer);
+    		if ("TypesToAccept" in $$new_props) $$invalidate(50, TypesToAccept = $$new_props.TypesToAccept);
+    		if ("onOuterDropRequest" in $$new_props) $$invalidate(51, onOuterDropRequest = $$new_props.onOuterDropRequest);
+    		if ("onDroppedOutside" in $$new_props) $$invalidate(52, onDroppedOutside = $$new_props.onDroppedOutside);
+    		if ("onDropFromOutside" in $$new_props) $$invalidate(53, onDropFromOutside = $$new_props.onDropFromOutside);
     		if ("HoldDelay" in $$new_props) $$invalidate(13, HoldDelay = $$new_props.HoldDelay);
     		if ("onDroppableHold" in $$new_props) $$invalidate(14, onDroppableHold = $$new_props.onDroppableHold);
-    		if ("$$scope" in $$new_props) $$invalidate(54, $$scope = $$new_props.$$scope);
+    		if ("$$scope" in $$new_props) $$invalidate(56, $$scope = $$new_props.$$scope);
     	};
 
     	$$self.$$.update = () => {
@@ -2442,27 +2488,29 @@
     		}
 
     		if ($$self.$$.dirty[0] & /*List*/ 1) {
-    			$$invalidate(0, List = javascriptInterfaceLibrary.allowedListSatisfying("\"List\" attribute", List, javascriptInterfaceLibrary.ValueIsObject) || []);
+    			{
+    				javascriptInterfaceLibrary.allowListSatisfying("\"List\" attribute", List, javascriptInterfaceLibrary.ValueIsObject);
+
+    				if (List == null) {
+    					$$invalidate(0, List = []);
+    				}
+    			}
     		}
 
-    		if ($$self.$$.dirty[1] & /*Key*/ 8) {
+    		if ($$self.$$.dirty[1] & /*Key*/ 16) {
     			switch (true) {
     				case Key == null:
-    					$$invalidate(18, KeyOf = Item => String(Item));
+    					$$invalidate(15, KeyOf = Item => String(Item));
     					break;
     				case javascriptInterfaceLibrary.ValueIsNonEmptyString(Key):
-    					$$invalidate(18, KeyOf = Item => String(Item[Key]));
+    					$$invalidate(15, KeyOf = Item => String(Item[Key]));
     					break;
     				case javascriptInterfaceLibrary.ValueIsFunction(Key):
-    					$$invalidate(18, KeyOf = (Item, Index) => String(Key(Item, Index)));
+    					$$invalidate(15, KeyOf = (Item, Index) => String(Key(Item, Index)));
     					break;
     				default:
     					javascriptInterfaceLibrary.throwError("InvalidArgument: the given \"Key\" attribute is neither " + "a non-empty string nor a function returning such a string");
     			}
-    		}
-
-    		if ($$self.$$.dirty[1] & /*SelectionLimit*/ 16) {
-    			javascriptInterfaceLibrary.allowOrdinal("selection limit", SelectionLimit);
     		}
 
     		if ($$self.$$.dirty[0] & /*AttachmentRegion*/ 32) {
@@ -2483,11 +2531,63 @@
     			}
     		}
 
-    		if ($$self.$$.dirty[0] & /*List*/ 1 | $$self.$$.dirty[1] & /*Key*/ 8) {
+    		if ($$self.$$.dirty[0] & /*List*/ 1 | $$self.$$.dirty[1] & /*Key*/ 16) {
     			updateItemSet(List, Key);
     		}
 
-    		if ($$self.$$.dirty[0] & /*List*/ 1 | $$self.$$.dirty[1] & /*SelectionLimit*/ 16) {
+    		if ($$self.$$.dirty[1] & /*SelectionLimit*/ 32) {
+    			javascriptInterfaceLibrary.allowOrdinal("selection limit", SelectionLimit);
+    		}
+
+    		if ($$self.$$.dirty[0] & /*KeyOf, List*/ 32769 | $$self.$$.dirty[1] & /*SelectionList, ItemSet, SelectionLimit*/ 8388648) {
+    			{
+    				javascriptInterfaceLibrary.allowListSatisfying("\"SelectionList\" attribute", SelectionList, javascriptInterfaceLibrary.ValueIsObject);
+
+    				if (SelectionList == null) {
+    					$$invalidate(34, SelectionList = []);
+    				}
+
+    				let newSelectionSet = new WeakMap(), newSelectionCount = 0;
+
+    				SelectionList.forEach(Item => {
+    					let Key = KeyOf(Item);
+
+    					if (Key in ItemSet) {
+    						if (!newSelectionSet.has(Item)) {
+    							if (SelectionLimit == null || newSelectionCount < SelectionLimit) {
+    								newSelectionSet.set(Item, true);
+    								newSelectionCount++;
+    							}
+    						}
+    					} else {
+    						javascriptInterfaceLibrary.throwError("InvalidArgument: one or multiple of the given items to select " + "are not part of the given \"List\"");
+    					}
+    				});
+
+    				let SelectionChanged = false;
+
+    				List.forEach(Item => {
+    					if (SelectionSet.has(Item)) {
+    						if (!newSelectionSet.has(Item)) {
+    							SelectionSet.delete(Item);
+    							SelectionChanged = true;
+    						}
+    					} else {
+    						if (newSelectionSet.has(Item)) {
+    							SelectionSet.set(Item, true);
+    							SelectionChanged = true;
+    						}
+    					}
+    				});
+
+    				if (SelectionChanged) {
+    					$$invalidate(34, SelectionList = selectedItems());
+    					triggerRedraw();
+    				}
+    			}
+    		}
+
+    		if ($$self.$$.dirty[0] & /*List*/ 1 | $$self.$$.dirty[1] & /*SelectionLimit*/ 32) {
     			if (SelectionLimit != null && SelectionCount() > SelectionLimit) {
     				let Count = 0;
 
@@ -2515,11 +2615,11 @@
     			javascriptInterfaceLibrary.allowNonEmptyString("\"neverFrom\" CSS selector list", neverFrom);
     		}
 
-    		if ($$self.$$.dirty[1] & /*onSortRequest*/ 16384) {
+    		if ($$self.$$.dirty[1] & /*onSortRequest*/ 32768) {
     			javascriptInterfaceLibrary.allowFunction("\"onSortRequest\" callback", onSortRequest);
     		}
 
-    		if ($$self.$$.dirty[1] & /*onSort*/ 32768) {
+    		if ($$self.$$.dirty[1] & /*onSort*/ 65536) {
     			javascriptInterfaceLibrary.allowFunction("\"onSort\" callback", onSort);
     		}
 
@@ -2535,27 +2635,27 @@
     			javascriptInterfaceLibrary.allowOrdinal("panning speed", PanSpeed);
     		}
 
-    		if ($$self.$$.dirty[1] & /*Operations*/ 65536) {
+    		if ($$self.$$.dirty[1] & /*Operations*/ 131072) {
     			parsedOperations("list of allowed operations", Operations);
     		}
 
-    		if ($$self.$$.dirty[1] & /*DataToOffer*/ 131072) {
+    		if ($$self.$$.dirty[1] & /*DataToOffer*/ 262144) {
     			javascriptInterfaceLibrary.allowPlainObject("\"DataToOffer\" attribute", DataToOffer);
     		}
 
-    		if ($$self.$$.dirty[1] & /*TypesToAccept*/ 262144) {
+    		if ($$self.$$.dirty[1] & /*TypesToAccept*/ 524288) {
     			javascriptInterfaceLibrary.allowPlainObject("\"TypesToAccept\" attribute", TypesToAccept);
     		}
 
-    		if ($$self.$$.dirty[1] & /*onOuterDropRequest*/ 524288) {
+    		if ($$self.$$.dirty[1] & /*onOuterDropRequest*/ 1048576) {
     			javascriptInterfaceLibrary.allowFunction("\"onOuterDropRequest\" callback", onOuterDropRequest);
     		}
 
-    		if ($$self.$$.dirty[1] & /*onDroppedOutside*/ 1048576) {
+    		if ($$self.$$.dirty[1] & /*onDroppedOutside*/ 2097152) {
     			javascriptInterfaceLibrary.allowFunction("\"onDroppedOutside\" callback", onDroppedOutside);
     		}
 
-    		if ($$self.$$.dirty[1] & /*onDropFromOutside*/ 2097152) {
+    		if ($$self.$$.dirty[1] & /*onDropFromOutside*/ 4194304) {
     			javascriptInterfaceLibrary.allowFunction("\"onDropFromOutside\" callback", onDropFromOutside);
     		}
 
@@ -2567,42 +2667,42 @@
     			javascriptInterfaceLibrary.allowFunction("\"onDroppableHold\" callback", onDroppableHold);
     		}
 
-    		if ($$self.$$.dirty[0] & /*DataOffered, sortable*/ 32772 | $$self.$$.dirty[1] & /*isDragging, DataToOffer*/ 4325376) {
+    		if ($$self.$$.dirty[0] & /*DataOffered, sortable*/ 65540 | $$self.$$.dirty[1] & /*isDragging, DataToOffer*/ 17039360) {
     			if (!isDragging) {
     				// do not update while already dragging
-    				$$invalidate(15, DataOffered = Object.assign({}, DataToOffer));
+    				$$invalidate(16, DataOffered = Object.assign({}, DataToOffer));
 
     				if ("none" in DataOffered) javascriptInterfaceLibrary.throwError("InvalidArgument: \"none\" is not a valid data type");
 
     				// @ts-ignore "DataOffered" is definitely not undefined
     				if (sortable) {
-    					$$invalidate(15, DataOffered[privateKey] = "", DataOffered);
+    					$$invalidate(16, DataOffered[privateKey] = "", DataOffered);
     				}
     			}
     		}
 
-    		if ($$self.$$.dirty[0] & /*sortable*/ 4 | $$self.$$.dirty[1] & /*isDragging, TypesToAccept*/ 4456448) {
+    		if ($$self.$$.dirty[0] & /*sortable*/ 4 | $$self.$$.dirty[1] & /*isDragging, TypesToAccept*/ 17301504) {
     			if (!isDragging) {
     				// do not update while already dragging
-    				$$invalidate(16, TypesAccepted = {});
+    				$$invalidate(17, TypesAccepted = {});
 
     				if (TypesToAccept != null && "none" in TypesToAccept) javascriptInterfaceLibrary.throwError("InvalidArgument: \"none\" is not a valid data type");
 
     				for (let Type in TypesToAccept) {
     					if (TypesToAccept.hasOwnProperty(Type)) {
     						// @ts-ignore "TypesAccepted" is definitely not undefined
-    						$$invalidate(16, TypesAccepted[Type] = parsedOperations("list of accepted operations for type " + javascriptInterfaceLibrary.quoted(Type), TypesToAccept[Type]), TypesAccepted);
+    						$$invalidate(17, TypesAccepted[Type] = parsedOperations("list of accepted operations for type " + javascriptInterfaceLibrary.quoted(Type), TypesToAccept[Type]), TypesAccepted);
     					}
     				}
 
     				// @ts-ignore "TypesAccepted" is definitely not undefined
     				if (sortable) {
-    					$$invalidate(16, TypesAccepted[privateKey] = "copy move", TypesAccepted);
+    					$$invalidate(17, TypesAccepted[privateKey] = "copy move", TypesAccepted);
     				}
     			} // 'copy' because of the better visual feedback from native drag-and-drop
     		}
 
-    		if ($$self.$$.dirty[0] & /*DataOffered, TypesAccepted*/ 98304 | $$self.$$.dirty[1] & /*isDragging*/ 4194304) {
+    		if ($$self.$$.dirty[0] & /*DataOffered, TypesAccepted*/ 196608 | $$self.$$.dirty[1] & /*isDragging*/ 16777216) {
     			if (!isDragging) {
     				// do not update while already dragging
     				$$invalidate(20, shrinkable = hasNonPrivateTypes(DataOffered));
@@ -2628,10 +2728,10 @@
     		PanSpeed,
     		HoldDelay,
     		onDroppableHold,
+    		KeyOf,
     		DataOffered,
     		TypesAccepted,
     		ListViewElement,
-    		KeyOf,
     		draggedItemList,
     		shrinkable,
     		extendable,
@@ -2647,6 +2747,7 @@
     		TransitionStarted,
     		TransitionEnded,
     		$$restProps,
+    		SelectionList,
     		Key,
     		SelectionLimit,
     		select,
@@ -2666,6 +2767,7 @@
     		onOuterDropRequest,
     		onDroppedOutside,
     		onDropFromOutside,
+    		ItemSet,
     		isDragging,
     		$$scope,
     		slots,
@@ -2689,35 +2791,36 @@
     				class: 3,
     				style: 4,
     				List: 0,
-    				Key: 34,
-    				SelectionLimit: 35,
+    				Key: 35,
     				AttachmentRegion: 5,
     				Placeholder: 6,
     				withTransitions: 1,
-    				select: 36,
-    				selectOnly: 37,
-    				selectAll: 38,
-    				selectRange: 39,
-    				deselect: 40,
-    				deselectAll: 41,
-    				toggleSelectionOf: 42,
-    				selectedItems: 43,
-    				SelectionCount: 44,
+    				SelectionLimit: 36,
+    				SelectionList: 34,
+    				select: 37,
+    				selectOnly: 38,
+    				selectAll: 39,
+    				selectRange: 40,
+    				deselect: 41,
+    				deselectAll: 42,
+    				toggleSelectionOf: 43,
+    				selectedItems: 44,
+    				SelectionCount: 45,
     				isSelected: 7,
     				sortable: 2,
     				onlyFrom: 8,
     				neverFrom: 9,
-    				onSortRequest: 45,
-    				onSort: 46,
+    				onSortRequest: 46,
+    				onSort: 47,
     				PanSensorWidth: 10,
     				PanSensorHeight: 11,
     				PanSpeed: 12,
-    				Operations: 47,
-    				DataToOffer: 48,
-    				TypesToAccept: 49,
-    				onOuterDropRequest: 50,
-    				onDroppedOutside: 51,
-    				onDropFromOutside: 52,
+    				Operations: 48,
+    				DataToOffer: 49,
+    				TypesToAccept: 50,
+    				onOuterDropRequest: 51,
+    				onDroppedOutside: 52,
+    				onDropFromOutside: 53,
     				HoldDelay: 13,
     				onDroppableHold: 14
     			},
@@ -2753,20 +2856,11 @@
     	}
 
     	get Key() {
-    		return this.$$.ctx[34];
+    		return this.$$.ctx[35];
     	}
 
     	set Key(Key) {
     		this.$set({ Key });
-    		flush();
-    	}
-
-    	get SelectionLimit() {
-    		return this.$$.ctx[35];
-    	}
-
-    	set SelectionLimit(SelectionLimit) {
-    		this.$set({ SelectionLimit });
     		flush();
     	}
 
@@ -2797,40 +2891,58 @@
     		flush();
     	}
 
-    	get select() {
+    	get SelectionLimit() {
     		return this.$$.ctx[36];
     	}
 
-    	get selectOnly() {
+    	set SelectionLimit(SelectionLimit) {
+    		this.$set({ SelectionLimit });
+    		flush();
+    	}
+
+    	get SelectionList() {
+    		return this.$$.ctx[34];
+    	}
+
+    	set SelectionList(SelectionList) {
+    		this.$set({ SelectionList });
+    		flush();
+    	}
+
+    	get select() {
     		return this.$$.ctx[37];
     	}
 
-    	get selectAll() {
+    	get selectOnly() {
     		return this.$$.ctx[38];
     	}
 
-    	get selectRange() {
+    	get selectAll() {
     		return this.$$.ctx[39];
     	}
 
-    	get deselect() {
+    	get selectRange() {
     		return this.$$.ctx[40];
     	}
 
-    	get deselectAll() {
+    	get deselect() {
     		return this.$$.ctx[41];
     	}
 
-    	get toggleSelectionOf() {
+    	get deselectAll() {
     		return this.$$.ctx[42];
     	}
 
-    	get selectedItems() {
+    	get toggleSelectionOf() {
     		return this.$$.ctx[43];
     	}
 
-    	get SelectionCount() {
+    	get selectedItems() {
     		return this.$$.ctx[44];
+    	}
+
+    	get SelectionCount() {
+    		return this.$$.ctx[45];
     	}
 
     	get isSelected() {
@@ -2865,7 +2977,7 @@
     	}
 
     	get onSortRequest() {
-    		return this.$$.ctx[45];
+    		return this.$$.ctx[46];
     	}
 
     	set onSortRequest(onSortRequest) {
@@ -2874,7 +2986,7 @@
     	}
 
     	get onSort() {
-    		return this.$$.ctx[46];
+    		return this.$$.ctx[47];
     	}
 
     	set onSort(onSort) {
@@ -2910,7 +3022,7 @@
     	}
 
     	get Operations() {
-    		return this.$$.ctx[47];
+    		return this.$$.ctx[48];
     	}
 
     	set Operations(Operations) {
@@ -2919,7 +3031,7 @@
     	}
 
     	get DataToOffer() {
-    		return this.$$.ctx[48];
+    		return this.$$.ctx[49];
     	}
 
     	set DataToOffer(DataToOffer) {
@@ -2928,7 +3040,7 @@
     	}
 
     	get TypesToAccept() {
-    		return this.$$.ctx[49];
+    		return this.$$.ctx[50];
     	}
 
     	set TypesToAccept(TypesToAccept) {
@@ -2937,7 +3049,7 @@
     	}
 
     	get onOuterDropRequest() {
-    		return this.$$.ctx[50];
+    		return this.$$.ctx[51];
     	}
 
     	set onOuterDropRequest(onOuterDropRequest) {
@@ -2946,7 +3058,7 @@
     	}
 
     	get onDroppedOutside() {
-    		return this.$$.ctx[51];
+    		return this.$$.ctx[52];
     	}
 
     	set onDroppedOutside(onDroppedOutside) {
@@ -2955,7 +3067,7 @@
     	}
 
     	get onDropFromOutside() {
-    		return this.$$.ctx[52];
+    		return this.$$.ctx[53];
     	}
 
     	set onDropFromOutside(onDropFromOutside) {

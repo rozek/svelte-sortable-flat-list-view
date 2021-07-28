@@ -31,7 +31,7 @@
             Pannable:ListViewElement, PanSensorWidth,PanSensorHeight, PanSpeed
           }}
           animate:flip
-          transition:scale
+          transition:scale={{ duration:withTransitions ? 300 : 0 }}
             on:introstart={TransitionStarted} on:introend={TransitionEnded}
             on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
         >
@@ -55,7 +55,7 @@
           class:ListItemView={true}
           class:selected={isSelected(Item)}
           on:click={(Event) => handleClick(Event,Item)}
-          transition:scale
+          transition:scale={{ duration:withTransitions ? 300 : 0 }}
             on:introstart={TransitionStarted} on:introend={TransitionEnded}
             on:outrostart={TransitionStarted} on:outroend={TransitionEnded}
         >
@@ -89,7 +89,7 @@ import { flip } from 'svelte/animate';
 </script>
 <script>
 import { // see https://github.com/sveltejs/svelte/issues/5954
-throwError, ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList, ValueIsOneOf, allowedBoolean, allowIntegerInRange, allowOrdinal, allowedString, allowNonEmptyString, allowFunction, allowPlainObject, allowListSatisfying, allowedListSatisfying, ValuesDiffer, quoted } from 'javascript-interface-library';
+throwError, ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList, ValueIsOneOf, allowBoolean, allowedBoolean, allowIntegerInRange, allowOrdinal, allowedString, allowNonEmptyString, allowFunction, allowPlainObject, allowListSatisfying, allowedListSatisfying, ValuesDiffer, quoted } from 'javascript-interface-library';
 let privateKey = newUniqueId();
 const dispatch = createEventDispatcher();
 let ListViewElement; // will refer to the list view's DOM element
@@ -104,6 +104,7 @@ export let Key = undefined;
 export let SelectionLimit = undefined;
 export let AttachmentRegion = undefined;
 export let Placeholder = undefined;
+export let withTransitions = true;
 $: List = allowedListSatisfying('"List" attribute', List, ValueIsObject) || [];
 let KeyOf;
 $: switch (true) {
@@ -122,6 +123,12 @@ $: switch (true) {
 $: allowOrdinal('selection limit', SelectionLimit);
 $: allowNonEmptyString('"AttachmentRegion" attribute', AttachmentRegion);
 $: allowNonEmptyString('"Placeholder" attribute', Placeholder);
+$: {
+    allowBoolean('"withTransitions" attribute', withTransitions);
+    if (withTransitions == null) {
+        withTransitions = true;
+    }
+}
 /**** Key Validation and quick Lookup ****/
 let ItemSet;
 function updateItemSet(...ArgumentsAreForReactivityOnly) {
@@ -640,7 +647,7 @@ function scale(Element, Options) {
     const currentStyle = window.getComputedStyle(Element);
     const currentTransform = (currentStyle.transform === 'none' ? '' : currentStyle.transform);
     return {
-        delay: 0, duration: 300,
+        delay: 0, duration: (Options.duration === 0 ? 0 : Options.duration || 300),
         css: (t, u) => (`transform: ${currentTransform} translateX(-${50 * u}%) scaleX(${t})`)
     };
 }

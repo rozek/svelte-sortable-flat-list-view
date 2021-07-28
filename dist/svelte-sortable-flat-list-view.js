@@ -1012,7 +1012,7 @@
     	Index: /*Index*/ ctx[76]
     });
 
-    // (791:4) {:else}
+    // (794:4) {:else}
     function create_else_block_1(ctx) {
     	let li;
     	let raw_value = (/*Placeholder*/ ctx[6] || "(empty list)") + "";
@@ -1036,7 +1036,7 @@
     	};
     }
 
-    // (783:4) {#if extendable}
+    // (786:4) {#if extendable}
     function create_if_block_3(ctx) {
     	let li;
     	let raw_value = (/*Placeholder*/ ctx[6] || "(empty list)") + "";
@@ -1085,7 +1085,7 @@
     	};
     }
 
-    // (730:2) {#if (List.length > 0)}
+    // (733:2) {#if (List.length > 0)}
     function create_if_block(ctx) {
     	let current_block_type_index;
     	let if_block;
@@ -1155,7 +1155,7 @@
     	};
     }
 
-    // (768:4) {:else}
+    // (771:4) {:else}
     function create_else_block(ctx) {
     	let each_blocks = [];
     	let each_1_lookup = new Map();
@@ -1220,7 +1220,7 @@
     	};
     }
 
-    // (731:4) {#if sortable || extendable || shrinkable}
+    // (734:4) {#if sortable || extendable || shrinkable}
     function create_if_block_1(ctx) {
     	let each_blocks = [];
     	let each_1_lookup = new Map();
@@ -1309,7 +1309,7 @@
     	};
     }
 
-    // (778:31)  
+    // (781:31)  
     function fallback_block_1(ctx) {
     	let t_value = /*KeyOf*/ ctx[15](/*Item*/ ctx[74], /*Index*/ ctx[76]) + "";
     	let t;
@@ -1330,7 +1330,7 @@
     	};
     }
 
-    // (769:6) {#each List as Item,Index (KeyOf(Item,Index))}
+    // (772:6) {#each List as Item,Index (KeyOf(Item,Index))}
     function create_each_block_1(key_1, ctx) {
     	let li;
     	let t;
@@ -1440,7 +1440,7 @@
     	};
     }
 
-    // (754:31)  
+    // (757:31)  
     function fallback_block(ctx) {
     	let t_value = /*KeyOf*/ ctx[15](/*Item*/ ctx[74], /*Index*/ ctx[76]) + "";
     	let t;
@@ -1461,7 +1461,7 @@
     	};
     }
 
-    // (732:6) {#each List as Item,Index (KeyOf(Item,Index))}
+    // (735:6) {#each List as Item,Index (KeyOf(Item,Index))}
     function create_each_block(key_1, ctx) {
     	let li;
     	let asDroppable_action;
@@ -1651,7 +1651,7 @@
     	};
     }
 
-    // (758:6) {#if sortable || extendable}
+    // (761:6) {#if sortable || extendable}
     function create_if_block_2(ctx) {
     	let li;
     	let raw_value = (/*AttachmentRegion*/ ctx[5] || "") + "";
@@ -1857,6 +1857,11 @@
     				$$invalidate(54, ItemSet[Key] = Item, ItemSet);
     			}
     		});
+
+    		if (ListViewElement != null) {
+    			// i.e., after component was initialized
+    			$$invalidate(34, SelectionList = selectedItems());
+    		}
     	}
 
     	//----------------------------------------------------------------------------//

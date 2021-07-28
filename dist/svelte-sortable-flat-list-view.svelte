@@ -152,6 +152,9 @@ function updateItemSet(...ArgumentsAreForReactivityOnly) {
             ItemSet[Key] = Item;
         }
     });
+    if (ListViewElement != null) { // i.e., after component was initialized
+        SelectionList = selectedItems();
+    }
 }
 $: updateItemSet(List, Key);
 //----------------------------------------------------------------------------//

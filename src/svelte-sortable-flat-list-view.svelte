@@ -73,7 +73,7 @@
     ValueIsOneOf,
     allowBoolean, allowedBoolean, allowIntegerInRange, allowOrdinal,
     allowedString, allowNonEmptyString,
-    allowFunction, allowPlainObject, allowListSatisfying, allowedListSatisfying,
+    allowFunction, allowPlainObject, allowListSatisfying,
     ValuesDiffer, quoted
   } from 'javascript-interface-library'
 

@@ -27,8 +27,6 @@ All [examples](#examples) are live and may be changed on the fly!
 
 **Mobile Developers**: since many mobile platforms lack support for native HTML5 drag-and-drop, you should consider importing [svelte-drag-drop-touch](https://github.com/rozek/svelte-drag-drop-touch) as a polyfill (a simple import of that package will suffice - there is no extra programming needed)
 
-*Please note: this package is currently under active development. Be invited to follow me on this road (with many detours searching for a [proper build environment](https://github.com/rozek/build-configuration-study), preparing [npm packages for Svelte](https://github.com/rozek/save-to-file) or struggling with singletons that turn out not to be so "single" in reality), but don't expect this package to be stable until perhaps end of July 2021 (sorry for frequent updates until then - sometimes you may see even multiple npm publications per day...).*
-
 ## Installation ##
 
 ```

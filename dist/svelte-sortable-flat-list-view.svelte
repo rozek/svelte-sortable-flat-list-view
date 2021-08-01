@@ -89,7 +89,7 @@ import { flip } from 'svelte/animate';
 </script>
 <script>
 import { // see https://github.com/sveltejs/svelte/issues/5954
-throwError, ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList, ValueIsOneOf, allowBoolean, allowedBoolean, allowIntegerInRange, allowOrdinal, allowedString, allowNonEmptyString, allowFunction, allowPlainObject, allowListSatisfying, allowedListSatisfying, ValuesDiffer, quoted } from 'javascript-interface-library';
+throwError, ValueIsNonEmptyString, ValueIsFunction, ValueIsObject, ValueIsList, ValueIsOneOf, allowBoolean, allowedBoolean, allowIntegerInRange, allowOrdinal, allowedString, allowNonEmptyString, allowFunction, allowPlainObject, allowListSatisfying, ValuesDiffer, quoted } from 'javascript-interface-library';
 let privateKey = newUniqueId();
 const dispatch = createEventDispatcher();
 let ListViewElement; // will refer to the list view's DOM element

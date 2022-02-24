@@ -24,7 +24,9 @@
     "url": "git+https://github.com/rozek/svelte-sortable-flat-list-view.git"
   },
   "keywords": [
+    "svelte",
     "svelte3",
+    "svelte-v3",
     "sortable",
     "list-view"
   ],

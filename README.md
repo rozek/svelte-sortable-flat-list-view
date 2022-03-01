@@ -39,7 +39,7 @@ npm install svelte-sortable-flat-list-view
 
 `svelte-sortable-flat-list-view` should be imported in a module context (perhaps together with `svelte-drag-drop-touch`) and may then be used in your markup:
 
-```
+```html
 <script context="module">
   import DragDropTouch from 'svelte-drag-drop-touch'
   import ListView      from 'svelte-sortable-flat-list-view'
